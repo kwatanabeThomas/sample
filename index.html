@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マインスイーパー</title>
+  <title>ポケモン マインスイーパー</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,154 +13,324 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      font-family: 'Segoe UI', sans-serif;
-      color: #fff;
+      background: linear-gradient(160deg, #1a3a1a 0%, #0d2b0d 40%, #0a1f0a 100%);
+      font-family: 'Segoe UI', 'Meiryo', sans-serif;
+      color: #e8f5e9;
       padding: 16px;
     }
 
+    /* ---- title ---- */
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
     h1 {
-      font-size: 2rem;
-      letter-spacing: 0.1em;
-      margin-bottom: 20px;
-      text-shadow: 0 0 20px rgba(100, 200, 255, 0.6);
+      font-size: 1.9rem;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 16px rgba(100,255,100,0.5), 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .title-sub {
+      font-size: 0.78rem;
+      color: #88bb88;
+      margin-bottom: 18px;
+      letter-spacing: 0.05em;
     }
 
-    /* --- difficulty selector --- */
+    /* ---- difficulty ---- */
     .difficulty {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 18px;
       flex-wrap: wrap;
       justify-content: center;
     }
-
     .difficulty button {
-      padding: 8px 20px;
-      border: 2px solid rgba(100, 200, 255, 0.4);
+      padding: 7px 18px;
+      border: 2px solid rgba(100,220,100,0.35);
       border-radius: 20px;
-      background: rgba(255,255,255,0.07);
-      color: #fff;
-      font-size: 0.9rem;
+      background: rgba(0,80,0,0.35);
+      color: #c8e6c9;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: all 0.2s;
     }
     .difficulty button:hover,
     .difficulty button.active {
-      background: rgba(100, 200, 255, 0.25);
-      border-color: rgba(100, 200, 255, 0.9);
-      box-shadow: 0 0 12px rgba(100, 200, 255, 0.4);
+      background: rgba(50,160,50,0.4);
+      border-color: rgba(100,220,100,0.9);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(100,220,100,0.35);
     }
 
-    /* --- status bar --- */
+    /* ---- status bar ---- */
     .status-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      max-width: 600px;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(100,200,255,0.2);
+      max-width: 620px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(100,200,100,0.25);
       border-radius: 12px;
-      padding: 10px 20px;
-      margin-bottom: 16px;
-      font-size: 1.1rem;
-      gap: 10px;
+      padding: 10px 18px;
+      margin-bottom: 10px;
+      font-size: 1rem;
+      gap: 8px;
     }
-
     .status-item {
       display: flex;
       align-items: center;
       gap: 6px;
       font-variant-numeric: tabular-nums;
+      min-width: 56px;
+    }
+    .status-label {
+      font-size: 0.72rem;
+      color: #88bb88;
+      display: block;
+      line-height: 1;
+    }
+    .status-val {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #e8f5e9;
     }
 
-    .status-icon { font-size: 1.3rem; }
-
     #reset-btn {
-      font-size: 1.6rem;
+      font-size: 1.8rem;
       background: none;
       border: none;
       cursor: pointer;
       transition: transform 0.15s;
       line-height: 1;
+      flex-shrink: 0;
     }
-    #reset-btn:hover { transform: scale(1.2); }
+    #reset-btn:hover { transform: scale(1.2) rotate(-5deg); }
 
-    /* --- board wrapper --- */
+    /* ---- hint button ---- */
+    .hint-wrap {
+      margin-bottom: 14px;
+    }
+    #hint-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 22px;
+      border-radius: 24px;
+      border: 2px solid rgba(255,220,50,0.6);
+      background: rgba(120,90,0,0.4);
+      color: #ffe082;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #hint-btn:hover:not(:disabled) {
+      background: rgba(180,130,0,0.5);
+      box-shadow: 0 0 14px rgba(255,220,50,0.4);
+    }
+    #hint-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: rgba(255,220,50,0.2);
+    }
+    #hint-btn .hint-uses {
+      font-size: 0.75rem;
+      background: rgba(255,220,50,0.2);
+      border-radius: 10px;
+      padding: 1px 7px;
+    }
+
+    /* ---- board wrapper ---- */
     .board-wrap {
       overflow: auto;
       max-width: 100vw;
       padding-bottom: 4px;
     }
 
-    /* --- grid --- */
+    /* ---- grid ---- */
     #board {
       display: grid;
       gap: 2px;
-      background: rgba(0,0,0,0.5);
-      border: 2px solid rgba(100,200,255,0.3);
-      border-radius: 8px;
+      background: rgba(0,0,0,0.6);
+      border: 3px solid rgba(80,160,80,0.5);
+      border-radius: 10px;
       padding: 6px;
       user-select: none;
+      box-shadow: 0 0 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.3);
     }
 
+    /* ---- cells ---- */
     .cell {
-      width: 34px;
-      height: 34px;
-      border-radius: 4px;
+      width: 36px;
+      height: 36px;
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.08);
-      transition: background 0.1s, transform 0.08s;
-      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(80,130,80,0.3);
+      transition: background 0.1s, transform 0.08s, box-shadow 0.1s;
+      background: linear-gradient(145deg, rgba(40,100,40,0.7), rgba(20,60,20,0.8));
+      position: relative;
+      overflow: hidden;
     }
-
     .cell:hover:not(.revealed):not(.flagged) {
-      background: rgba(100,200,255,0.25);
-      transform: scale(1.06);
+      background: linear-gradient(145deg, rgba(80,160,80,0.6), rgba(40,100,40,0.7));
+      transform: scale(1.08);
+      box-shadow: 0 0 8px rgba(100,220,100,0.3);
+      border-color: rgba(100,200,100,0.5);
     }
-
     .cell.revealed {
-      background: rgba(0,0,0,0.3);
+      background: rgba(0,0,0,0.35);
       cursor: default;
       border-color: rgba(255,255,255,0.04);
     }
+    .cell.hint-flash {
+      animation: hintPulse 0.6s ease-out;
+    }
+    @keyframes hintPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(255,220,50,0.9); transform: scale(1.15); }
+      100% { box-shadow: 0 0 16px 8px rgba(255,220,50,0); transform: scale(1); }
+    }
 
+    /* ---- Pikachu flag ---- */
     .cell.flagged {
-      background: rgba(255,180,0,0.18);
-      border-color: rgba(255,180,0,0.5);
+      background: linear-gradient(145deg, rgba(60,40,0,0.7), rgba(40,25,0,0.8));
+      border-color: rgba(255,200,50,0.6);
+    }
+    .pikachu {
+      position: relative;
+      width: 22px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    /* face */
+    .pikachu::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 18px; height: 16px;
+      background: #FFD700;
+      border-radius: 50%;
+      border: 1.5px solid #b8860b;
+    }
+    /* left ear */
+    .pikachu-ear-l,
+    .pikachu-ear-r {
+      position: absolute;
+      width: 6px; height: 9px;
+      background: #FFD700;
+      border: 1.5px solid #b8860b;
+      top: 0;
+      border-radius: 50% 50% 0 0;
+    }
+    .pikachu-ear-l { left: 1px;  transform: rotate(-15deg); }
+    .pikachu-ear-r { right: 1px; transform: rotate(15deg); }
+    /* ear tips (black) */
+    .pikachu-ear-l::after,
+    .pikachu-ear-r::after {
+      content: '';
+      position: absolute;
+      width: 6px; height: 4px;
+      background: #222;
+      top: 0; left: -1px;
+      border-radius: 50% 50% 0 0;
+    }
+    /* cheeks */
+    .pikachu-cheek-l,
+    .pikachu-cheek-r {
+      position: absolute;
+      width: 5px; height: 3px;
+      background: #ff6b6b;
+      border-radius: 50%;
+      bottom: 3px;
+    }
+    .pikachu-cheek-l { left: 2px; }
+    .pikachu-cheek-r { right: 2px; }
+    /* eyes */
+    .pikachu-eyes {
+      position: absolute;
+      bottom: 8px; left: 50%; transform: translateX(-50%);
+      width: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .pikachu-eyes::before,
+    .pikachu-eyes::after {
+      content: '';
+      width: 3px; height: 4px;
+      background: #333;
+      border-radius: 50%;
+      display: block;
     }
 
+    /* ---- Electrode mine ---- */
+    .electrode {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(to bottom, #cc1111 50%, #f0f0f0 50%);
+      border: 2px solid #222;
+      position: relative;
+      flex-shrink: 0;
+      box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.2);
+    }
+    .electrode::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: calc(50% - 3px);
+      height: 6px;
+      background: #222;
+    }
+    .electrode::after {
+      content: '';
+      position: absolute;
+      width: 9px; height: 9px;
+      background: #333;
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1.5px solid #555;
+      box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3);
+    }
     .cell.mine-explode {
-      background: rgba(255,60,60,0.6) !important;
+      background: rgba(255,60,20,0.7) !important;
+      border-color: #ff4400 !important;
+      animation: explodeShake 0.4s ease-out;
     }
-
+    @keyframes explodeShake {
+      0%,100% { transform: translate(0,0); }
+      20% { transform: translate(-3px,2px); }
+      40% { transform: translate(3px,-2px); }
+      60% { transform: translate(-2px,-3px); }
+      80% { transform: translate(2px,3px); }
+    }
     .cell.mine-shown {
-      background: rgba(80,80,80,0.5);
+      background: rgba(50,50,50,0.55);
       cursor: default;
     }
 
-    /* number colours */
-    .n1 { color: #4fc3f7; }
+    /* number type colours */
+    .n1 { color: #64b5f6; }
     .n2 { color: #81c784; }
     .n3 { color: #e57373; }
-    .n4 { color: #ce93d8; }
+    .n4 { color: #ba68c8; }
     .n5 { color: #ffb74d; }
     .n6 { color: #4dd0e1; }
-    .n7 { color: #f06292; }
+    .n7 { color: #f48fb1; }
     .n8 { color: #bdbdbd; }
 
-    /* --- overlay messages --- */
+    /* ---- overlays ---- */
     .overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.65);
+      background: rgba(0,0,0,0.7);
       align-items: center;
       justify-content: center;
       z-index: 100;
@@ -168,82 +338,96 @@
     .overlay.show { display: flex; }
 
     .overlay-box {
-      background: linear-gradient(145deg, #1a2a4a, #0f1e38);
-      border: 2px solid rgba(100,200,255,0.4);
-      border-radius: 16px;
-      padding: 40px 50px;
+      background: linear-gradient(145deg, #0a2a0a, #061806);
+      border: 2px solid rgba(100,220,100,0.5);
+      border-radius: 18px;
+      padding: 36px 48px;
       text-align: center;
-      box-shadow: 0 0 40px rgba(100,200,255,0.2);
+      box-shadow: 0 0 50px rgba(50,180,50,0.2);
+      max-width: 90vw;
     }
-
-    .overlay-box .emoji { font-size: 3.5rem; margin-bottom: 10px; }
-    .overlay-box h2 { font-size: 1.8rem; margin-bottom: 8px; }
-    .overlay-box p  { color: #aaa; margin-bottom: 24px; }
+    .overlay-box .ov-icon { font-size: 3.5rem; margin-bottom: 10px; line-height: 1; }
+    .overlay-box h2 { font-size: 1.7rem; margin-bottom: 8px; }
+    .overlay-box p  { color: #88bb88; margin-bottom: 22px; font-size: 0.95rem; }
 
     .overlay-box button {
       padding: 10px 32px;
       border-radius: 24px;
-      border: 2px solid rgba(100,200,255,0.6);
-      background: rgba(100,200,255,0.15);
-      color: #fff;
+      border: 2px solid rgba(100,220,100,0.6);
+      background: rgba(40,120,40,0.3);
+      color: #c8e6c9;
       font-size: 1rem;
       cursor: pointer;
       transition: all 0.2s;
     }
     .overlay-box button:hover {
-      background: rgba(100,200,255,0.35);
-      box-shadow: 0 0 16px rgba(100,200,255,0.4);
+      background: rgba(60,160,60,0.45);
+      box-shadow: 0 0 16px rgba(100,220,100,0.4);
+      color: #fff;
     }
 
-    /* mobile tweaks */
+    /* mobile */
     @media (max-width: 480px) {
-      h1 { font-size: 1.5rem; }
-      .cell { width: 28px; height: 28px; font-size: 0.78rem; }
+      h1 { font-size: 1.4rem; }
+      .cell { width: 30px; height: 30px; font-size: 0.78rem; }
+      .electrode { width: 21px; height: 21px; }
+      .pikachu { width: 18px; height: 16px; }
     }
   </style>
 </head>
 <body>
 
-<h1>💣 マインスイーパー</h1>
+<div class="title-wrap">
+  <h1>ポケモン マインスイーパー</h1>
+</div>
+<p class="title-sub">マルマインを避けてフィールドを踏破せよ！</p>
 
 <div class="difficulty">
-  <button data-level="easy"   class="active">初級 (9×9)</button>
-  <button data-level="medium"           >中級 (16×16)</button>
-  <button data-level="hard"             >上級 (30×16)</button>
+  <button data-level="easy" class="active">初級 (9×9)</button>
+  <button data-level="medium">中級 (16×16)</button>
+  <button data-level="hard">上級 (30×16)</button>
 </div>
 
 <div class="status-bar">
   <div class="status-item">
-    <span class="status-icon">🚩</span>
-    <span id="flag-count">0</span>
+    <span class="status-label">ピカチュウ</span>
+    <span class="status-val" id="flag-count">0</span>
   </div>
   <button id="reset-btn" title="リセット">🙂</button>
-  <div class="status-item">
-    <span class="status-icon">⏱</span>
-    <span id="timer">0</span>
+  <div class="status-item" style="justify-content:flex-end">
+    <span class="status-label">タイム</span>
+    <span class="status-val" id="timer">0</span>
   </div>
+</div>
+
+<div class="hint-wrap">
+  <button id="hint-btn" onclick="useHint()">
+    <span>💡 ヒント</span>
+    <span class="hint-uses" id="hint-uses">残り 1 回</span>
+  </button>
 </div>
 
 <div class="board-wrap">
   <div id="board"></div>
 </div>
 
-<!-- Result overlays -->
+<!-- Win overlay -->
 <div class="overlay" id="win-overlay">
   <div class="overlay-box">
-    <div class="emoji">🎉</div>
-    <h2>クリア！</h2>
+    <div class="ov-icon">🏆</div>
+    <h2>やった！クリア！</h2>
     <p id="win-time"></p>
-    <button onclick="newGame()">もう一度</button>
+    <button onclick="newGame()">もう一度あそぶ</button>
   </div>
 </div>
 
+<!-- Lose overlay -->
 <div class="overlay" id="lose-overlay">
   <div class="overlay-box">
-    <div class="emoji">💥</div>
-    <h2>ゲームオーバー</h2>
+    <div class="ov-icon">💥</div>
+    <h2>マルマインに当たった！</h2>
     <p>また挑戦してみよう！</p>
-    <button onclick="newGame()">もう一度</button>
+    <button onclick="newGame()">もう一度あそぶ</button>
   </div>
 </div>
 
@@ -256,23 +440,24 @@
 
   let level    = 'easy';
   let cfg      = LEVELS[level];
-  let board    = [];   // 2-D array of cell objects
+  let board    = [];
   let revealed = 0;
   let flags    = 0;
   let gameOver = false;
   let started  = false;
   let timerVal = 0;
   let timerID  = null;
+  let hintUsed = false;
 
-  /* ---- UI refs ---- */
-  const boardEl    = document.getElementById('board');
-  const flagEl     = document.getElementById('flag-count');
-  const timerEl    = document.getElementById('timer');
-  const resetBtn   = document.getElementById('reset-btn');
-  const winOverlay = document.getElementById('win-overlay');
-  const loseOverlay= document.getElementById('lose-overlay');
+  const boardEl     = document.getElementById('board');
+  const flagEl      = document.getElementById('flag-count');
+  const timerEl     = document.getElementById('timer');
+  const resetBtn    = document.getElementById('reset-btn');
+  const winOverlay  = document.getElementById('win-overlay');
+  const loseOverlay = document.getElementById('lose-overlay');
+  const hintBtn     = document.getElementById('hint-btn');
+  const hintUsesEl  = document.getElementById('hint-uses');
 
-  /* ---- difficulty buttons ---- */
   document.querySelectorAll('.difficulty button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelector('.difficulty button.active').classList.remove('active');
@@ -286,7 +471,7 @@
   resetBtn.addEventListener('click', newGame);
 
   /* ================================================================
-     Game logic
+     Game
   ================================================================ */
 
   function newGame() {
@@ -296,13 +481,17 @@
     gameOver  = false;
     revealed  = 0;
     flags     = 0;
+    hintUsed  = false;
+
     timerEl.textContent  = '0';
     flagEl.textContent   = '0';
     resetBtn.textContent = '🙂';
+    hintBtn.disabled     = false;
+    hintUsesEl.textContent = '残り 1 回';
+
     winOverlay.classList.remove('show');
     loseOverlay.classList.remove('show');
 
-    // build empty board
     board = [];
     for (let r = 0; r < cfg.rows; r++) {
       board.push([]);
@@ -310,7 +499,6 @@
         board[r].push({ mine: false, revealed: false, flagged: false, adjacent: 0 });
       }
     }
-
     renderBoard();
   }
 
@@ -320,12 +508,10 @@
       const r = Math.floor(Math.random() * cfg.rows);
       const c = Math.floor(Math.random() * cfg.cols);
       if (board[r][c].mine) continue;
-      // Keep a 3×3 area around first click safe
       if (Math.abs(r - safeR) <= 1 && Math.abs(c - safeC) <= 1) continue;
       board[r][c].mine = true;
       placed++;
     }
-    // calc adjacency
     for (let r = 0; r < cfg.rows; r++) {
       for (let c = 0; c < cfg.cols; c++) {
         if (board[r][c].mine) continue;
@@ -346,7 +532,26 @@
     return out;
   }
 
-  /* ---- rendering ---- */
+  /* ----------------------------------------------------------------
+     Rendering
+  ---------------------------------------------------------------- */
+
+  function makePikachuEl() {
+    const wrap = document.createElement('div');
+    wrap.className = 'pikachu';
+    wrap.innerHTML = '<div class="pikachu-ear-l"></div>'
+                   + '<div class="pikachu-ear-r"></div>'
+                   + '<div class="pikachu-cheek-l"></div>'
+                   + '<div class="pikachu-cheek-r"></div>'
+                   + '<div class="pikachu-eyes"></div>';
+    return wrap;
+  }
+
+  function makeElectrodeEl() {
+    const el = document.createElement('div');
+    el.className = 'electrode';
+    return el;
+  }
 
   function renderBoard() {
     boardEl.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
@@ -361,7 +566,6 @@
 
         el.addEventListener('click',       onLeftClick);
         el.addEventListener('contextmenu', onRightClick);
-        // long-press for mobile flag
         el.addEventListener('touchstart',  onTouchStart, { passive: true });
         el.addEventListener('touchend',    onTouchEnd);
         el.addEventListener('touchmove',   onTouchMove,  { passive: true });
@@ -381,15 +585,15 @@
     if (!el) return;
 
     el.className = 'cell';
-    el.textContent = '';
+    el.innerHTML = '';
 
     if (cell.flagged) {
       el.classList.add('flagged');
-      el.textContent = '🚩';
+      el.appendChild(makePikachuEl());
     } else if (cell.revealed) {
       el.classList.add('revealed');
       if (cell.mine) {
-        el.textContent = '💣';
+        el.appendChild(makeElectrodeEl());
       } else if (cell.adjacent > 0) {
         el.textContent = cell.adjacent;
         el.classList.add('n' + cell.adjacent);
@@ -397,10 +601,56 @@
     }
   }
 
-  /* ---- interactions ---- */
+  /* ----------------------------------------------------------------
+     Hint
+  ---------------------------------------------------------------- */
 
-  let touchTimer  = null;
-  let touchMoved  = false;
+  function useHint() {
+    if (hintUsed || gameOver) return;
+
+    if (!started) {
+      // 未開始のときは中央付近を安全基点として地雷を配置してから実行
+      const safeR = Math.floor(cfg.rows / 2);
+      const safeC = Math.floor(cfg.cols / 2);
+      started = true;
+      placeMines(safeR, safeC);
+      timerID = setInterval(() => { timerVal++; timerEl.textContent = timerVal; }, 1000);
+    }
+
+    const safeCells = [];
+    for (let r = 0; r < cfg.rows; r++) {
+      for (let c = 0; c < cfg.cols; c++) {
+        const cell = board[r][c];
+        if (!cell.mine && !cell.revealed && !cell.flagged) safeCells.push([r, c]);
+      }
+    }
+    if (safeCells.length === 0) return;
+
+    hintUsed = true;
+    hintBtn.disabled = true;
+    hintUsesEl.textContent = '使用済み';
+
+    const idx = Math.floor(Math.random() * safeCells.length);
+    const [r, c] = safeCells[idx];
+
+    reveal(r, c);
+
+    // 光らせる演出
+    const el = cellEl(r, c);
+    if (el) {
+      el.classList.add('hint-flash');
+      el.addEventListener('animationend', () => el.classList.remove('hint-flash'), { once: true });
+    }
+
+    checkWin();
+  }
+
+  /* ----------------------------------------------------------------
+     Interactions
+  ---------------------------------------------------------------- */
+
+  let touchTimer = null;
+  let touchMoved = false;
 
   function onTouchStart(e) {
     touchMoved = false;
@@ -411,10 +661,8 @@
       }
     }, 500);
   }
-
-  function onTouchMove() { touchMoved = true; clearTimeout(touchTimer); }
-
-  function onTouchEnd() { clearTimeout(touchTimer); }
+  function onTouchMove()  { touchMoved = true; clearTimeout(touchTimer); }
+  function onTouchEnd()   { clearTimeout(touchTimer); }
 
   function onLeftClick(e) {
     const r = +e.currentTarget.dataset.r;
@@ -424,10 +672,7 @@
     if (!started) {
       started = true;
       placeMines(r, c);
-      timerID = setInterval(() => {
-        timerVal++;
-        timerEl.textContent = timerVal;
-      }, 1000);
+      timerID = setInterval(() => { timerVal++; timerEl.textContent = timerVal; }, 1000);
     }
 
     if (board[r][c].mine) {
@@ -455,7 +700,6 @@
     updateCell(r, c);
   }
 
-  /* flood-fill reveal */
   function reveal(r, c) {
     const stack = [[r, c]];
     while (stack.length) {
@@ -465,9 +709,7 @@
       cell.revealed = true;
       revealed++;
       updateCell(cr, cc);
-      if (cell.adjacent === 0) {
-        neighbors(cr, cc).forEach(n => stack.push(n));
-      }
+      if (cell.adjacent === 0) neighbors(cr, cc).forEach(n => stack.push(n));
     }
   }
 
@@ -476,7 +718,6 @@
     clearInterval(timerID);
     resetBtn.textContent = '😵';
 
-    // reveal all mines
     for (let i = 0; i < cfg.rows; i++) {
       for (let j = 0; j < cfg.cols; j++) {
         if (board[i][j].mine && !board[i][j].flagged) {
@@ -486,10 +727,11 @@
         }
       }
     }
-    cellEl(r, c).classList.add('mine-explode');
-    cellEl(r, c).textContent = '💥';
+    const el = cellEl(r, c);
+    el.classList.add('mine-explode');
+    el.innerHTML = '<span style="font-size:1.3rem">💥</span>';
 
-    setTimeout(() => loseOverlay.classList.add('show'), 600);
+    setTimeout(() => loseOverlay.classList.add('show'), 700);
   }
 
   function checkWin() {
@@ -499,11 +741,10 @@
       clearInterval(timerID);
       resetBtn.textContent = '😎';
       document.getElementById('win-time').textContent = `クリアタイム: ${timerVal} 秒`;
-      setTimeout(() => winOverlay.classList.add('show'), 300);
+      setTimeout(() => winOverlay.classList.add('show'), 400);
     }
   }
 
-  /* ---- start ---- */
   newGame();
 </script>
 </body>
