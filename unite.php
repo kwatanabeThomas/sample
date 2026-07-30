@@ -9,7 +9,7 @@
 :root{
   --cs:32px;
   --txt:#e9eefc; --sub:#9aa8c8; --line:#2c3860;
-  --ally:#4a94ff; --enemy:#ff5f5f; --wild:#e6c979;
+  --ally:#4a94ff; --enemy:#ff5f5f; --wild:#e6c979; --shoot:#5cffa8;
 }
 html,body{height:100%}
 body{
@@ -39,13 +39,13 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .gpip{font-size:.6rem;padding:1px 5px;border-radius:4px;border:1px solid var(--line);background:#0e1428;color:var(--sub);white-space:nowrap}
 .gpip.open{border-color:#5c74b8;color:#cfe0ff}
 .gpip.dead{opacity:.35;text-decoration:line-through}
-.tmid{text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:132px}
+.tmid{text-align:center;display:flex;flex-direction:column;justify-content:center;min-width:140px}
 .tmid .t{font-size:.68rem;color:var(--sub);letter-spacing:.1em}
 .tmid .v{font-size:1.2rem;font-weight:700}
 .tmid .v small{font-size:.7rem;color:var(--sub);font-weight:400}
 .tmid select{font-size:.66rem;background:#0e1630;border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-top:5px}
 
-/* ---------- turn order strip ---------- */
+/* ---------- turn order ---------- */
 .order{display:flex;align-items:center;gap:5px;margin-bottom:8px;background:linear-gradient(180deg,#141c3c,#0f1630);
   border:1px solid var(--line);border-radius:10px;padding:6px 8px;overflow-x:auto}
 .order .lbl{font-size:.62rem;color:var(--sub);letter-spacing:.1em;flex:none;padding-right:2px}
@@ -69,7 +69,9 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 /* ---------- map ---------- */
 #mapWrap{background:linear-gradient(180deg,#0f1630,#0a1022);border:1px solid var(--line);border-radius:12px;
   padding:6px;overflow:auto}
-#map{display:grid;grid-template-columns:repeat(29,var(--cs));margin:0 auto;width:max-content}
+#mapStage{position:relative;width:max-content;margin:0 auto}
+#map{display:grid;grid-template-columns:repeat(29,var(--cs))}
+#fx{position:absolute;inset:0;pointer-events:none;z-index:20}
 .cell{width:var(--cs);height:var(--cs);position:relative;background:#18234f;
   outline:1px solid rgba(255,255,255,.03);outline-offset:-1px}
 .cell.wall{background:#070b18;outline-color:transparent}
@@ -89,8 +91,14 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .cell.gaA{background:#1f5aa8}
 .cell.gaE{background:#8f3030}
 .cell.gaA.dead,.cell.gaE.dead{background:#2a2f45}
+/* ゴール加速ライン：必ず地形色より後に置く（background-image を上書きさせるため） */
+.cell.accel{background-image:linear-gradient(180deg,
+  transparent 0 25%,rgba(140,225,255,.32) 25% 30%,transparent 30% 70%,
+  rgba(140,225,255,.32) 70% 75%,transparent 75% 100%)}
+.cell.accel::before{content:'';position:absolute;left:0;right:0;top:calc(50% - 1px);height:2px;
+  background:repeating-linear-gradient(90deg,rgba(170,240,255,.5) 0 4px,transparent 4px 9px);z-index:1}
 
-/* goal 3x3 frame (drawn on the centre cell, spilling over neighbours) */
+/* goal 3x3 frame */
 .gbox{position:absolute;left:-100%;top:-100%;width:300%;height:300%;border:2px solid;border-radius:9px;
   display:flex;align-items:center;justify-content:center;z-index:1;pointer-events:none}
 .gbox.a{border-color:#6fb0ff;box-shadow:inset 0 0 14px rgba(70,140,255,.35)}
@@ -99,7 +107,7 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .gbox.dead{border-style:dotted;opacity:.28}
 .gbox b{font-size:calc(var(--cs)*.42);font-weight:800;text-shadow:0 2px 4px #000c;opacity:.85}
 
-/* units */
+/* ---------- units ---------- */
 .u{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3}
 .u .ring{position:absolute;inset:2%;border-radius:12px;border:2px solid}
 .u.a .ring{border-color:var(--ally);background:rgba(74,148,255,.2)}
@@ -107,30 +115,86 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .u.w .ring{border-color:var(--wild);background:rgba(230,201,121,.18)}
 .u.me .ring{border-color:#ffe14d;box-shadow:0 0 0 2px rgba(255,225,77,.3),0 0 10px rgba(255,225,77,.45)}
 .u.now .ring{animation:pulse .7s ease-in-out infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 1px #ffe14d,0 0 6px rgba(255,225,77,.5)}50%{box-shadow:0 0 0 3px #ffe14d,0 0 16px rgba(255,225,77,.9)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 1px #ffe14d,0 0 6px rgba(255,225,77,.5)}
+                 50%{box-shadow:0 0 0 3px #ffe14d,0 0 16px rgba(255,225,77,.9)}}
 .u svg{position:relative;z-index:2;width:88%;height:88%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
-.hp{position:absolute;left:6%;right:6%;bottom:0;height:3px;border-radius:2px;background:#000b;overflow:hidden;z-index:4}
+
+/* 攻撃モーション：攻撃側は対象方向へ突き、被弾側は震える */
+.u.lunge{animation:lunge .34s ease-out}
+@keyframes lunge{0%{transform:none}
+  28%{transform:translate(calc(var(--ax)*38%),calc(var(--ay)*38%))}
+  55%{transform:translate(calc(var(--ax)*-12%),calc(var(--ay)*-12%))}
+  100%{transform:none}}
+.u.shake{animation:shake .32s ease-in-out}
+@keyframes shake{0%,100%{transform:none}
+  18%{transform:translate(-16%,0) rotate(-8deg)}
+  42%{transform:translate(14%,0) rotate(7deg)}
+  68%{transform:translate(-8%,0) rotate(-3deg)}}
+
+/* HPゲージ＝足元の横バー */
+.hp{position:absolute;left:6%;right:6%;bottom:0;height:4px;border-radius:2px;
+  background:rgba(0,0,0,.72);box-shadow:0 0 0 1px rgba(0,0,0,.6);overflow:hidden;z-index:4}
 .hp i{display:block;height:100%;background:#4ce07a}
 .hp.s2 i{background:#ffd24c}.hp.s1 i{background:#ff5d5d}
-.sh{position:absolute;left:6%;right:6%;bottom:4px;height:2px;background:#7fd8ff;border-radius:2px;z-index:4}
+.sh{position:absolute;left:6%;right:6%;bottom:5px;height:2px;background:#7fd8ff;border-radius:2px;z-index:4}
+
+/* シュートゲージ＝アイコンを囲む緑のリング＋ラベル（HPバーと形が完全に別） */
+.chgring{position:absolute;inset:-9%;border-radius:50%;z-index:6;pointer-events:none;
+  background:conic-gradient(from -90deg,var(--shoot) calc(var(--p)*1%),rgba(4,22,13,.6) 0);
+  -webkit-mask:radial-gradient(circle,transparent 57%,#000 60%);
+          mask:radial-gradient(circle,transparent 57%,#000 60%);
+  animation:chgglow 1.1s ease-in-out infinite}
+@keyframes chgglow{0%,100%{filter:drop-shadow(0 0 2px rgba(92,255,168,.5))}
+                   50%{filter:drop-shadow(0 0 8px rgba(92,255,168,.95))}}
+.chgtag{position:absolute;left:50%;bottom:calc(var(--cs)*-0.32);transform:translateX(-50%);z-index:7;
+  background:#08281a;border:1px solid var(--shoot);color:#a9ffcd;border-radius:99px;
+  font-size:calc(var(--cs)*.27);font-weight:800;padding:0 4px;line-height:1.35;white-space:nowrap;
+  box-shadow:0 1px 4px #000a}
+
 .pts{position:absolute;top:-3px;right:-3px;background:linear-gradient(180deg,#ffe17a,#f4b93c);color:#4a3200;
   font-size:calc(var(--cs)*.3);font-weight:800;border-radius:99px;padding:0 3px;min-width:calc(var(--cs)*.38);
   text-align:center;z-index:5;box-shadow:0 1px 3px #000a}
+/* 野生ポケモンを倒したときに拾える点数（枠だけ金色＝所持点バッジと区別） */
+.wpt{position:absolute;bottom:-5px;right:-4px;z-index:5;background:#2a2410;border:1px solid var(--wild);
+  color:#ffd97a;border-radius:99px;font-size:calc(var(--cs)*.27);font-weight:800;padding:0 3px;line-height:1.3;
+  box-shadow:0 1px 3px #000a}
 .badge{position:absolute;top:-4px;left:-3px;font-size:calc(var(--cs)*.3);z-index:5;line-height:1;
   background:#0d142c;border-radius:99px;padding:1px 3px;border:1px solid var(--line)}
-.chg{position:absolute;left:6%;right:6%;top:0;height:4px;background:#000b;border-radius:2px;overflow:hidden;z-index:5}
-.chg i{display:block;height:100%;background:linear-gradient(90deg,#7dffb0,#4ce07a)}
 .downmk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:calc(var(--cs)*.42);color:#8792b5;z-index:2}
 
 /* highlights */
 .cell.hlMove{box-shadow:inset 0 0 0 2px #4ce07a;cursor:pointer}
+.cell.hlMoveFast{box-shadow:inset 0 0 0 2px #7df0ff,inset 0 0 11px rgba(125,240,255,.6);cursor:pointer}
 .cell.hlAtk{box-shadow:inset 0 0 0 2px #ff8a4c;cursor:pointer}
 .cell.hlHeal{box-shadow:inset 0 0 0 2px #7fd8ff;cursor:pointer}
 .cell.hlArea{box-shadow:inset 0 0 0 2px #ffe14d;cursor:pointer}
-.cell.aoe::before{content:'';position:absolute;inset:0;background:rgba(255,180,60,.42);z-index:2}
-.cell.hit::before{content:'';position:absolute;inset:0;background:rgba(255,70,70,.6);z-index:2;animation:fade .45s forwards}
+.cell.aoe::after{content:'';position:absolute;inset:0;background:rgba(255,180,60,.42);z-index:2}
+.cell.hit::after{content:'';position:absolute;inset:0;background:rgba(255,70,70,.55);z-index:2;animation:fade .5s forwards}
 @keyframes fade{to{opacity:0}}
+
+/* ---------- fx layer ---------- */
+.fxtok{position:absolute;left:0;top:0;z-index:24;display:flex;align-items:center;justify-content:center;
+  will-change:transform}
+.fxtok svg{width:88%;height:88%;filter:drop-shadow(0 2px 6px rgba(0,0,0,.75))}
+.fxtok .ring{position:absolute;inset:2%;border-radius:12px;border:2px solid}
+.fxtok.a .ring{border-color:var(--ally);background:rgba(74,148,255,.2)}
+.fxtok.e .ring{border-color:var(--enemy);background:rgba(255,95,95,.2)}
+.fxtok.w .ring{border-color:var(--wild);background:rgba(230,201,121,.18)}
+.fxtok.me .ring{border-color:#ffe14d;box-shadow:0 0 12px rgba(255,225,77,.6)}
+.fxtrail{position:absolute;z-index:22;border-radius:50%;pointer-events:none;
+  animation:trailfade .6s ease-out forwards}
+@keyframes trailfade{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(.35)}}
+.fxbeam{position:absolute;z-index:23;height:3px;border-radius:2px;transform-origin:0 50%;
+  animation:beam .36s ease-out forwards}
+@keyframes beam{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+.fxtext{position:absolute;z-index:30;font-weight:800;pointer-events:none;white-space:nowrap;
+  text-shadow:0 2px 4px #000,0 0 4px #000;animation:rise 1s ease-out forwards}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,6px) scale(.75)}
+  16%{opacity:1;transform:translate(-50%,0) scale(1.15)}
+  100%{opacity:0;transform:translate(-50%,-26px) scale(1)}}
+.fxtext.dmg{color:#ff9a9a}.fxtext.pt{color:#ffd24c}.fxtext.heal{color:#8dffb8}
+.fxtext.ko{color:#ff6b6b}.fxtext.sc{color:#8dffb8}
 
 /* ---------- panels ---------- */
 .card{background:linear-gradient(180deg,#182144,#111834);border:1px solid var(--line);border-radius:12px;padding:10px 11px}
@@ -142,11 +206,21 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .mecard .info{flex:1;min-width:0}
 .mecard .nm{font-weight:700;font-size:.94rem}
 .mecard .st{font-size:.66rem;color:var(--sub);display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
-.bigbar{height:9px;background:#000a;border-radius:5px;overflow:hidden;margin-top:6px}
+.gauge{margin-top:7px}
+.gauge .lb{display:flex;justify-content:space-between;font-size:.63rem;color:var(--sub);margin-bottom:2px}
+.bigbar{height:10px;background:#000a;border-radius:5px;overflow:hidden;box-shadow:0 0 0 1px #0008 inset}
 .bigbar i{display:block;height:100%;background:linear-gradient(90deg,#3ce06f,#8ef0a8)}
 .bigbar.s2 i{background:linear-gradient(90deg,#ffc93c,#ffe08a)}
 .bigbar.s1 i{background:linear-gradient(90deg,#ff4d4d,#ff9a9a)}
-.hpnum{font-size:.66rem;color:var(--sub);margin-top:2px;display:flex;justify-content:space-between}
+/* シュートゲージ：セグメント式（HPの連続バーと形を分ける） */
+.shootbox{margin-top:7px;border:1px solid #245c42;background:#0a1f17;border-radius:9px;padding:6px 8px}
+.shootbox .hd{display:flex;justify-content:space-between;font-size:.65rem;color:#8dffc0;font-weight:700;gap:6px}
+.shootbox.off{opacity:.45}
+.segs{display:flex;gap:3px;margin-top:4px}
+.segs span{flex:1;height:11px;border-radius:3px;background:#0b1a14;border:1px solid #245c42}
+.segs span.on{background:linear-gradient(180deg,#8dffc0,#3ddc8c);border-color:#8dffc0;
+  box-shadow:0 0 7px rgba(92,255,168,.65)}
+
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .act{border:1px solid var(--line);background:#0e1630;border-radius:9px;padding:7px 8px;text-align:left;transition:.12s}
 .act:hover:not(:disabled){border-color:#5c74b8;background:#152046}
@@ -156,8 +230,8 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .act .t b{font-size:.6rem;color:#ffd24c;font-weight:600;text-align:right}
 .act .d{font-size:.62rem;color:var(--sub);margin-top:2px;line-height:1.35}
 .act.wide{grid-column:1/-1}
-.act.goal{border-color:#4ce07a;background:#12301f}
-.act.goal:hover:not(:disabled){background:#18452c}
+.act.goal{border-color:#3ddc8c;background:#0f2c1e}
+.act.goal:hover:not(:disabled){background:#164329}
 .hintbar{margin-top:7px;font-size:.7rem;color:#ffe14d;min-height:1.1em;line-height:1.4}
 
 .rlist{display:flex;flex-direction:column;gap:3px}
@@ -189,8 +263,7 @@ details.rules b{color:#e9eefc}
 .ov{position:fixed;inset:0;background:rgba(5,8,18,.92);backdrop-filter:blur(4px);z-index:100;
   display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
 .ov.hide{display:none}
-/* margin:auto で「収まるときは中央・はみ出すときは上寄せ+スクロール可」にする
-   （align-items:center だと縦にはみ出した分がスクロールできなくなる） */
+/* margin:auto で「収まるときは中央・はみ出すときは上寄せ+スクロール可」にする */
 .ovbox{max-width:1000px;width:100%;margin:auto}
 .ovbox h2{font-size:1.5rem;text-align:center;margin-bottom:4px}
 .ovbox p.lead{text-align:center;color:var(--sub);font-size:.8rem;margin-bottom:14px}
@@ -231,10 +304,10 @@ details.rules b{color:#e9eefc}
       <div class="v"><span id="turnNo">1</span><small> / <span id="turnMax">70</span></small></div>
       <div class="t" style="margin-top:5px" id="phaseTxt">行動を選択</div>
       <select id="spdSel" title="自動行動の表示速度">
-        <option value="750">速度: ゆっくり</option>
-        <option value="420" selected>速度: ふつう</option>
-        <option value="180">速度: はやい</option>
-        <option value="40">速度: 最速</option>
+        <option value="520">速度: ゆっくり</option>
+        <option value="280" selected>速度: ふつう</option>
+        <option value="150">速度: はやい</option>
+        <option value="30">速度: 最速(演出なし)</option>
       </select>
     </div>
     <div class="side e">
@@ -247,20 +320,24 @@ details.rules b{color:#e9eefc}
 
   <div class="main">
     <div class="left">
-      <div id="mapWrap"><div id="map"></div></div>
+      <div id="mapWrap"><div id="mapStage"><div id="map"></div><div id="fx"></div></div></div>
       <details class="rules">
         <summary>ルール / 操作説明</summary>
         <div>
           <b>■ 距離の数え方</b>：移動は<b>上下左右のみ1マス</b>。斜めへ行くには2マスかかります（＝マンハッタン距離）。<b>こうげき・わざの射程、範囲わざの半径も同じ数え方</b>です。<br>
-          <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。あなた以外の9匹は自動で順に動きます（速度は上のセレクトで変更可）。野生ポケモンは全員の行動後にまとめて反撃します。<br>
+          <b>■ すり抜け</b>：移動の<b>途中は他のポケモン（味方・敵・野生）を通り抜けられます</b>。ただし<b>止まれるのは空いているマスだけ</b>です。囲まれても動けなくなりません。<br>
+          <b>■ ゴール加速ライン</b>：<b>ゴールとゴールを結ぶ直線</b>（マップの水色の破線）の上では<b>移動1で2マス</b>進めます。素早さ3なら加速ライン上を6マス。移動先ハイライトのうち<b>水色に光っているマスが加速ラインを使った到達先</b>です。<br>
+          <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。あなた以外の9匹は自動で順に動きます（速度は上のセレクトで変更可）。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
           <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / 待機」から<b>1つだけ</b>選べます。<br>
-          <b>■ 素早さ</b>＝1回の移動で進めるマス数。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
           <b>■ 得点の入手</b>：野生ポケモンを倒す／相手ポケモンを倒す（相手が持っていた点＋1をもらう）。<br>
+          　・<b>アイコン右下の金枠「◆N」＝ 倒したときに拾える点数</b>（野生ポケモンのみ表示）。<br>
+          　・<b>アイコン右上の金色の丸い数字＝ そのポケモンが今持っている点数</b>。<br>
           <b>■ ゴール</b>：ゴールは<b>3×3マスのエリア</b>。相手の有効ゴールのエリア内に入り、<b>「ゴール」アクション</b>を選ぶとシュートを開始します。<br>
           　・所持点数が多いほど<b>完了までのターン数が増えます</b>（1〜3点=1ターン / 4〜7点=2 / 8〜11点=3 / 12〜15点=4 / 16点以上=5）。<br>
-          　・<b>シュート中にダメージを受けるとキャンセル</b>され、最初からやり直しになります。エリアから出た場合・別の行動をした場合もキャンセルされます。<br>
-          <b>■ ゴールの回復</b>：<b>自陣の生きているゴールエリア内にいるとターン終了時にHPが回復</b>します（最大HPの10%）。自陣ベースではさらに回復します（20%）。<br>
+          　・シュート中は<b>アイコンを囲む緑のリングゲージ</b>で進行を表示します（HPは足元の横バー）。<br>
+          　・<b>シュート中にダメージを受けるとキャンセル</b>され、最初からやり直しです。エリアから出た場合・別の行動をした場合もキャンセルされます。<br>
+          <b>■ ゴールの回復</b>：<b>自陣の生きているゴールエリア内にいるとターン終了時にHPが回復</b>（最大HPの10%）。自陣ベースではさらに回復します（20%）。<br>
           <b>■ ゴールの順番</b>：各チーム5個（上レーン2・下レーン2・中央1）。レーンは<b>外側→内側</b>の順にしか壊せません。<b>中央ゴールは相手ゴールを2つ以上壊すと開放</b>されます。<br>
           <b>■ 気絶</b>：HPが0になるとスタート地点に戻され、3ターン行動できません（持っていた点は倒した相手へ）。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
@@ -276,8 +353,14 @@ details.rules b{color:#e9eefc}
           <div class="av" id="meAv"></div>
           <div class="info"><div class="nm" id="meNm">-</div><div class="st" id="meSt"></div></div>
         </div>
-        <div class="bigbar" id="meBar"><i style="width:100%"></i></div>
-        <div class="hpnum"><span id="meHp">-</span><span id="mePt"></span></div>
+        <div class="gauge">
+          <div class="lb"><span>❤️ HP</span><span id="meHp">-</span></div>
+          <div class="bigbar" id="meBar"><i style="width:100%"></i></div>
+        </div>
+        <div class="shootbox off" id="shootBox">
+          <div class="hd"><span>⚡ シュートゲージ</span><span id="shootTxt">-</span></div>
+          <div class="segs" id="shootSegs"></div>
+        </div>
         <div class="acts" id="acts"></div>
         <div class="hintbar" id="hint"></div>
       </div>
@@ -441,7 +524,7 @@ const SPR = {
 };
 
 /* =========================================================
-   MAP  — 左上1/4だけ定義し、上下左右にミラーして完全対称なマップを作る
+   MAP  — 左上1/4だけ定義し、上下左右にミラーして完全対称にする
    ========================================================= */
 const QUAD = [
  "###############",
@@ -471,8 +554,16 @@ const ZAPDOS_TURN = 52;
 const DMG_K = 150;
 const GOAL_HEAL = 0.10, BASE_HEAL = 0.20;
 
+/* 移動コスト：通常マス=2 / 加速ライン=1、移動予算 = 素早さ×2
+   → 加速ライン上は「移動1で2マス」進める */
+const COST_NORMAL = 2, COST_FAST = 1;
+const ACCEL_ROWS = [2,8,14], ACCEL_C0 = 4, ACCEL_C1 = W-1-4;
+
 const BASE = { ally:{r:8,c:1}, enemy:{r:8,c:W-2} };
 const BASE_ZONE = { ally:{r0:7,r1:9,c0:1,c1:2}, enemy:{r0:7,r1:9,c0:W-3,c1:W-2} };
+/* 初期配置：レーンごとに間隔をあける（互いに隣接しない）。左右ミラー */
+const START_A = [{r:8,c:1},{r:2,c:1},{r:5,c:1},{r:11,c:1},{r:14,c:1}];
+const START = { ally:START_A, enemy:START_A.map(p=>({r:p.r,c:W-1-p.c})) };
 
 /* =========================================================
    POKÉMON
@@ -525,8 +616,6 @@ const WILD_SPAWNS = [
   {t:'drednaw',r:6,c:14},{t:'drednaw',r:10,c:14},
   {t:'zapdos', r:8,c:14, spawnTurn:ZAPDOS_TURN},
 ];
-
-/* ゴールは中心座標。3x3エリアを占める。team = 所有チーム（相手がここに得点する） */
 const GOAL_DEFS = [
   {team:'ally', lane:'top',tier:1,r:2, c:10,cap:20},
   {team:'ally', lane:'top',tier:2,r:2, c:4, cap:28},
@@ -544,19 +633,30 @@ const GOAL_DEFS = [
    STATE
    ========================================================= */
 let S = null;
-let sel = null;           // 選択中の行動（対象待ち）
-let running = false;      // 自動行動シーケンス実行中
-let curActor = null;      // いま行動しているユニット
-let SPEED = 420;
-let AUTO_PASS = true;     // 行動不能時に自動でターンを進める
+let sel = null;
+let running = false;
+let curActor = null;
+let SPEED = 280;
+let AUTO_PASS = true;
+let movingUid = null;      // 移動アニメ中は元マスのアイコンを隠す
+let fxAttacker = null;     // {uid,ax,ay}
+let fxShake = [];          // 被弾した uid
+let hitCells = [];
 
 const key=(r,c)=>r*W+c;
 const inb=(r,c)=>r>=0&&r<H&&c>=0&&c<W;
 const passable=(r,c)=>inb(r,c)&&MAP[r][c]!=='#';
-/* 上下左右のみ1マス＝斜めは2マス分。射程もこの距離で判定する */
+/* 射程・範囲は「上下左右1マス／斜め2マス」＝マンハッタン距離 */
 const dist=(a,b)=>Math.abs(a.r-b.r)+Math.abs(a.c-b.c);
 const DIRS=[[-1,0],[1,0],[0,-1],[0,1]];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fxOn=()=>SPEED>=60;
+
+/* ゴール加速ライン（ゴールとゴールを結ぶ直線） */
+const ACCEL=new Set();
+for(const r of ACCEL_ROWS) for(let c=ACCEL_C0;c<=ACCEL_C1;c++) if(passable(r,c)) ACCEL.add(key(r,c));
+const stepCost=(r,c)=>ACCEL.has(key(r,c))?COST_FAST:COST_NORMAL;
+const budgetOf=u=>u.spd*COST_NORMAL;
 
 /* =========================================================
    SETUP
@@ -585,9 +685,11 @@ function startGame(pokeId){
   allyD.forEach((d,i)=>{const u=makeUnit(d,'ally',i); if(i===0)u.isPlayer=true; S.units.push(u);});
   enemD.forEach((d,i)=>S.units.push(makeUnit(d,'enemy',i)));
   const LANES=['mid','top','top','bot','bot'];
-  ['ally','enemy'].forEach(t=>S.units.filter(u=>u.team===t).forEach((u,i)=>{u.lane=LANES[i];}));
+  ['ally','enemy'].forEach(t=>S.units.filter(u=>u.team===t).forEach((u,i)=>{
+    u.lane=LANES[i];
+    const p=START[t][i]; u.r=p.r; u.c=p.c;
+  }));
 
-  /* 行動順：あなた → 敵1 → 味方2 → 敵2 → …（毎ターン同じ順） */
   const A=S.units.filter(u=>u.team==='ally'), E=S.units.filter(u=>u.team==='enemy');
   S.order=[A[0]];
   for(let i=0;i<5;i++){ if(E[i])S.order.push(E[i]); if(A[i+1])S.order.push(A[i+1]); }
@@ -596,12 +698,13 @@ function startGame(pokeId){
   S.wilds=WILD_SPAWNS.map(makeWild);
   S.goals=GOAL_DEFS.map((g,i)=>({...g,gid:i,filled:0,alive:true}));
   initAreas(S.goals);
-  S.units.forEach(u=>{const p=freeSpawn(u.team); u.r=p.r; u.c=p.c;});
 
+  movingUid=null; clearFx();
+  fxEl.innerHTML='';
   document.getElementById('ovSelect').classList.add('hide');
   document.getElementById('turnMax').textContent=TURN_LIMIT;
   pushLog('th','── バトル開始！ ──');
-  pushLog('th',`ターン 1`);
+  pushLog('th','ターン 1');
   render();
   maybeAutoPass();
 }
@@ -649,7 +752,6 @@ function inBaseZone(team,r,c){
   const z=BASE_ZONE[team];
   return r>=z.r0&&r<=z.r1&&c>=z.c0&&c<=z.c1;
 }
-/* team が得点できる（＝相手が所有する有効な）ゴール */
 function openGoalsFor(team){
   const owner = team==='ally' ? 'enemy' : 'ally';
   const gs = S.goals.filter(g=>g.team===owner);
@@ -665,79 +767,117 @@ function goalUnderFoot(u){ return openGoalsFor(u.team).find(g=>inGoal(g,u.r,u.c)
 const chargeNeed = pts => Math.min(5, 1+Math.floor(pts/4));
 
 /* =========================================================
-   PATHFINDING (4方向)
+   PATHFINDING  (4方向 / コスト付き / 他ユニットはすり抜け可)
    ========================================================= */
-function distField(targets){
-  const d=new Int16Array(W*H).fill(-1); const q=[];
-  for(const t of targets){ if(passable(t.r,t.c)&&d[key(t.r,t.c)]<0){ d[key(t.r,t.c)]=0; q.push(t); } }
-  let i=0;
-  while(i<q.length){
-    const cur=q[i++], cd=d[key(cur.r,cur.c)];
-    for(const [dr,dc] of DIRS){
-      const nr=cur.r+dr,nc=cur.c+dc;
-      if(!passable(nr,nc)||d[key(nr,nc)]>=0) continue;
-      d[key(nr,nc)]=cd+1; q.push({r:nr,c:nc});
+function costField(targets){
+  const d=new Int32Array(W*H).fill(-1);
+  const buckets=[];
+  const push=(c,k)=>{ (buckets[c]||(buckets[c]=[])).push(k); };
+  for(const t of (Array.isArray(targets)?targets:[targets])){
+    if(!passable(t.r,t.c)) continue;
+    const k=key(t.r,t.c);
+    if(d[k]<0){ d[k]=0; push(0,k); }
+  }
+  for(let c=0;c<buckets.length;c++){
+    const b=buckets[c]; if(!b) continue;
+    for(let i=0;i<b.length;i++){
+      const k=b[i]; if(d[k]!==c) continue;
+      const r=(k/W)|0, cc=k%W;
+      for(const [dr,dc] of DIRS){
+        const nr=r+dr,nc=cc+dc;
+        if(!passable(nr,nc)) continue;
+        const nk=key(nr,nc), nd=c+stepCost(nr,nc);
+        if(d[nk]>=0&&nd>=d[nk]) continue;
+        d[nk]=nd; push(nd,nk);
+      }
     }
   }
   return d;
 }
+/* 到達可能マス：経路は他ユニットをすり抜け、止まれるのは空きマスのみ
+   → 周囲を囲まれても動けなくならない */
 function reachable(u){
-  const out=new Map(); const start=key(u.r,u.c); out.set(start,0);
-  let frontier=[{r:u.r,c:u.c}];
-  for(let step=1;step<=u.spd;step++){
-    const nxt=[];
-    for(const cur of frontier) for(const [dr,dc] of DIRS){
-      const nr=cur.r+dr,nc=cur.c+dc,k=key(nr,nc);
-      if(!passable(nr,nc)||out.has(k)) continue;
-      const occ=unitAt(nr,nc); if(occ&&occ!==u) continue;
-      out.set(k,step); nxt.push({r:nr,c:nc});
+  const budget=budgetOf(u);
+  const d=new Int32Array(W*H).fill(-1);
+  const start=key(u.r,u.c); d[start]=0;
+  const buckets=[[start]];
+  for(let c=0;c<buckets.length&&c<=budget;c++){
+    const b=buckets[c]; if(!b) continue;
+    for(let i=0;i<b.length;i++){
+      const k=b[i]; if(d[k]!==c) continue;
+      const r=(k/W)|0, cc=k%W;
+      for(const [dr,dc] of DIRS){
+        const nr=r+dr,nc=cc+dc;
+        if(!passable(nr,nc)) continue;
+        const nk=key(nr,nc), nd=c+stepCost(nr,nc);
+        if(nd>budget||(d[nk]>=0&&nd>=d[nk])) continue;
+        d[nk]=nd; (buckets[nd]||(buckets[nd]=[])).push(nk);
+      }
     }
-    frontier=nxt; if(!frontier.length) break;
   }
-  out.delete(start);
+  const out=new Map();
+  for(let k=0;k<W*H;k++){
+    if(k===start||d[k]<0) continue;
+    const occ=unitAt((k/W)|0,k%W);
+    if(!occ||occ===u) out.set(k,d[k]);
+  }
   return out;
 }
-function walkTo(u,dests,steps){
-  const f=distField(Array.isArray(dests)?dests:[dests]);
-  let cur={r:u.r,c:u.c};
-  for(let i=0;i<steps;i++){
+/* dest 方向へ budget 分進む道順（マス列）を返す。止まれない終点は手前まで戻す */
+function pathTo(u,dests,budget){
+  const f=costField(dests);
+  const path=[]; let cur={r:u.r,c:u.c}, spent=0;
+  for(let guard=0;guard<W*H;guard++){
     const cd=f[key(cur.r,cur.c)];
     if(cd<=0) break;
-    let best=null,bd=cd;
+    let best=null,bd=cd,bc=0;
     for(const [dr,dc] of DIRS){
       const nr=cur.r+dr,nc=cur.c+dc;
       if(!passable(nr,nc)) continue;
       const dv=f[key(nr,nc)];
       if(dv<0||dv>=bd) continue;
-      const occ=unitAt(nr,nc); if(occ&&occ!==u) continue;
-      bd=dv; best={r:nr,c:nc};
+      bd=dv; best={r:nr,c:nc}; bc=stepCost(nr,nc);
     }
-    if(!best) break;
-    cur=best;
+    if(!best||spent+bc>budget) break;
+    spent+=bc; cur=best; path.push(cur);
   }
-  return cur;
+  while(path.length){
+    const last=path[path.length-1];
+    const occ=unitAt(last.r,last.c);
+    if(!occ||occ===u) break;
+    path.pop();
+  }
+  return path;
 }
 function distTo(u,dests){
-  const f=distField(Array.isArray(dests)?dests:[dests]);
-  const d=f[key(u.r,u.c)];
-  return d<0?9999:d;
+  const d=costField(dests)[key(u.r,u.c)];
+  return d<0?99999:d;
 }
 
 /* =========================================================
    COMBAT
    ========================================================= */
 const calcDmg=(src,tgt,power)=>Math.max(1,Math.round((power+src.atk)*DMG_K/(100+tgt.dfs)));
-let hitCells=[];
 
+function markAttack(src,tgt){
+  const dr=tgt.r-src.r, dc=tgt.c-src.c;
+  const m=Math.max(Math.abs(dr),Math.abs(dc))||1;
+  fxAttacker={uid:src.uid, ax:+(dc/m).toFixed(2), ay:+(dr/m).toFixed(2)};
+  if(!fxShake.includes(tgt.uid)) fxShake.push(tgt.uid);
+  if(fxOn()&&dist(src,tgt)>1) fxBeam(src,tgt,src.team==='ally'?'#8ec6ff':(src.team==='enemy'?'#ffa0a0':'#ffe6a0'));
+}
 function applyDamage(src,tgt,power,label){
   let dmg=calcDmg(src,tgt,power);
   if(tgt.shield>0){ const ab=Math.min(tgt.shield,dmg); tgt.shield-=ab; dmg-=ab; }
   tgt.hp-=dmg;
   hitCells.push(key(tgt.r,tgt.c));
+  markAttack(src,tgt);
+  floatText(tgt.r,tgt.c,'-'+dmg,'dmg');
   pushLog(logCls(src), `${mark(src)}${src.name} の ${label} → ${mark(tgt)}${tgt.name} に ${dmg}`);
   if(tgt.charge>0){
     tgt.charge=0; tgt.chargeNeed=0; tgt.chargeGid=-1;
     pushLog('ko',`  └ ${mark(tgt)}${tgt.name} のシュートはキャンセルされた！`);
+    floatText(tgt.r,tgt.c,'シュート中断','ko');
   }
   if(tgt.hp<=0) knockOut(src,tgt);
 }
@@ -746,7 +886,10 @@ function knockOut(src,tgt){
   let gain=0;
   if(tgt.kind==='wild') gain=tgt.ptsGive;
   else { gain=tgt.pts+1; tgt.pts=0; }
-  if(src.kind==='poke'&&gain>0) src.pts+=gain;
+  if(src.kind==='poke'&&gain>0){
+    src.pts+=gain;
+    floatText(src.r,src.c,'+'+gain+'点','pt');
+  }
   pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
   tgt.down = tgt.kind==='wild' ? tgt.resp : 3;
 }
@@ -754,40 +897,46 @@ const mark=u=>u.team==='ally'?'🔵':(u.team==='enemy'?'🔴':'⚪');
 const logCls=u=>u.team==='ally'?'a':(u.team==='enemy'?'e':'w');
 
 /* =========================================================
-   ACTION EXECUTION
+   ACTION EXECUTION   戻り値: {from, path, acted}
    ========================================================= */
 function execAction(u,act){
-  if(!isAlive(u)||!act) return;
-  if(u.stun>0){ pushLog('w',`${mark(u)}${u.name} は行動できない…`); return; }
+  const res={from:{r:u.r,c:u.c},path:null,acted:false};
+  if(!isAlive(u)||!act) return res;
+  if(u.stun>0){ pushLog('w',`${mark(u)}${u.name} は行動できない…`); return res; }
   if(act.type!=='goal'&&u.charge>0){ u.charge=0; u.chargeNeed=0; u.chargeGid=-1; }
 
-  if(act.type==='wait'||act.type==='none'){ pushLog(logCls(u),`${mark(u)}${u.name} は待機`); return; }
+  if(act.type==='wait'||act.type==='none'){ pushLog(logCls(u),`${mark(u)}${u.name} は待機`); return res; }
 
   if(act.type==='move'){
-    const to=act.to;
-    if(!to) return;
-    const occ=unitAt(to.r,to.c);
-    if(occ&&occ!==u){ const p=walkTo(u,to,u.spd); u.r=p.r; u.c=p.c; }
-    else { u.r=to.r; u.c=to.c; }
-    return;
+    const to=act.to; if(!to) return res;
+    const path=pathTo(u,to,budgetOf(u));
+    if(path.length){
+      const end=path[path.length-1];
+      pushLog(logCls(u),`👟 ${mark(u)}${u.name} が (${res.from.r},${res.from.c}) → (${end.r},${end.c}) へ移動`);
+      u.r=end.r; u.c=end.c; res.path=path;
+    }else{
+      pushLog('w',`${mark(u)}${u.name} は移動できなかった`);
+    }
+    return res;
   }
-  if(act.type==='goal'){ execGoal(u); return; }
+  if(act.type==='goal'){ execGoal(u); res.acted=true; return res; }
 
   if(act.type==='attack'){
     const t=act.target;
-    if(!t||!isAlive(t)||dist(u,t)>u.rng){ pushLog('w',`${mark(u)}${u.name} のこうげきは届かなかった`); return; }
-    applyDamage(u,t,0,'こうげき'); return;
+    if(!t||!isAlive(t)||dist(u,t)>u.rng){ pushLog('w',`${mark(u)}${u.name} のこうげきは届かなかった`); return res; }
+    applyDamage(u,t,0,'こうげき'); res.acted=true; return res;
   }
   if(act.type==='skill'){
     const m=u.def.moves[act.idx];
-    if(u.cd[act.idx]>0) return;
+    if(u.cd[act.idx]>0) return res;
     let used=false;
 
     if(m.kind==='single'){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
         applyDamage(u,t,m.power,m.name);
-        if(m.stun&&isAlive(t)){ t.stunNew=1; pushLog('w',`  └ ${t.name} は次のターン行動できない！`); }
+        if(m.stun&&isAlive(t)){ t.stunNew=1; pushLog('w',`  └ ${t.name} は次のターン行動できない！`);
+          floatText(t.r,t.c,'行動不能','ko'); }
         used=true;
       }
     } else if(m.kind==='aoe'){
@@ -802,8 +951,8 @@ function execAction(u,act){
     } else if(m.kind==='dash'){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
-        const p=walkTo(u,{r:t.r,c:t.c},m.dash);
-        u.r=p.r; u.c=p.c;
+        const path=pathTo(u,{r:t.r,c:t.c},m.dash*COST_NORMAL);
+        if(path.length){ const e=path[path.length-1]; u.r=e.r; u.c=e.c; res.path=path; }
         if(dist(u,t)<=Math.max(1,u.rng)) applyDamage(u,t,m.power,m.name);
         else pushLog('w',`${mark(u)}${u.name} の ${m.name} は届かなかった…`);
         used=true;
@@ -814,18 +963,20 @@ function execAction(u,act){
         const list = m.radius ? S.units.filter(x=>isAlive(x)&&x.team===u.team&&dist(x,t)<=m.radius) : [t];
         pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！`);
         list.forEach(x=>{ const b=x.hp; x.hp=Math.min(x.maxHp,x.hp+m.heal);
+          if(x.hp>b) floatText(x.r,x.c,'+'+(x.hp-b),'heal');
           pushLog(logCls(u),`  └ ${x.name} を ${x.hp-b} 回復`); });
         used=true;
       }
     } else if(m.kind==='shield'){
       const list=[...new Set([u,...S.units.filter(x=>isAlive(x)&&x.team===u.team&&dist(x,u)<=(m.range||0))])];
-      list.forEach(x=>{ x.shield=Math.max(x.shield,m.shield); x.shieldT=3; });
+      list.forEach(x=>{ x.shield=Math.max(x.shield,m.shield); x.shieldT=3; floatText(x.r,x.c,'🛡','heal'); });
       pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！ ${list.length}体にシールド`);
       used=true;
     }
-    if(used) u.cd[act.idx]=m.cd;
-    return;
+    if(used){ u.cd[act.idx]=m.cd; res.acted=true; }
+    return res;
   }
+  return res;
 }
 
 function execGoal(u){
@@ -839,12 +990,14 @@ function execGoal(u){
   u.charge++;
   if(u.charge<u.chargeNeed){
     pushLog(logCls(u),`🎯 ${mark(u)}${u.name} がシュート中… (${u.charge}/${u.chargeNeed})`);
+    floatText(u.r,u.c,`${u.charge}/${u.chargeNeed}`,'sc');
     return;
   }
   const amt=Math.min(u.pts,g.cap-g.filled);
   g.filled+=amt; u.pts-=amt; S.score[u.team]+=amt;
   u.charge=0; u.chargeNeed=0; u.chargeGid=-1;
   pushLog('sc',`⭐ ${mark(u)}${u.name} がシュート成功！ ${amt}点（${laneName(g)}ゴール）`);
+  floatText(u.r,u.c,`GOAL +${amt}`,'sc');
   if(g.filled>=g.cap){ g.alive=false; pushLog('sc',`🔥 ${g.team==='ally'?'味方':'敵'}の${laneName(g)}ゴールを破壊！`); }
 }
 const laneName=g=>g.lane==='top'?'上':(g.lane==='bot'?'下':'中央');
@@ -893,44 +1046,36 @@ function skillScore(u,i){
   }
   return null;
 }
-
 function healSpots(team){
-  const t=[];
-  const z=BASE_ZONE[team];
+  const t=[]; const z=BASE_ZONE[team];
   for(let r=z.r0;r<=z.r1;r++)for(let c=z.c0;c<=z.c1;c++) if(passable(r,c)) t.push({r,c});
   S.goals.filter(g=>g.team===team&&g.alive).forEach(g=>t.push(...goalTiles(g)));
   return t;
 }
-
+function moveAct(u,dests){
+  const p=pathTo(u,dests,budgetOf(u));
+  if(!p.length) return null;
+  const e=p[p.length-1];
+  if(e.r===u.r&&e.c===u.c) return null;
+  return {type:'move',to:e};
+}
 function aiAction(u){
   if(u.stun>0) return {type:'none'};
   const foes=foesOf(u), pokeFoes=foes.filter(x=>x.kind==='poke');
   const here=goalUnderFoot(u);
-
-  /* シュート継続 */
   if(u.charge>0&&here&&u.pts>0) return {type:'goal'};
 
-  /* 撤退（自陣ゴール/ベースで回復できる） */
   if(u.hp<u.maxHp*0.3&&pokeFoes.some(x=>dist(u,x)<=5)){
     const spots=healSpots(u.team);
-    if(spots.length&&distTo(u,spots)>0){
-      const p=walkTo(u,spots,u.spd);
-      if(p.r!==u.r||p.c!==u.c) return {type:'move',to:p};
-    }
+    if(spots.length&&distTo(u,spots)>0){ const a=moveAct(u,spots); if(a) return a; }
   }
-  /* ゴールエリア内で点を持っていればシュート開始 */
   if(here&&u.pts>0) return {type:'goal'};
 
-  /* 点を持っていればゴールへ向かう */
   const goals=openGoalsFor(u.team);
   if(u.pts>=2&&goals.length){
     const gs=goals.map(g=>({g,d:distTo(u,goalTiles(g))})).sort((a,b)=>a.d-b.d);
-    if(gs[0].d<=u.spd+3){
-      const p=walkTo(u,goalTiles(gs[0].g),u.spd);
-      if(p.r!==u.r||p.c!==u.c) return {type:'move',to:p};
-    }
+    if(gs[0].d<=budgetOf(u)+6){ const a=moveAct(u,goalTiles(gs[0].g)); if(a) return a; }
   }
-  /* わざ・こうげき */
   let best=null;
   for(let i=0;i<2;i++){ const s=skillScore(u,i); if(s&&(!best||s.sc>best.sc)) best=s; }
   const inR=foes.filter(x=>dist(u,x)<=u.rng);
@@ -948,13 +1093,10 @@ function aiAction(u){
   }
   if(best) return best.act;
 
-  /* 点を持っていれば遠くてもゴールへ */
   if(u.pts>=2&&goals.length){
     const gs=goals.map(g=>({g,d:distTo(u,goalTiles(g))})).sort((a,b)=>a.d-b.d);
-    const p=walkTo(u,goalTiles(gs[0].g),u.spd);
-    if(p.r!==u.r||p.c!==u.c) return {type:'move',to:p};
+    const a=moveAct(u,goalTiles(gs[0].g)); if(a) return a;
   }
-  /* 目標へ移動 */
   const targets=[];
   for(const w of liveWilds()){
     let b=0;
@@ -978,10 +1120,73 @@ function aiAction(u){
   if(!targets.length&&goals.length) targets.push({r:goals[0].r,c:goals[0].c,sc:1});
   if(!targets.length) return {type:'wait'};
   targets.sort((a,b)=>b.sc-a.sc);
-  const p=walkTo(u,{r:targets[0].r,c:targets[0].c},u.spd);
-  if(p.r===u.r&&p.c===u.c) return {type:'wait'};
-  return {type:'move',to:p};
+  return moveAct(u,{r:targets[0].r,c:targets[0].c}) || {type:'wait'};
 }
+
+/* =========================================================
+   FX LAYER  (移動アニメ / 攻撃演出 / ダメージ表示)
+   ========================================================= */
+const fxEl=document.getElementById('fx');
+const CS=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cs'))||30;
+function floatText(r,c,txt,cls){
+  if(!fxOn()) return;
+  const cs=CS(), d=document.createElement('div');
+  d.className='fxtext '+cls;
+  d.textContent=txt;
+  d.style.left=(c*cs+cs/2)+'px';
+  d.style.top=(r*cs-cs*0.12)+'px';
+  d.style.fontSize=Math.max(10,cs*0.42)+'px';
+  fxEl.appendChild(d);
+  setTimeout(()=>d.remove(),1050);
+}
+function fxBeam(a,b,color){
+  const cs=CS();
+  const x1=a.c*cs+cs/2, y1=a.r*cs+cs/2, x2=b.c*cs+cs/2, y2=b.r*cs+cs/2;
+  const len=Math.hypot(x2-x1,y2-y1), ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+  const d=document.createElement('div');
+  d.className='fxbeam';
+  d.style.left=x1+'px'; d.style.top=(y1-1.5)+'px';
+  d.style.width=len+'px';
+  d.style.transform=`rotate(${ang}deg)`;
+  d.style.background=`linear-gradient(90deg,transparent,${color},#fff)`;
+  d.style.boxShadow=`0 0 8px ${color}`;
+  fxEl.appendChild(d);
+  setTimeout(()=>d.remove(),380);
+}
+function trailDot(r,c,cs){
+  const d=document.createElement('div');
+  d.className='fxtrail';
+  d.style.left=(c*cs+cs*0.34)+'px'; d.style.top=(r*cs+cs*0.34)+'px';
+  d.style.width=(cs*0.32)+'px'; d.style.height=(cs*0.32)+'px';
+  d.style.background='rgba(140,235,255,.8)';
+  fxEl.appendChild(d);
+  setTimeout(()=>d.remove(),620);
+}
+/* 始点→終点を1マスずつなめらかに移動させる */
+async function animateMove(u,from,path){
+  if(!fxOn()||!path||!path.length) return;
+  const cs=CS();
+  movingUid=u.uid; render();
+  const tok=document.createElement('div');
+  tok.className='fxtok '+(u.team==='ally'?'a':(u.team==='enemy'?'e':'w'))+(u.isPlayer?' me':'');
+  tok.style.width=cs+'px'; tok.style.height=cs+'px';
+  tok.innerHTML='<span class="ring"></span>'+u.spr;
+  tok.style.transform=`translate(${from.c*cs}px,${from.r*cs}px)`;
+  fxEl.appendChild(tok);
+  const per=Math.max(55,Math.min(130,Math.round(SPEED/4)));
+  await sleep(20);
+  tok.style.transition=`transform ${per}ms linear`;
+  let prev=from;
+  for(const p of path){
+    trailDot(prev.r,prev.c,cs);
+    tok.style.transform=`translate(${p.c*cs}px,${p.r*cs}px)`;
+    prev=p;
+    await sleep(per);
+  }
+  tok.remove();
+  movingUid=null;
+}
+function clearFx(){ fxAttacker=null; fxShake=[]; hitCells=[]; }
 
 /* =========================================================
    TURN LOOP  (1匹ずつ順番に決定・実行)
@@ -992,33 +1197,34 @@ async function runTurn(playerAct){
 
   for(const u of S.order){
     if(S.over) break;
-    curActor=u; hitCells=[];
-    if(!isAlive(u)){ continue; }
-    if(u!==player()){ render(); await sleep(SPEED*0.45); }
-    const act = (u===player()) ? playerAct : aiAction(u);
-    execAction(u,act);
+    curActor=u; clearFx();
+    if(!isAlive(u)) continue;
+    const isAI = u!==player();
+    if(isAI){ render(); await sleep(fxOn()?SPEED*0.28:0); }
+
+    const act = isAI ? aiAction(u) : playerAct;
+    const res = execAction(u,act);
+    if(res.path&&res.path.length) await animateMove(u,res.from,res.path);
     render();
-    if(u!==player()) await sleep(SPEED*0.55);
-    else await sleep(Math.min(SPEED,260));
+    if(fxOn()) await sleep(res.acted?Math.min(SPEED*0.75,360):SPEED*0.22);
+    clearFx();
   }
 
-  /* 野生ポケモンの反撃 */
-  curActor=null; hitCells=[];
+  curActor=null; clearFx();
   for(const w of liveWilds()){
     if(w.stun>0) continue;
     const t=foesOf(w).filter(x=>dist(w,x)<=w.rng).sort((a,b)=>a.hp-b.hp)[0];
     if(t) applyDamage(w,t,0,'こうげき');
   }
-  if(hitCells.length){ render(); await sleep(SPEED*0.5); }
+  if(hitCells.length){ render(); if(fxOn()) await sleep(Math.min(SPEED*0.7,340)); }
 
   endTurn();
-  running=false;
+  running=false; clearFx();
   render();
   if(!S.over) maybeAutoPass();
 }
 
 function endTurn(){
-  /* ゴール/ベースでの回復・CT・シールド・気絶カウント */
   for(const u of S.units){
     for(let i=0;i<2;i++) if(u.cd[i]>0) u.cd[i]--;
     if(u.shieldT>0){ u.shieldT--; if(u.shieldT===0) u.shield=0; }
@@ -1031,10 +1237,12 @@ function endTurn(){
       if(base||g){
         const before=u.hp;
         u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*(base?BASE_HEAL:GOAL_HEAL)));
-        if(u.hp>before) pushLog(logCls(u),`💚 ${mark(u)}${u.name} が${base?'ベース':'自陣ゴール'}で ${u.hp-before} 回復`);
+        if(u.hp>before){
+          pushLog(logCls(u),`💚 ${mark(u)}${u.name} が${base?'ベース':'自陣ゴール'}で ${u.hp-before} 回復`);
+          floatText(u.r,u.c,'+'+(u.hp-before),'heal');
+        }
       }
     }
-    /* シュート中にエリア外へ出ていたら解除 */
     if(u.charge>0&&!goalUnderFoot(u)){ u.charge=0; u.chargeNeed=0; u.chargeGid=-1; }
 
     if(u.down>0){
@@ -1049,16 +1257,20 @@ function endTurn(){
     if(w.stun>0) w.stun--;
     if(w.stunNew){ w.stun=1; w.stunNew=0; }
     if(w.down<=0) continue;
+    /* 野生ポケモンは一切移動しない。復活は必ず元の位置で、
+       誰かが乗っている間は次のターンまで待つ（ずれ・重なりを防ぐ） */
     if(w.spawnTurn&&w.down===999){
-      if(S.turn+1>=w.spawnTurn){
-        const p=freeNear(w.home);
-        w.down=0; w.hp=w.maxHp; w.r=p.r; w.c=p.c;
+      if(S.turn+1>=w.spawnTurn&&!unitAt(w.home.r,w.home.c)){
+        w.down=0; w.hp=w.maxHp; w.r=w.home.r; w.c=w.home.c;
         pushLog('sc',`⚡ ${w.name} が中央に出現！（${w.ptsGive}点）`);
       }
       continue;
     }
     w.down--;
-    if(w.down===0){ const p=freeNear(w.home); w.hp=w.maxHp; w.r=p.r; w.c=p.c; w.pts=0; }
+    if(w.down===0){
+      if(unitAt(w.home.r,w.home.c)) w.down=1;
+      else { w.hp=w.maxHp; w.r=w.home.r; w.c=w.home.c; w.pts=0; }
+    }
   }
   S.turn++;
   checkEnd();
@@ -1068,9 +1280,8 @@ function endTurn(){
 function maybeAutoPass(){
   if(!AUTO_PASS||S.over||running) return;
   const u=player();
-  if(!isAlive(u)||u.stun>0) setTimeout(()=>{ if(!running&&!S.over) runTurn({type:'none'}); }, Math.min(SPEED,420));
+  if(!isAlive(u)||u.stun>0) setTimeout(()=>{ if(!running&&!S.over) runTurn({type:'none'}); },Math.min(SPEED,420));
 }
-
 function checkEnd(){
   const aDead=S.goals.filter(g=>g.team==='ally'&&!g.alive).length;
   const eDead=S.goals.filter(g=>g.team==='enemy'&&!g.alive).length;
@@ -1099,7 +1310,10 @@ function pushLog(cls,txt){ S.log.push({cls,txt}); if(S.log.length>400) S.log.spl
 function validTargets(u,s){
   const out=new Map();
   if(!s||!isAlive(u)||u.stun>0) return out;
-  if(s.type==='move'){ for(const k of reachable(u).keys()) out.set(k,{r:Math.floor(k/W),c:k%W}); return out; }
+  if(s.type==='move'){
+    for(const [k,cost] of reachable(u)) out.set(k,{r:(k/W)|0,c:k%W,cost});
+    return out;
+  }
   if(s.type==='attack'){
     foesOf(u).forEach(t=>{ if(dist(u,t)<=u.rng) out.set(key(t.r,t.c),{r:t.r,c:t.c,target:t}); });
     return out;
@@ -1118,8 +1332,8 @@ function validTargets(u,s){
   }
   return out;
 }
-function hlClass(u,s){
-  if(s.type==='move') return 'hlMove';
+function hlClass(u,s,v){
+  if(s.type==='move') return dist(u,v)>u.spd ? 'hlMoveFast' : 'hlMove';
   if(s.type==='attack') return 'hlAtk';
   const m=u.def.moves[s.idx];
   if(m.kind==='heal'||m.kind==='shield') return 'hlHeal';
@@ -1166,7 +1380,7 @@ mapEl.addEventListener('click',e=>{
 });
 mapEl.addEventListener('mousemove',e=>{
   const c=e.target.closest('.cell');
-  hoverAoe(c?+c.dataset.r:-1, c?+c.dataset.c:-1);
+  hoverAoe(c?+c.dataset.r:-1,c?+c.dataset.c:-1);
 });
 mapEl.addEventListener('mouseleave',()=>hoverAoe(-1,-1));
 
@@ -1177,7 +1391,7 @@ function hoverAoe(r,c){
     const u=player(), m=u.def.moves[sel.idx];
     if(m.kind==='aoe'&&validTargets(u,sel).has(key(r,c))){
       for(let rr=0;rr<H;rr++)for(let cc=0;cc<W;cc++)
-        if(inb(rr,cc)&&Math.abs(rr-r)+Math.abs(cc-c)<=m.radius) next.push(key(rr,cc));
+        if(Math.abs(rr-r)+Math.abs(cc-c)<=m.radius) next.push(key(rr,cc));
     }
   }
   if(next.join()===aoeKeys.join()) return;
@@ -1186,8 +1400,7 @@ function hoverAoe(r,c){
   aoeKeys=next;
 }
 
-/* 地形＋ゴールエリアの塗り分け情報を一度だけ作る */
-const GOAL_AREA=new Map();   // key -> {team, gid}
+const GOAL_AREA=new Map();
 function initAreas(goals){
   GOAL_AREA.clear();
   goals.forEach(g=>goalTiles(g).forEach(t=>GOAL_AREA.set(key(t.r,t.c),g)));
@@ -1195,15 +1408,18 @@ function initAreas(goals){
 function terrainClass(r,c){
   const t=MAP[r][c];
   if(t==='#') return 'wall';
+  let cls;
   const g=GOAL_AREA.get(key(r,c));
-  if(g) return (g.team==='ally'?'gaA':'gaE')+(g.alive?'':' dead');
-  if(inBaseZone('ally',r,c)) return 'baseA';
-  if(inBaseZone('enemy',r,c)) return 'baseE';
-  if(t==='~') return 'bush';
-  if(r<=4||r>=12) return 'lane';
-  if(c<=9) return 'zoneA';
-  if(c>=W-10) return 'zoneE';
-  return '';
+  if(g) cls=(g.team==='ally'?'gaA':'gaE')+(g.alive?'':' dead');
+  else if(inBaseZone('ally',r,c)) cls='baseA';
+  else if(inBaseZone('enemy',r,c)) cls='baseE';
+  else if(t==='~') cls='bush';
+  else if(r<=4||r>=12) cls='lane';
+  else if(c<=9) cls='zoneA';
+  else if(c>=W-10) cls='zoneE';
+  else cls='';
+  if(ACCEL.has(key(r,c))) cls+=' accel';
+  return cls;
 }
 
 function render(){
@@ -1212,29 +1428,26 @@ function render(){
   const openA=openGoalsFor('enemy').map(g=>g.gid);
   const openE=openGoalsFor('ally').map(g=>g.gid);
 
-  /* header */
   document.getElementById('scA').textContent=S.score.ally;
   document.getElementById('scE').textContent=S.score.enemy;
   document.getElementById('turnNo').textContent=Math.min(S.turn,TURN_LIMIT);
   document.getElementById('phaseTxt').textContent =
-    S.over?'試合終了':(running?(curActor?`${curActor.name} 行動中`:'解決中'):(isAlive(u)?(u.stun>0?'行動不能':'あなたの番'):`気絶中 (復帰まで${u.down})`));
+    S.over?'試合終了':(running?(curActor?`${curActor.name} 行動中`:'解決中')
+      :(isAlive(u)?(u.stun>0?'行動不能':'あなたの番'):`気絶中 (復帰まで${u.down})`));
   const pip=(team,open)=>S.goals.filter(g=>g.team===team).sort((a,b)=>a.tier-b.tier)
     .map(g=>`<span class="gpip ${!g.alive?'dead':(open.includes(g.gid)?'open':'')}">${laneName(g)}${g.tier} ${g.alive?(g.cap-g.filled):'×'}</span>`).join('');
   document.getElementById('gA').innerHTML=pip('ally',openA);
   document.getElementById('gE').innerHTML=pip('enemy',openE);
 
-  /* turn order strip */
   document.getElementById('orderStrip').innerHTML='<span class="lbl">行動順</span>'+
     S.order.map(o=>{
-      const done = running && curActor && S.order.indexOf(o)<S.order.indexOf(curActor);
+      const done=running&&curActor&&S.order.indexOf(o)<S.order.indexOf(curActor);
       return `<div class="oi ${o.team==='ally'?'a':'e'}${o===curActor&&running?' now':''}${o.isPlayer?' me':''}`+
              `${isAlive(o)?'':' dead'}${done?' done':''}" title="${o.name}">`+
              `<span class="no">${o.ord}</span>${o.spr}</div>`;
     }).join('');
 
-  /* map */
   const vt=(sel&&!running&&!S.over)?validTargets(u,sel):new Map();
-  const hc=sel?hlClass(u,sel):'';
   const occupied=new Map();
   allActors().forEach(a=>{ if(isAlive(a)) occupied.set(key(a.r,a.c),a); });
   const downedAt=new Map();
@@ -1244,29 +1457,35 @@ function render(){
   for(let r=0;r<H;r++)for(let c=0;c<W;c++){
     const k=key(r,c);
     let cls='cell '+terrainClass(r,c);
-    if(vt.has(k)) cls+=' '+hc;
+    const v=vt.get(k);
+    if(v) cls+=' '+hlClass(u,sel,v);
     if(hitCells.includes(k)) cls+=' hit';
     html+=`<div class="${cls}" data-r="${r}" data-c="${c}">`;
-    /* goal frame on centre cell */
     const g=S.goals.find(x=>x.r===r&&x.c===c);
     if(g){
-      const open = g.team==='ally'?openA.includes(g.gid):openE.includes(g.gid);
+      const open=g.team==='ally'?openA.includes(g.gid):openE.includes(g.gid);
       html+=`<div class="gbox ${g.team==='ally'?'a':'e'}${!g.alive?' dead':(open?'':' closed')}">`+
             `<b>${g.alive?(g.cap-g.filled):'×'}</b></div>`;
     }
     const a=occupied.get(k);
-    if(a){
+    if(a&&a.uid!==movingUid){
       const tc=a.team==='ally'?'a':(a.team==='enemy'?'e':'w');
       const ratio=Math.max(0,a.hp)/a.maxHp;
-      html+=`<div class="u ${tc}${a.isPlayer?' me':''}${a===curActor&&running?' now':''}" title="${unitTip(a)}">`+
+      const lunge=!!(fxAttacker&&fxAttacker.uid===a.uid);
+      const shake=fxShake.includes(a.uid);
+      html+=`<div class="u ${tc}${a.isPlayer?' me':''}${a===curActor&&running?' now':''}`+
+            `${lunge?' lunge':''}${shake?' shake':''}" title="${unitTip(a)}"`+
+            (lunge?` style="--ax:${fxAttacker.ax};--ay:${fxAttacker.ay}"`:'')+'>'+
             `<span class="ring"></span>${a.spr}`+
             `<div class="hp ${ratio<0.3?'s1':(ratio<0.6?'s2':'')}"><i style="width:${ratio*100}%"></i></div>`+
             (a.shield>0?'<div class="sh"></div>':'')+
-            (a.charge>0?`<div class="chg"><i style="width:${a.charge/a.chargeNeed*100}%"></i></div>`:'')+
+            (a.charge>0?`<div class="chgring" style="--p:${Math.round(a.charge/a.chargeNeed*100)}"></div>`+
+                        `<div class="chgtag">⚡${a.charge}/${a.chargeNeed}</div>`:'')+
             (a.pts>0?`<div class="pts">${a.pts}</div>`:'')+
+            (a.kind==='wild'?`<div class="wpt">◆${a.ptsGive}</div>`:'')+
             (a.stun>0?'<div class="badge">💫</div>':'')+
             `</div>`;
-    }else if(downedAt.has(k)){
+    }else if(!a&&downedAt.has(k)){
       html+=`<div class="downmk">💤${downedAt.get(k)>1?downedAt.get(k):''}</div>`;
     }
     html+='</div>';
@@ -1274,7 +1493,6 @@ function render(){
   mapEl.innerHTML=html;
   aoeKeys=[];
 
-  /* my card */
   document.getElementById('meAv').innerHTML=u.spr;
   document.getElementById('meNm').textContent=u.name;
   document.getElementById('meSt').innerHTML=
@@ -1283,10 +1501,18 @@ function render(){
   const bar=document.getElementById('meBar');
   bar.className='bigbar '+(rr<0.3?'s1':(rr<0.6?'s2':''));
   bar.innerHTML=`<i style="width:${rr*100}%"></i>`;
-  document.getElementById('meHp').textContent=`HP ${Math.max(0,u.hp)} / ${u.maxHp}${u.shield>0?` (+🛡${u.shield})`:''}`;
-  document.getElementById('mePt').innerHTML=`所持得点 <b style="color:#ffd24c">${u.pts}</b>`;
+  document.getElementById('meHp').textContent=
+    `${Math.max(0,u.hp)} / ${u.maxHp}${u.shield>0?` (+🛡${u.shield})`:''}　所持得点 ${u.pts}`;
 
-  /* actions */
+  const gHere=isAlive(u)?goalUnderFoot(u):null;
+  const need=u.charge>0?u.chargeNeed:chargeNeed(u.pts);
+  const active=u.charge>0;
+  document.getElementById('shootBox').className='shootbox'+(active?'':' off');
+  document.getElementById('shootTxt').textContent = active?`${u.charge} / ${u.chargeNeed} ターン`
+    : (gHere&&u.pts>0?`開始すると ${need} ターン`:(u.pts>0?'ゴールエリア外':'得点なし'));
+  document.getElementById('shootSegs').innerHTML=
+    Array.from({length:Math.max(1,need)},(_,i)=>`<span class="${i<u.charge?'on':''}"></span>`).join('');
+
   const A=document.getElementById('acts'); A.innerHTML='';
   const dis=S.over||running||!isAlive(u)||u.stun>0;
   const add=(label,desc,s,off,tag,extra)=>{
@@ -1297,16 +1523,16 @@ function render(){
     b.onclick=()=>pickAct(s);
     A.appendChild(b);
   };
-  add('移動',`上下左右に${u.spd}マスまで`,{type:'move'},false,`👟${u.spd}`);
+  const canMove=isAlive(u)&&u.stun===0&&reachable(u).size>0;
+  add('移動',canMove?`上下左右に${u.spd}マス（加速ラインは${u.spd*2}マス）`:'空きマスが無くて動けません',
+      {type:'move'},!canMove,`👟${u.spd}`);
   add('こうげき',`射程${u.rng} / 威力 ${calcDmg(u,{dfs:35},0)}目安`,{type:'attack'},false,`🎯${u.rng}`);
   u.def.moves.forEach((m,i)=>{
     const off=u.cd[i]>0;
     const tag=off?`CT ${u.cd[i]}`:`射程${m.range}${m.radius?` 半径${m.radius}`:''}`;
     add(`わざ${i+1}: ${m.name}`,m.desc+`（CT${m.cd}）`,{type:'skill',idx:i},off,tag);
   });
-  const gHere=isAlive(u)?goalUnderFoot(u):null;
   const gOk=!!gHere&&u.pts>0;
-  const need=u.charge>0?u.chargeNeed:chargeNeed(u.pts);
   add(u.charge>0?`ゴール（継続 ${u.charge}/${u.chargeNeed}）`:'ゴール',
       gOk?`${need}ターンでシュート完了。ダメージを受けると中断`
         :(gHere?'得点を持っていません':'相手の有効ゴールのエリア内で使えます'),
@@ -1320,13 +1546,12 @@ function render(){
   else if(!isAlive(u)) hint.textContent='気絶中です。自動でターンが進みます。';
   else if(u.stun>0) hint.textContent='行動不能です。自動でターンが進みます。';
   else if(sel){
-    const t=sel.type==='move'?'移動先':(sel.type==='attack'?'攻撃する相手':
+    const t=sel.type==='move'?'移動先（水色に光るマスは加速ライン経由）':(sel.type==='attack'?'攻撃する相手':
       (u.def.moves[sel.idx].kind==='aoe'?'着弾させる地点':
        u.def.moves[sel.idx].kind==='heal'?'回復する味方':'わざの対象'));
     hint.textContent=`▶ マップ上で${t}をクリック（もう一度ボタンで解除）`;
   }else hint.textContent=`あなたの番です（行動順 ${u.ord} 番目）。行動を1つ選んでください。`;
 
-  /* roster */
   const row=a=>{
     const rt=Math.max(0,a.hp)/a.maxHp;
     return `<div class="rrow ${a.team==='ally'?'a':'e'}${isAlive(a)?'':' dead'}${a.isPlayer?' me':''}">`+
@@ -1345,7 +1570,9 @@ function render(){
 function unitTip(a){
   return `${a.name}（${a.team==='ally'?'味方':a.team==='enemy'?'敵':'野生'}）\n`+
     `HP ${Math.max(0,a.hp)}/${a.maxHp}\n素早さ ${a.spd} / 射程 ${a.rng}`+
-    (a.pts?`\n所持得点 ${a.pts}`:'')+(a.charge>0?`\nシュート中 ${a.charge}/${a.chargeNeed}`:'');
+    (a.kind==='wild'?`\n倒すと ${a.ptsGive}点`:'')+
+    (a.pts?`\n所持得点 ${a.pts}`:'')+
+    (a.charge>0?`\nシュート中 ${a.charge}/${a.chargeNeed}`:'');
 }
 
 /* =========================================================
