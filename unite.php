@@ -70,7 +70,7 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 #mapWrap{background:linear-gradient(180deg,#0f1630,#0a1022);border:1px solid var(--line);border-radius:12px;
   padding:6px;overflow:auto}
 #mapStage{position:relative;width:max-content;margin:0 auto}
-#map{display:grid;grid-template-columns:repeat(29,var(--cs))}
+#map{display:grid;grid-template-columns:repeat(35,var(--cs))}
 #fx{position:absolute;inset:0;pointer-events:none;z-index:20}
 .cell{width:var(--cs);height:var(--cs);position:relative;background:#18234f;
   outline:1px solid rgba(255,255,255,.03);outline-offset:-1px}
@@ -90,22 +90,34 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .cell.baseE{background:#6b2323}
 .cell.gaA{background:#1f5aa8}
 .cell.gaE{background:#8f3030}
-.cell.gaA.dead,.cell.gaE.dead{background:#2a2f45}
-/* ゴール加速ライン：必ず地形色より後に置く（background-image を上書きさせるため） */
-.cell.accel{background-image:linear-gradient(180deg,
-  transparent 0 25%,rgba(140,225,255,.32) 25% 30%,transparent 30% 70%,
-  rgba(140,225,255,.32) 70% 75%,transparent 75% 100%)}
-.cell.accel::before{content:'';position:absolute;left:0;right:0;top:calc(50% - 1px);height:2px;
-  background:repeating-linear-gradient(90deg,rgba(170,240,255,.5) 0 4px,transparent 4px 9px);z-index:1}
+/* いまシュートできるゴール＝明るく、まだできないゴール＝暗く */
+.cell.gaA.gOpen{background:#3286f0}
+.cell.gaE.gOpen{background:#d24747}
+.cell.gaA.gShut{background:#14304f}
+.cell.gaE.gShut{background:#4a1d1d}
+.cell.gaA.dead,.cell.gaE.dead{background:#262b40}
+/* ゴール加速ライン：縦横それぞれのレールを描く。必ず地形色より後に置く
+   （地形側は background ショートハンドなので background-image を上書きさせる必要がある） */
+.cell.accelV{background-image:linear-gradient(90deg,
+  transparent 0 24%,rgba(140,225,255,.34) 24% 30%,transparent 30% 70%,
+  rgba(140,225,255,.34) 70% 76%,transparent 76% 100%)}
+.cell.accelH::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,
+    transparent 0 24%,rgba(140,225,255,.34) 24% 30%,transparent 30% 70%,
+    rgba(140,225,255,.34) 70% 76%,transparent 76% 100%)}
 
 /* goal 3x3 frame */
 .gbox{position:absolute;left:-100%;top:-100%;width:300%;height:300%;border:2px solid;border-radius:9px;
   display:flex;align-items:center;justify-content:center;z-index:1;pointer-events:none}
 .gbox.a{border-color:#6fb0ff;box-shadow:inset 0 0 14px rgba(70,140,255,.35)}
 .gbox.e{border-color:#ff9090;box-shadow:inset 0 0 14px rgba(255,90,90,.3)}
-.gbox.closed{border-style:dashed;opacity:.5}
-.gbox.dead{border-style:dotted;opacity:.28}
+/* 開放中は枠を明るく光らせ、未開放は破線＋暗く落とす */
+.gbox.open.a{border-color:#bfe0ff;box-shadow:inset 0 0 18px rgba(120,190,255,.55),0 0 10px rgba(120,190,255,.45)}
+.gbox.open.e{border-color:#ffd0d0;box-shadow:inset 0 0 18px rgba(255,140,140,.5),0 0 10px rgba(255,140,140,.4)}
+.gbox.closed{border-style:dashed;opacity:.42}
+.gbox.dead{border-style:dotted;opacity:.24}
 .gbox b{font-size:calc(var(--cs)*.42);font-weight:800;text-shadow:0 2px 4px #000c;opacity:.85}
+.gbox.open b{opacity:1;color:#fff}
 
 /* ---------- units ---------- */
 .u{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3}
@@ -325,8 +337,8 @@ details.rules b{color:#e9eefc}
         <summary>ルール / 操作説明</summary>
         <div>
           <b>■ 距離の数え方</b>：移動は<b>上下左右のみ1マス</b>。斜めへ行くには2マスかかります（＝マンハッタン距離）。<b>こうげき・わざの射程、範囲わざの半径も同じ数え方</b>です。<br>
-          <b>■ すり抜け</b>：移動の<b>途中は他のポケモン（味方・敵・野生）を通り抜けられます</b>。ただし<b>止まれるのは空いているマスだけ</b>です。囲まれても動けなくなりません。<br>
-          <b>■ ゴール加速ライン</b>：<b>ゴールとゴールを結ぶ直線</b>（マップの水色の破線）の上では<b>移動1で2マス</b>進めます。素早さ3なら加速ライン上を6マス。移動先ハイライトのうち<b>水色に光っているマスが加速ラインを使った到達先</b>です。<br>
+          <b>■ すり抜け</b>：移動の途中に<b>味方ポケモンは通り抜けられます</b>が、<b>敵ポケモンと野生ポケモンは通り抜けられません</b>（壁と同じ扱い）。<b>止まれるのは空いているマスだけ</b>です。<br>
+          <b>■ ゴール加速エリア</b>：<b>自陣の「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線</b>（マップの水色のレール）の上では<b>移動1で2マス</b>進めます。素早さ3なら6マス。<b>相手側の加速エリアとはつながっていません</b>（中央には加速エリアがありません）。移動先ハイライトのうち<b>水色に光っているマスが加速エリアを使った到達先</b>です。<br>
           <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。あなた以外の9匹は自動で順に動きます（速度は上のセレクトで変更可）。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
           <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / 待機」から<b>1つだけ</b>選べます。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
@@ -338,7 +350,7 @@ details.rules b{color:#e9eefc}
           　・シュート中は<b>アイコンを囲む緑のリングゲージ</b>で進行を表示します（HPは足元の横バー）。<br>
           　・<b>シュート中にダメージを受けるとキャンセル</b>され、最初からやり直しです。エリアから出た場合・別の行動をした場合もキャンセルされます。<br>
           <b>■ ゴールの回復</b>：<b>自陣の生きているゴールエリア内にいるとターン終了時にHPが回復</b>（最大HPの10%）。自陣ベースではさらに回復します（20%）。<br>
-          <b>■ ゴールの順番</b>：各チーム5個（上レーン2・下レーン2・中央1）。レーンは<b>外側→内側</b>の順にしか壊せません。<b>中央ゴールは相手ゴールを2つ以上壊すと開放</b>されます。<br>
+          <b>■ ゴールの順番</b>：各チーム5個（上レーン2・下レーン2・中央1）。<b>最初にシュートできるのは「ゴール1」（中央寄りの外側ゴール）だけ</b>です。同じレーンの<b>ゴール1を壊すとそのレーンのゴール2</b>が、<b>ゴール2をどちらか1つ壊すと中央のゴール3</b>がシュート可能になります。ヘッダーの枠が実線のゴールが今シュートできるゴール、破線はまだ開放されていないゴールです。<br>
           <b>■ 気絶</b>：HPが0になるとスタート地点に戻され、3ターン行動できません（持っていた点は倒した相手へ）。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
           <b>■ 中央のカジリガメは高得点。52ターン目にサンダーが中央に出現します。</b>
@@ -527,23 +539,23 @@ const SPR = {
    MAP  — 左上1/4だけ定義し、上下左右にミラーして完全対称にする
    ========================================================= */
 const QUAD = [
- "###############",
- "#..............",
- "#..............",
- "#......~....~..",
- "#..............",
- "#......###.###.",
- "#.......~...~..",
- "#.......##.....",
- "#..............",
+ "##################",
+ "#.................",
+ "#.................",
+ "#.......~.......~.",
+ "#.................",
+ "#.......###.###...",
+ "#........~.....~..",
+ "#........##.......",
+ "#.................",
 ];
-const W = 29, H = 17;
+const W = 35, H = 17, QW = 18;
 const MAP = (()=>{
   const g=[];
   for(let r=0;r<H;r++){
     const qr = r<=8 ? r : (H-1-r);
     let s='';
-    for(let c=0;c<W;c++) s += QUAD[qr][c<=14 ? c : (W-1-c)];
+    for(let c=0;c<W;c++) s += QUAD[qr][c<QW ? c : (W-1-c)];
     g.push(s);
   }
   return g;
@@ -554,15 +566,14 @@ const ZAPDOS_TURN = 52;
 const DMG_K = 150;
 const GOAL_HEAL = 0.10, BASE_HEAL = 0.20;
 
-/* 移動コスト：通常マス=2 / 加速ライン=1、移動予算 = 素早さ×2
-   → 加速ライン上は「移動1で2マス」進める */
+/* 移動コスト：通常マス=2 / 加速エリア=1、移動予算 = 素早さ×2
+   → 加速エリア上は「移動1で2マス」進める */
 const COST_NORMAL = 2, COST_FAST = 1;
-const ACCEL_ROWS = [2,8,14], ACCEL_C0 = 4, ACCEL_C1 = W-1-4;
 
 const BASE = { ally:{r:8,c:1}, enemy:{r:8,c:W-2} };
 const BASE_ZONE = { ally:{r0:7,r1:9,c0:1,c1:2}, enemy:{r0:7,r1:9,c0:W-3,c1:W-2} };
-/* 初期配置：レーンごとに間隔をあける（互いに隣接しない）。左右ミラー */
-const START_A = [{r:8,c:1},{r:2,c:1},{r:5,c:1},{r:11,c:1},{r:14,c:1}];
+/* 初期配置：ポケモンの間を1マスあける（行4/6/8/10/12）。左右ミラー */
+const START_A = [{r:8,c:1},{r:6,c:1},{r:4,c:1},{r:10,c:1},{r:12,c:1}];
 const START = { ally:START_A, enemy:START_A.map(p=>({r:p.r,c:W-1-p.c})) };
 
 /* =========================================================
@@ -609,25 +620,45 @@ const WILD_DEFS = {
   zapdos:  {name:'サンダー',  hp:700, atk:80, def:40, rng:2, pts:25, resp:99},
 };
 const WILD_SPAWNS = [
-  {t:'otachi',r:2,c:7},{t:'otachi',r:2,c:21},{t:'otachi',r:14,c:7},{t:'otachi',r:14,c:21},
-  {t:'bouff', r:2,c:14},{t:'bouff', r:14,c:14},
-  {t:'ludi',  r:7,c:7},{t:'ludi',  r:9,c:7},{t:'ludi',r:7,c:21},{t:'ludi',r:9,c:21},
-  {t:'bouff', r:6,c:11},{t:'bouff',r:10,c:11},{t:'bouff',r:6,c:17},{t:'bouff',r:10,c:17},
-  {t:'drednaw',r:6,c:14},{t:'drednaw',r:10,c:14},
-  {t:'zapdos', r:8,c:14, spawnTurn:ZAPDOS_TURN},
+  {t:'otachi',r:2,c:9},{t:'otachi',r:2,c:25},{t:'otachi',r:14,c:9},{t:'otachi',r:14,c:25},
+  {t:'bouff', r:2,c:17},{t:'bouff', r:14,c:17},
+  {t:'ludi',  r:7,c:8},{t:'ludi',  r:9,c:8},{t:'ludi',r:7,c:26},{t:'ludi',r:9,c:26},
+  {t:'bouff', r:6,c:13},{t:'bouff',r:10,c:13},{t:'bouff',r:6,c:21},{t:'bouff',r:10,c:21},
+  {t:'drednaw',r:6,c:17},{t:'drednaw',r:10,c:17},
+  {t:'zapdos', r:8,c:17, spawnTurn:ZAPDOS_TURN},
 ];
 const GOAL_DEFS = [
-  {team:'ally', lane:'top',tier:1,r:2, c:10,cap:20},
-  {team:'ally', lane:'top',tier:2,r:2, c:4, cap:28},
-  {team:'ally', lane:'bot',tier:1,r:14,c:10,cap:20},
-  {team:'ally', lane:'bot',tier:2,r:14,c:4, cap:28},
-  {team:'ally', lane:'mid',tier:3,r:8, c:4, cap:36},
-  {team:'enemy',lane:'top',tier:1,r:2, c:W-1-10,cap:20},
-  {team:'enemy',lane:'top',tier:2,r:2, c:W-1-4, cap:28},
-  {team:'enemy',lane:'bot',tier:1,r:14,c:W-1-10,cap:20},
-  {team:'enemy',lane:'bot',tier:2,r:14,c:W-1-4, cap:28},
-  {team:'enemy',lane:'mid',tier:3,r:8, c:W-1-4, cap:36},
+  {team:'ally', lane:'top',tier:1,r:2, c:13,cap:20},
+  {team:'ally', lane:'top',tier:2,r:2, c:5, cap:28},
+  {team:'ally', lane:'bot',tier:1,r:14,c:13,cap:20},
+  {team:'ally', lane:'bot',tier:2,r:14,c:5, cap:28},
+  {team:'ally', lane:'mid',tier:3,r:8, c:5, cap:36},
+  {team:'enemy',lane:'top',tier:1,r:2, c:W-1-13,cap:20},
+  {team:'enemy',lane:'top',tier:2,r:2, c:W-1-5, cap:28},
+  {team:'enemy',lane:'bot',tier:1,r:14,c:W-1-13,cap:20},
+  {team:'enemy',lane:'bot',tier:2,r:14,c:W-1-5, cap:28},
+  {team:'enemy',lane:'mid',tier:3,r:8, c:W-1-5, cap:36},
 ];
+
+/* ゴール加速エリア：同じチームの「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線だけ。
+   敵チームのゴールとはつながらない（中央には加速エリアが無い） */
+const ACCEL=new Set();
+(()=>{
+  const line=(r1,c1,r2,c2)=>{
+    if(r1===r2){ for(let c=Math.min(c1,c2);c<=Math.max(c1,c2);c++) if(MAP[r1][c]!=='#') ACCEL.add(r1*W+c); }
+    else if(c1===c2){ for(let r=Math.min(r1,r2);r<=Math.max(r1,r2);r++) if(MAP[r][c1]!=='#') ACCEL.add(r*W+c1); }
+  };
+  for(const team of ['ally','enemy']){
+    const gs=GOAL_DEFS.filter(g=>g.team===team);
+    const at=(lane,tier)=>gs.find(x=>x.lane===lane&&x.tier===tier);
+    const t3=at('mid',3);
+    for(const lane of ['top','bot']){
+      const t1=at(lane,1), t2=at(lane,2);
+      if(t1&&t2) line(t1.r,t1.c,t2.r,t2.c);
+      if(t2&&t3) line(t2.r,t2.c,t3.r,t3.c);
+    }
+  }
+})();
 
 /* =========================================================
    STATE
@@ -652,9 +683,6 @@ const DIRS=[[-1,0],[1,0],[0,-1],[0,1]];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const fxOn=()=>SPEED>=60;
 
-/* ゴール加速ライン（ゴールとゴールを結ぶ直線） */
-const ACCEL=new Set();
-for(const r of ACCEL_ROWS) for(let c=ACCEL_C0;c<=ACCEL_C1;c++) if(passable(r,c)) ACCEL.add(key(r,c));
 const stepCost=(r,c)=>ACCEL.has(key(r,c))?COST_FAST:COST_NORMAL;
 const budgetOf=u=>u.spd*COST_NORMAL;
 
@@ -752,15 +780,16 @@ function inBaseZone(team,r,c){
   const z=BASE_ZONE[team];
   return r>=z.r0&&r<=z.r1&&c>=z.c0&&c<=z.c1;
 }
+/* シュートできるのは「ゴール1」だけ。同レーンのゴール1が壊れるとゴール2が開放され、
+   ゴール2がどちらか1つ壊れると中央のゴール3が開放される */
 function openGoalsFor(team){
   const owner = team==='ally' ? 'enemy' : 'ally';
   const gs = S.goals.filter(g=>g.team===owner);
-  const destroyed = gs.filter(g=>!g.alive).length;
   return gs.filter(g=>{
     if(!g.alive) return false;
     if(g.tier===1) return true;
-    if(g.tier===2){ const o=gs.find(x=>x.lane===g.lane&&x.tier===1); return o&&!o.alive; }
-    return destroyed>=2;
+    if(g.tier===2){ const o=gs.find(x=>x.lane===g.lane&&x.tier===1); return !!o&&!o.alive; }
+    return gs.some(x=>x.tier===2&&!x.alive);
   });
 }
 function goalUnderFoot(u){ return openGoalsFor(u.team).find(g=>inGoal(g,u.r,u.c))||null; }
@@ -769,10 +798,17 @@ const chargeNeed = pts => Math.min(5, 1+Math.floor(pts/4));
 /* =========================================================
    PATHFINDING  (4方向 / コスト付き / 他ユニットはすり抜け可)
    ========================================================= */
-function costField(targets){
+/* u から見て通り抜けられないマス：敵ポケモンと野生ポケモン（味方はすり抜け可） */
+function blockSet(u){
+  const s=new Set();
+  for(const x of allActors()) if(x!==u&&isAlive(x)&&isFoe(u,x)) s.add(key(x.r,x.c));
+  return s;
+}
+function costField(targets,blocked){
   const d=new Int32Array(W*H).fill(-1);
   const buckets=[];
   const push=(c,k)=>{ (buckets[c]||(buckets[c]=[])).push(k); };
+  /* 目標マス自体は（敵が乗っていても）始点として置く。隣接マスまでの距離が要るため */
   for(const t of (Array.isArray(targets)?targets:[targets])){
     if(!passable(t.r,t.c)) continue;
     const k=key(t.r,t.c);
@@ -786,7 +822,9 @@ function costField(targets){
       for(const [dr,dc] of DIRS){
         const nr=r+dr,nc=cc+dc;
         if(!passable(nr,nc)) continue;
-        const nk=key(nr,nc), nd=c+stepCost(nr,nc);
+        const nk=key(nr,nc);
+        if(blocked&&blocked.has(nk)) continue;
+        const nd=c+stepCost(nr,nc);
         if(d[nk]>=0&&nd>=d[nk]) continue;
         d[nk]=nd; push(nd,nk);
       }
@@ -794,10 +832,9 @@ function costField(targets){
   }
   return d;
 }
-/* 到達可能マス：経路は他ユニットをすり抜け、止まれるのは空きマスのみ
-   → 周囲を囲まれても動けなくならない */
+/* 到達可能マス：味方はすり抜け、敵・野生は通れない。止まれるのは空きマスのみ */
 function reachable(u){
-  const budget=budgetOf(u);
+  const budget=budgetOf(u), blocked=blockSet(u);
   const d=new Int32Array(W*H).fill(-1);
   const start=key(u.r,u.c); d[start]=0;
   const buckets=[[start]];
@@ -809,7 +846,9 @@ function reachable(u){
       for(const [dr,dc] of DIRS){
         const nr=r+dr,nc=cc+dc;
         if(!passable(nr,nc)) continue;
-        const nk=key(nr,nc), nd=c+stepCost(nr,nc);
+        const nk=key(nr,nc);
+        if(blocked.has(nk)) continue;
+        const nd=c+stepCost(nr,nc);
         if(nd>budget||(d[nk]>=0&&nd>=d[nk])) continue;
         d[nk]=nd; (buckets[nd]||(buckets[nd]=[])).push(nk);
       }
@@ -825,7 +864,8 @@ function reachable(u){
 }
 /* dest 方向へ budget 分進む道順（マス列）を返す。止まれない終点は手前まで戻す */
 function pathTo(u,dests,budget){
-  const f=costField(dests);
+  const blocked=blockSet(u);
+  const f=costField(dests,blocked);
   const path=[]; let cur={r:u.r,c:u.c}, spent=0;
   for(let guard=0;guard<W*H;guard++){
     const cd=f[key(cur.r,cur.c)];
@@ -834,7 +874,9 @@ function pathTo(u,dests,budget){
     for(const [dr,dc] of DIRS){
       const nr=cur.r+dr,nc=cur.c+dc;
       if(!passable(nr,nc)) continue;
-      const dv=f[key(nr,nc)];
+      const nk=key(nr,nc);
+      if(blocked.has(nk)) continue;
+      const dv=f[nk];
       if(dv<0||dv>=bd) continue;
       bd=dv; best={r:nr,c:nc}; bc=stepCost(nr,nc);
     }
@@ -850,7 +892,7 @@ function pathTo(u,dests,budget){
   return path;
 }
 function distTo(u,dests){
-  const d=costField(dests)[key(u.r,u.c)];
+  const d=costField(dests,blockSet(u))[key(u.r,u.c)];
   return d<0?99999:d;
 }
 
@@ -1405,20 +1447,26 @@ function initAreas(goals){
   GOAL_AREA.clear();
   goals.forEach(g=>goalTiles(g).forEach(t=>GOAL_AREA.set(key(t.r,t.c),g)));
 }
-function terrainClass(r,c){
+function terrainClass(r,c,openGids){
   const t=MAP[r][c];
   if(t==='#') return 'wall';
   let cls;
   const g=GOAL_AREA.get(key(r,c));
-  if(g) cls=(g.team==='ally'?'gaA':'gaE')+(g.alive?'':' dead');
+  if(g) cls=(g.team==='ally'?'gaA':'gaE')+
+            (!g.alive?' dead':(openGids.has(g.gid)?' gOpen':' gShut'));
   else if(inBaseZone('ally',r,c)) cls='baseA';
   else if(inBaseZone('enemy',r,c)) cls='baseE';
   else if(t==='~') cls='bush';
   else if(r<=4||r>=12) cls='lane';
-  else if(c<=9) cls='zoneA';
-  else if(c>=W-10) cls='zoneE';
+  else if(c<=11) cls='zoneA';
+  else if(c>=W-12) cls='zoneE';
   else cls='';
-  if(ACCEL.has(key(r,c))) cls+=' accel';
+  if(ACCEL.has(key(r,c))){
+    const h=(inb(r,c-1)&&ACCEL.has(key(r,c-1)))||(inb(r,c+1)&&ACCEL.has(key(r,c+1)));
+    const v=(inb(r-1,c)&&ACCEL.has(key(r-1,c)))||(inb(r+1,c)&&ACCEL.has(key(r+1,c)));
+    if(h) cls+=' accelH';
+    if(v) cls+=' accelV';
+  }
   return cls;
 }
 
@@ -1447,6 +1495,7 @@ function render(){
              `<span class="no">${o.ord}</span>${o.spr}</div>`;
     }).join('');
 
+  const openGids=new Set([...openA,...openE]);
   const vt=(sel&&!running&&!S.over)?validTargets(u,sel):new Map();
   const occupied=new Map();
   allActors().forEach(a=>{ if(isAlive(a)) occupied.set(key(a.r,a.c),a); });
@@ -1456,7 +1505,7 @@ function render(){
   let html='';
   for(let r=0;r<H;r++)for(let c=0;c<W;c++){
     const k=key(r,c);
-    let cls='cell '+terrainClass(r,c);
+    let cls='cell '+terrainClass(r,c,openGids);
     const v=vt.get(k);
     if(v) cls+=' '+hlClass(u,sel,v);
     if(hitCells.includes(k)) cls+=' hit';
@@ -1464,7 +1513,7 @@ function render(){
     const g=S.goals.find(x=>x.r===r&&x.c===c);
     if(g){
       const open=g.team==='ally'?openA.includes(g.gid):openE.includes(g.gid);
-      html+=`<div class="gbox ${g.team==='ally'?'a':'e'}${!g.alive?' dead':(open?'':' closed')}">`+
+      html+=`<div class="gbox ${g.team==='ally'?'a':'e'}${!g.alive?' dead':(open?' open':' closed')}">`+
             `<b>${g.alive?(g.cap-g.filled):'×'}</b></div>`;
     }
     const a=occupied.get(k);
@@ -1524,7 +1573,8 @@ function render(){
     A.appendChild(b);
   };
   const canMove=isAlive(u)&&u.stun===0&&reachable(u).size>0;
-  add('移動',canMove?`上下左右に${u.spd}マス（加速ラインは${u.spd*2}マス）`:'空きマスが無くて動けません',
+  add('移動',canMove?`上下左右に${u.spd}マス（加速エリアは${u.spd*2}マス）`
+      :'敵・野生ポケモンにふさがれて動けません',
       {type:'move'},!canMove,`👟${u.spd}`);
   add('こうげき',`射程${u.rng} / 威力 ${calcDmg(u,{dfs:35},0)}目安`,{type:'attack'},false,`🎯${u.rng}`);
   u.def.moves.forEach((m,i)=>{
@@ -1546,7 +1596,7 @@ function render(){
   else if(!isAlive(u)) hint.textContent='気絶中です。自動でターンが進みます。';
   else if(u.stun>0) hint.textContent='行動不能です。自動でターンが進みます。';
   else if(sel){
-    const t=sel.type==='move'?'移動先（水色に光るマスは加速ライン経由）':(sel.type==='attack'?'攻撃する相手':
+    const t=sel.type==='move'?'移動先（水色に光るマスは加速エリア経由）':(sel.type==='attack'?'攻撃する相手':
       (u.def.moves[sel.idx].kind==='aoe'?'着弾させる地点':
        u.def.moves[sel.idx].kind==='heal'?'回復する味方':'わざの対象'));
     hint.textContent=`▶ マップ上で${t}をクリック（もう一度ボタンで解除）`;
