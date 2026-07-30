@@ -86,8 +86,6 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .cell.lane{background:#1b2652}
 .cell.zoneA{background:#0f3a55}
 .cell.zoneE{background:#3a1e2b}
-.cell.baseA{background:#1d4a86}
-.cell.baseE{background:#6b2323}
 .cell.gaA{background:#1f5aa8}
 .cell.gaE{background:#8f3030}
 /* いまシュートできるゴール＝明るく、まだできないゴール＝暗く */
@@ -117,6 +115,8 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .gbox.closed{border-style:dashed;opacity:.42}
 .gbox.dead{border-style:dotted;opacity:.24}
 .gbox b{font-size:calc(var(--cs)*.42);font-weight:800;text-shadow:0 2px 4px #000c;opacity:.85}
+.gbox .hm{position:absolute;top:3%;left:50%;transform:translateX(-50%);font-style:normal;
+  font-size:calc(var(--cs)*.44);opacity:.9;filter:drop-shadow(0 1px 2px #000)}
 .gbox.open b{opacity:1;color:#fff}
 
 /* ---------- units ---------- */
@@ -276,7 +276,7 @@ details.rules b{color:#e9eefc}
   display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
 .ov.hide{display:none}
 /* margin:auto で「収まるときは中央・はみ出すときは上寄せ+スクロール可」にする */
-.ovbox{max-width:1000px;width:100%;margin:auto}
+.ovbox{max-width:1200px;width:100%;margin:auto}
 .ovbox h2{font-size:1.5rem;text-align:center;margin-bottom:4px}
 .ovbox p.lead{text-align:center;color:var(--sub);font-size:.8rem;margin-bottom:14px}
 .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:9px}
@@ -338,7 +338,7 @@ details.rules b{color:#e9eefc}
         <div>
           <b>■ 距離の数え方</b>：移動は<b>上下左右のみ1マス</b>。斜めへ行くには2マスかかります（＝マンハッタン距離）。<b>こうげき・わざの射程、範囲わざの半径も同じ数え方</b>です。<br>
           <b>■ すり抜け</b>：移動の途中に<b>味方ポケモンは通り抜けられます</b>が、<b>敵ポケモンと野生ポケモンは通り抜けられません</b>（壁と同じ扱い）。<b>止まれるのは空いているマスだけ</b>です。<br>
-          <b>■ ゴール加速エリア</b>：<b>自陣の「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線</b>（マップの水色のレール）の上では<b>移動1で2マス</b>進めます。素早さ3なら6マス。<b>相手側の加速エリアとはつながっていません</b>（中央には加速エリアがありません）。移動先ハイライトのうち<b>水色に光っているマスが加速エリアを使った到達先</b>です。<br>
+          <b>■ ゴール加速エリア</b>：<b>自陣の「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線</b>（マップの水色のレール）の上では<b>移動1で2マス</b>進めます。素早さ3なら6マス。自陣側でコの字型につながっており、<b>相手側の加速エリアとはつながっていません</b>（マップ中央には加速エリアがありません）。移動先ハイライトのうち<b>水色に光っているマスが加速エリアを使った到達先</b>です。<br>
           <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。あなた以外の9匹は自動で順に動きます（速度は上のセレクトで変更可）。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
           <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / 待機」から<b>1つだけ</b>選べます。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
@@ -349,7 +349,7 @@ details.rules b{color:#e9eefc}
           　・所持点数が多いほど<b>完了までのターン数が増えます</b>（1〜3点=1ターン / 4〜7点=2 / 8〜11点=3 / 12〜15点=4 / 16点以上=5）。<br>
           　・シュート中は<b>アイコンを囲む緑のリングゲージ</b>で進行を表示します（HPは足元の横バー）。<br>
           　・<b>シュート中にダメージを受けるとキャンセル</b>され、最初からやり直しです。エリアから出た場合・別の行動をした場合もキャンセルされます。<br>
-          <b>■ ゴールの回復</b>：<b>自陣の生きているゴールエリア内にいるとターン終了時にHPが回復</b>（最大HPの10%）。自陣ベースではさらに回復します（20%）。<br>
+          <b>■ ベースと回復</b>：マップ<b>左右の端にある「ゴール3」（🏠マーク）が自陣ベース</b>で、気絶からの復帰位置もここです。<b>自陣の生きているゴールエリア内にいるとターン終了時にHPが回復</b>します（ゴール3のエリアは最大HPの20%、それ以外の自陣ゴールは10%）。<br>
           <b>■ ゴールの順番</b>：各チーム5個（上レーン2・下レーン2・中央1）。<b>最初にシュートできるのは「ゴール1」（中央寄りの外側ゴール）だけ</b>です。同じレーンの<b>ゴール1を壊すとそのレーンのゴール2</b>が、<b>ゴール2をどちらか1つ壊すと中央のゴール3</b>がシュート可能になります。ヘッダーの枠が実線のゴールが今シュートできるゴール、破線はまだ開放されていないゴールです。<br>
           <b>■ 気絶</b>：HPが0になるとスタート地点に戻され、3ターン行動できません（持っていた点は倒した相手へ）。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
@@ -393,7 +393,7 @@ details.rules b{color:#e9eefc}
 <div class="ov" id="ovSelect">
   <div class="ovbox">
     <h2>使うポケモンを選ぼう</h2>
-    <p class="lead">残りの9匹が、味方4匹・敵5匹にランダムで振り分けられます。</p>
+    <p class="lead">全20匹。あなたが選んだ1匹以外の19匹から9匹が、味方4匹・敵5匹にランダムで振り分けられます。</p>
     <div class="picks" id="picks"></div>
   </div>
 </div>
@@ -496,6 +496,87 @@ const SPR = {
   <circle cx="32" cy="35" r="8.5" fill="#fdf3d8" stroke="#2f5f38" stroke-width="2"/>
   <circle cx="29" cy="34" r="1.7" fill="#3a4a2c"/><circle cx="35" cy="34" r="1.7" fill="#3a4a2c"/>
   <path d="M30 38.5 q2 2.2 4 0" fill="none" stroke="#3a4a2c" stroke-width="1.8" stroke-linecap="round"/>`),
+ /* --- 追加10匹 --- */
+ venusaur: SVG(`
+  <g stroke="#1f5a4e" stroke-width="3" stroke-linejoin="round">
+   <ellipse cx="13" cy="20" rx="9" ry="7" fill="#ef7396"/><ellipse cx="51" cy="20" rx="9" ry="7" fill="#ef7396"/>
+   <ellipse cx="32" cy="13" rx="10" ry="8" fill="#f593ad"/>
+   <circle cx="32" cy="41" r="19" fill="#4fa89a"/></g>
+  <circle cx="32" cy="16" r="4.2" fill="#f7d76c" stroke="#1f5a4e" stroke-width="2"/>
+  <circle cx="25" cy="39" r="3.2" fill="#8c2b2b"/><circle cx="39" cy="39" r="3.2" fill="#8c2b2b"/>
+  <path d="M24 47 l-3 7 M40 47 l3 7" stroke="#eef2e8" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M25 48 q7 5 14 0" fill="none" stroke="#1f5a4e" stroke-width="2.4" stroke-linecap="round"/>`),
+ blastoise: SVG(`
+  <g stroke="#27394b" stroke-width="3" stroke-linejoin="round">
+   <rect x="1" y="20" width="15" height="12" rx="4" fill="#8095aa"/>
+   <rect x="48" y="20" width="15" height="12" rx="4" fill="#8095aa"/>
+   <path d="M32 16 C19 16 13 28 15 40 C17 52 25 58 32 58 C39 58 47 52 49 40 C51 28 45 16 32 16Z" fill="#cba471"/></g>
+  <circle cx="7" cy="26" r="3.2" fill="#33465c"/><circle cx="57" cy="26" r="3.2" fill="#33465c"/>
+  <circle cx="25" cy="36" r="3.2" fill="#2b2418"/><circle cx="39" cy="36" r="3.2" fill="#2b2418"/>
+  <path d="M22 46 q10 7 20 0" fill="none" stroke="#6b5030" stroke-width="2.6" stroke-linecap="round"/>`),
+ greedent: SVG(`
+  <g stroke="#5e3a1c" stroke-width="3" stroke-linejoin="round">
+   <path d="M14 22 L10 5 L27 17Z" fill="#c96a2c"/><path d="M50 22 L54 5 L37 17Z" fill="#c96a2c"/>
+   <ellipse cx="32" cy="38" rx="21" ry="19" fill="#d97b34"/>
+   <circle cx="13" cy="44" r="8" fill="#eaa763"/><circle cx="51" cy="44" r="8" fill="#eaa763"/></g>
+  <circle cx="25" cy="33" r="3" fill="#3a2410"/><circle cx="39" cy="33" r="3" fill="#3a2410"/>
+  <path d="M27 43 h10" stroke="#f4ecd8" stroke-width="4.2" stroke-linecap="round"/>
+  <circle cx="32" cy="39" r="2.4" fill="#5e3a1c"/>`),
+ gardevoir: SVG(`
+  <g stroke="#4d6b58" stroke-width="3" stroke-linejoin="round">
+   <path d="M32 12 C19 12 12 25 14 38 C16 50 24 57 32 57 C40 57 48 50 50 38 C52 25 45 12 32 12Z" fill="#f6f8f6"/>
+   <path d="M32 8 C17 8 9 22 12 35 L21 30 C21 20 25 15 32 15 C39 15 43 20 43 30 L52 35 C55 22 47 8 32 8Z" fill="#5fbf94"/></g>
+  <path d="M32 43 l-5 13 h10Z" fill="#e05a6a" stroke="#8c3340" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="25" cy="35" r="3" fill="#e05a6a"/><circle cx="39" cy="35" r="3" fill="#e05a6a"/>
+  <path d="M28 42 q4 3 8 0" fill="none" stroke="#9aa8a0" stroke-width="2.2" stroke-linecap="round"/>`),
+ decidueye: SVG(`
+  <g stroke="#3c2a18" stroke-width="3" stroke-linejoin="round">
+   <path d="M32 15 C20 15 14 27 15 38 C16 50 25 57 32 57 C39 57 48 50 49 38 C50 27 44 15 32 15Z" fill="#8a6a45"/>
+   <path d="M32 5 C18 5 9 20 13 31 L22 26 C22 20 26 17 32 17 C38 17 42 20 42 26 L51 31 C55 20 46 5 32 5Z" fill="#4f8a4a"/></g>
+  <circle cx="24" cy="36" r="5.6" fill="#f7f2e0" stroke="#3c2a18" stroke-width="2"/>
+  <circle cx="40" cy="36" r="5.6" fill="#f7f2e0" stroke="#3c2a18" stroke-width="2"/>
+  <circle cx="24" cy="36" r="2.2" fill="#2a1f12"/><circle cx="40" cy="36" r="2.2" fill="#2a1f12"/>
+  <path d="M32 43 l-4.5 7 4.5 4.5 4.5-4.5Z" fill="#e0a83c" stroke="#3c2a18" stroke-width="2" stroke-linejoin="round"/>`),
+ mamoswine: SVG(`
+  <g stroke="#2e2116" stroke-width="3" stroke-linejoin="round">
+   <path d="M12 20 L6 7 L21 14Z" fill="#6b4f33"/><path d="M52 20 L58 7 L43 14Z" fill="#6b4f33"/>
+   <ellipse cx="32" cy="38" rx="23" ry="20" fill="#6b4f33"/>
+   <path d="M12 34 Q1 40 5 55 Q14 48 17 39Z" fill="#f2ece0"/>
+   <path d="M52 34 Q63 40 59 55 Q50 48 47 39Z" fill="#f2ece0"/></g>
+  <circle cx="24" cy="33" r="2.8" fill="#1c140c"/><circle cx="40" cy="33" r="2.8" fill="#1c140c"/>
+  <ellipse cx="32" cy="46" rx="8.5" ry="6.5" fill="#4a3722" stroke="#2e2116" stroke-width="2"/>
+  <circle cx="29" cy="45" r="1.7" fill="#1c140c"/><circle cx="35" cy="45" r="1.7" fill="#1c140c"/>`),
+ cinderace: SVG(`
+  <g stroke="#7a3a14" stroke-width="3" stroke-linejoin="round">
+   <path d="M19 25 L13 1 L29 18Z" fill="#f7f4ee"/><path d="M45 25 L51 1 L35 18Z" fill="#f7f4ee"/>
+   <path d="M32 16 C20 16 14 28 15 39 C16 51 25 57 32 57 C39 57 48 51 49 39 C50 28 44 16 32 16Z" fill="#f7f4ee"/></g>
+  <path d="M16 33 Q32 25 48 33 Q45 22 32 21 Q19 22 16 33Z" fill="#f07830"/>
+  <path d="M13 1 L18 14 L23 8Z" fill="#f07830"/><path d="M51 1 L46 14 L41 8Z" fill="#f07830"/>
+  <circle cx="25" cy="40" r="3" fill="#2b2418"/><circle cx="39" cy="40" r="3" fill="#2b2418"/>
+  <path d="M28 48 q4 4 8 0" fill="none" stroke="#a06030" stroke-width="2.4" stroke-linecap="round"/>`),
+ talonflame: SVG(`
+  <g stroke="#7a2418" stroke-width="3" stroke-linejoin="round">
+   <path d="M1 24 L20 34 L3 45Z" fill="#6b7280"/><path d="M63 24 L44 34 L61 45Z" fill="#6b7280"/>
+   <path d="M32 5 L23 21 h18Z" fill="#f2913c"/>
+   <ellipse cx="32" cy="36" rx="16" ry="17" fill="#e04a2c"/></g>
+  <circle cx="26" cy="33" r="3" fill="#2b1a12"/><circle cx="38" cy="33" r="3" fill="#2b1a12"/>
+  <path d="M32 40 l-7 5.5 7 5 7-5Z" fill="#f2c23c" stroke="#7a2418" stroke-width="2" stroke-linejoin="round"/>`),
+ blissey: SVG(`
+  <g stroke="#a8566e" stroke-width="3" stroke-linejoin="round">
+   <path d="M32 5 C20 5 12 24 12 38 C12 51 21 58 32 58 C43 58 52 51 52 38 C52 24 44 5 32 5Z" fill="#f9c0cf"/>
+   <path d="M13 40 Q32 56 51 40 Q50 58 32 58 Q14 58 13 40Z" fill="#fdfdfa"/></g>
+  <circle cx="18" cy="32" r="3.6" fill="#f78ba8"/><circle cx="46" cy="32" r="3.6" fill="#f78ba8"/>
+  <circle cx="25" cy="29" r="2.9" fill="#5e3040"/><circle cx="39" cy="29" r="2.9" fill="#5e3040"/>
+  <path d="M28 36 q4 4 8 0" fill="none" stroke="#a8566e" stroke-width="2.4" stroke-linecap="round"/>`),
+ zeraora: SVG(`
+  <g stroke="#f2d024" stroke-width="3" stroke-linejoin="round">
+   <path d="M16 24 L7 2 L28 18Z" fill="#2b3050"/><path d="M48 24 L57 2 L36 18Z" fill="#2b3050"/>
+   <path d="M32 13 C19 13 13 26 14 38 C15 50 25 57 32 57 C39 57 49 50 50 38 C51 26 45 13 32 13Z" fill="#2b3050"/></g>
+  <path d="M5 29 l11 4 -10 6" fill="none" stroke="#f2d024" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M59 29 l-11 4 10 6" fill="none" stroke="#f2d024" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M32 19 l-4.5 8 h9Z" fill="#4ad2f0"/>
+  <circle cx="25" cy="34" r="3.2" fill="#f2d024"/><circle cx="39" cy="34" r="3.2" fill="#f2d024"/>
+  <path d="M22 45 Q32 53 42 45 Q32 49 22 45Z" fill="#f2d024" stroke="#1d2138" stroke-width="2" stroke-linejoin="round"/>`),
  /* --- wild --- */
  otachi: SVG(`
   <g stroke="#6b4a22" stroke-width="3" stroke-linejoin="round">
@@ -542,11 +623,11 @@ const QUAD = [
  "##################",
  "#.................",
  "#.................",
- "#.......~.......~.",
+ "#......~........~.",
  "#.................",
- "#.......###.###...",
- "#........~.....~..",
- "#........##.......",
+ "#....###.###.###..",
+ "#........~......~.",
+ "#.....##......##..",
  "#.................",
 ];
 const W = 35, H = 17, QW = 18;
@@ -570,10 +651,11 @@ const GOAL_HEAL = 0.10, BASE_HEAL = 0.20;
    → 加速エリア上は「移動1で2マス」進める */
 const COST_NORMAL = 2, COST_FAST = 1;
 
-const BASE = { ally:{r:8,c:1}, enemy:{r:8,c:W-2} };
-const BASE_ZONE = { ally:{r0:7,r1:9,c0:1,c1:2}, enemy:{r0:7,r1:9,c0:W-3,c1:W-2} };
-/* 初期配置：ポケモンの間を1マスあける（行4/6/8/10/12）。左右ミラー */
-const START_A = [{r:8,c:1},{r:6,c:1},{r:4,c:1},{r:10,c:1},{r:12,c:1}];
+/* 中央のゴール3が自陣ベース。気絶からの復帰位置はその中心 */
+const BASE = { ally:{r:8,c:2}, enemy:{r:8,c:W-3} };
+/* 初期配置：ゴール3(3x3)の中心と四隅。互いに1マスずつ空く。左右ミラー
+   index 0=中心(プレイヤー) 1=右上 2=左上 3=右下 4=左下 */
+const START_A = [{r:8,c:2},{r:7,c:3},{r:7,c:1},{r:9,c:3},{r:9,c:1}];
 const START = { ally:START_A, enemy:START_A.map(p=>({r:p.r,c:W-1-p.c})) };
 
 /* =========================================================
@@ -610,6 +692,36 @@ const POKEMON = [
  { id:'comfey', name:'ワタシラガ', role:'サポート', hp:510, atk:44, def:36, spd:4, rng:4,
    moves:[{name:'はなびらのまい',kind:'aoe',power:40,range:4,radius:2,cd:3,desc:'花びらで範囲攻撃'},
           {name:'フラワーヒール',kind:'heal',heal:150,range:4,radius:2,cd:3,desc:'対象と周囲の味方を回復'}]},
+ { id:'venusaur', name:'フシギバナ', role:'アタック', hp:620, atk:60, def:42, spd:3, rng:4,
+   moves:[{name:'はっぱカッター',kind:'single',power:65,range:5,cd:2,desc:'葉の刃で遠くの敵を斬る'},
+          {name:'ヘドロばくだん',kind:'aoe',power:50,range:4,radius:2,cd:4,desc:'着弾点の半径2に毒を撒く'}]},
+ { id:'blastoise', name:'カメックス', role:'ディフェンス', hp:780, atk:50, def:56, spd:2, rng:3,
+   moves:[{name:'ハイドロポンプ',kind:'single',power:70,range:5,cd:3,desc:'高圧の水を撃ち出す'},
+          {name:'ロケットずつき',kind:'dash',power:60,range:5,dash:4,cd:3,desc:'甲羅ごと突っ込む'}]},
+ { id:'greedent', name:'ヨクバリス', role:'ディフェンス', hp:820, atk:48, def:54, spd:3, rng:1,
+   moves:[{name:'たいあたり',kind:'dash',power:65,range:5,dash:4,cd:3,desc:'体ごとぶつかる'},
+          {name:'ほおばる',kind:'shield',shield:210,range:1,cd:5,desc:'頬張って自分と隣の味方を守る'}]},
+ { id:'gardevoir', name:'サーナイト', role:'アタック', hp:470, atk:68, def:30, spd:3, rng:5,
+   moves:[{name:'サイコキネシス',kind:'single',power:80,range:6,cd:3,desc:'超射程の単体高火力'},
+          {name:'ムーンフォース',kind:'aoe',power:45,range:4,radius:2,cd:4,desc:'月の力で範囲攻撃'}]},
+ { id:'decidueye', name:'ジュナイパー', role:'アタック', hp:460, atk:70, def:28, spd:3, rng:6,
+   moves:[{name:'かげぬい',kind:'single',power:85,range:7,cd:4,desc:'最長射程の狙撃'},
+          {name:'はなふぶき',kind:'aoe',power:40,range:5,radius:2,cd:4,desc:'羽根を広範囲にばら撒く'}]},
+ { id:'mamoswine', name:'マンムー', role:'ディフェンス', hp:850, atk:52, def:58, spd:2, rng:1,
+   moves:[{name:'こおりのキバ',kind:'dash',power:60,range:5,dash:4,cd:3,desc:'牙で突っ込む'},
+          {name:'じしん',kind:'aoe',power:55,range:2,radius:2,cd:5,desc:'足元を大きく揺らす'}]},
+ { id:'cinderace', name:'エースバーン', role:'バランス', hp:590, atk:66, def:38, spd:4, rng:2,
+   moves:[{name:'かえんボール',kind:'single',power:65,range:4,cd:2,desc:'炎の球を蹴り込む'},
+          {name:'ブレイズキック',kind:'dash',power:85,range:5,dash:4,cd:4,desc:'踏み込んで蹴り抜く'}]},
+ { id:'talonflame', name:'ファイアロー', role:'スピード', hp:490, atk:68, def:30, spd:5, rng:1,
+   moves:[{name:'ブレイブバード',kind:'dash',power:90,range:6,dash:5,cd:4,desc:'急降下で体当たり'},
+          {name:'アクロバット',kind:'aoe',power:45,range:2,radius:2,cd:3,desc:'旋回して周囲を攻撃'}]},
+ { id:'blissey', name:'ハピナス', role:'サポート', hp:700, atk:40, def:44, spd:3, rng:2,
+   moves:[{name:'たまごうみ',kind:'heal',heal:200,range:3,cd:3,desc:'味方1体(自分可)を大回復'},
+          {name:'しんぴのまもり',kind:'shield',shield:220,range:3,cd:5,desc:'広めにシールドを張る'}]},
+ { id:'zeraora', name:'ゼラオラ', role:'スピード', hp:460, atk:72, def:26, spd:5, rng:1,
+   moves:[{name:'スパーク',kind:'dash',power:80,range:5,dash:5,cd:3,desc:'電気を纏って突進'},
+          {name:'プラズマシャワー',kind:'aoe',power:50,range:3,radius:2,cd:4,desc:'周囲に電撃を降らせる'}]},
 ];
 
 const WILD_DEFS = {
@@ -620,24 +732,24 @@ const WILD_DEFS = {
   zapdos:  {name:'サンダー',  hp:700, atk:80, def:40, rng:2, pts:25, resp:99},
 };
 const WILD_SPAWNS = [
-  {t:'otachi',r:2,c:9},{t:'otachi',r:2,c:25},{t:'otachi',r:14,c:9},{t:'otachi',r:14,c:25},
+  {t:'otachi',r:2,c:7},{t:'otachi',r:2,c:27},{t:'otachi',r:14,c:7},{t:'otachi',r:14,c:27},
   {t:'bouff', r:2,c:17},{t:'bouff', r:14,c:17},
-  {t:'ludi',  r:7,c:8},{t:'ludi',  r:9,c:8},{t:'ludi',r:7,c:26},{t:'ludi',r:9,c:26},
-  {t:'bouff', r:6,c:13},{t:'bouff',r:10,c:13},{t:'bouff',r:6,c:21},{t:'bouff',r:10,c:21},
+  {t:'ludi',  r:7,c:5},{t:'ludi',  r:9,c:5},{t:'ludi',r:7,c:29},{t:'ludi',r:9,c:29},
+  {t:'bouff', r:6,c:12},{t:'bouff',r:10,c:12},{t:'bouff',r:6,c:22},{t:'bouff',r:10,c:22},
   {t:'drednaw',r:6,c:17},{t:'drednaw',r:10,c:17},
   {t:'zapdos', r:8,c:17, spawnTurn:ZAPDOS_TURN},
 ];
 const GOAL_DEFS = [
-  {team:'ally', lane:'top',tier:1,r:2, c:13,cap:20},
-  {team:'ally', lane:'top',tier:2,r:2, c:5, cap:28},
-  {team:'ally', lane:'bot',tier:1,r:14,c:13,cap:20},
-  {team:'ally', lane:'bot',tier:2,r:14,c:5, cap:28},
-  {team:'ally', lane:'mid',tier:3,r:8, c:5, cap:36},
-  {team:'enemy',lane:'top',tier:1,r:2, c:W-1-13,cap:20},
-  {team:'enemy',lane:'top',tier:2,r:2, c:W-1-5, cap:28},
-  {team:'enemy',lane:'bot',tier:1,r:14,c:W-1-13,cap:20},
-  {team:'enemy',lane:'bot',tier:2,r:14,c:W-1-5, cap:28},
-  {team:'enemy',lane:'mid',tier:3,r:8, c:W-1-5, cap:36},
+  {team:'ally', lane:'top',tier:1,r:2, c:12,cap:20},
+  {team:'ally', lane:'top',tier:2,r:2, c:2, cap:28},
+  {team:'ally', lane:'bot',tier:1,r:14,c:12,cap:20},
+  {team:'ally', lane:'bot',tier:2,r:14,c:2, cap:28},
+  {team:'ally', lane:'mid',tier:3,r:8, c:2, cap:36},
+  {team:'enemy',lane:'top',tier:1,r:2, c:W-1-12,cap:20},
+  {team:'enemy',lane:'top',tier:2,r:2, c:W-1-2, cap:28},
+  {team:'enemy',lane:'bot',tier:1,r:14,c:W-1-12,cap:20},
+  {team:'enemy',lane:'bot',tier:2,r:14,c:W-1-2, cap:28},
+  {team:'enemy',lane:'mid',tier:3,r:8, c:W-1-2, cap:36},
 ];
 
 /* ゴール加速エリア：同じチームの「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線だけ。
@@ -775,10 +887,6 @@ function goalTiles(g){
   const t=[];
   for(let r=g.r-1;r<=g.r+1;r++)for(let c=g.c-1;c<=g.c+1;c++) if(passable(r,c)) t.push({r,c});
   return t;
-}
-function inBaseZone(team,r,c){
-  const z=BASE_ZONE[team];
-  return r>=z.r0&&r<=z.r1&&c>=z.c0&&c<=z.c1;
 }
 /* シュートできるのは「ゴール1」だけ。同レーンのゴール1が壊れるとゴール2が開放され、
    ゴール2がどちらか1つ壊れると中央のゴール3が開放される */
@@ -1089,8 +1197,7 @@ function skillScore(u,i){
   return null;
 }
 function healSpots(team){
-  const t=[]; const z=BASE_ZONE[team];
-  for(let r=z.r0;r<=z.r1;r++)for(let c=z.c0;c<=z.c1;c++) if(passable(r,c)) t.push({r,c});
+  const t=[];
   S.goals.filter(g=>g.team===team&&g.alive).forEach(g=>t.push(...goalTiles(g)));
   return t;
 }
@@ -1274,13 +1381,13 @@ function endTurn(){
     if(u.stunNew){ u.stun=1; u.stunNew=0; }
 
     if(isAlive(u)&&u.hp<u.maxHp){
-      const base=inBaseZone(u.team,u.r,u.c);
       const g=S.goals.find(x=>x.team===u.team&&x.alive&&inGoal(x,u.r,u.c));
-      if(base||g){
+      if(g){
+        const home=g.tier===3;   /* ゴール3＝自陣ベース。回復量が大きい */
         const before=u.hp;
-        u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*(base?BASE_HEAL:GOAL_HEAL)));
+        u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*(home?BASE_HEAL:GOAL_HEAL)));
         if(u.hp>before){
-          pushLog(logCls(u),`💚 ${mark(u)}${u.name} が${base?'ベース':'自陣ゴール'}で ${u.hp-before} 回復`);
+          pushLog(logCls(u),`💚 ${mark(u)}${u.name} が${home?'自陣ベース(ゴール3)':'自陣ゴール'}で ${u.hp-before} 回復`);
           floatText(u.r,u.c,'+'+(u.hp-before),'heal');
         }
       }
@@ -1454,12 +1561,10 @@ function terrainClass(r,c,openGids){
   const g=GOAL_AREA.get(key(r,c));
   if(g) cls=(g.team==='ally'?'gaA':'gaE')+
             (!g.alive?' dead':(openGids.has(g.gid)?' gOpen':' gShut'));
-  else if(inBaseZone('ally',r,c)) cls='baseA';
-  else if(inBaseZone('enemy',r,c)) cls='baseE';
   else if(t==='~') cls='bush';
   else if(r<=4||r>=12) cls='lane';
-  else if(c<=11) cls='zoneA';
-  else if(c>=W-12) cls='zoneE';
+  else if(c<=13) cls='zoneA';
+  else if(c>=W-14) cls='zoneE';
   else cls='';
   if(ACCEL.has(key(r,c))){
     const h=(inb(r,c-1)&&ACCEL.has(key(r,c-1)))||(inb(r,c+1)&&ACCEL.has(key(r,c+1)));
@@ -1514,6 +1619,7 @@ function render(){
     if(g){
       const open=g.team==='ally'?openA.includes(g.gid):openE.includes(g.gid);
       html+=`<div class="gbox ${g.team==='ally'?'a':'e'}${!g.alive?' dead':(open?' open':' closed')}">`+
+            (g.tier===3?'<i class="hm" title="自陣ベース">🏠</i>':'')+
             `<b>${g.alive?(g.cap-g.filled):'×'}</b></div>`;
     }
     const a=occupied.get(k);
