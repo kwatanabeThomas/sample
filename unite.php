@@ -43,7 +43,11 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .tmid .t{font-size:.68rem;color:var(--sub);letter-spacing:.1em}
 .tmid .v{font-size:1.2rem;font-weight:700}
 .tmid .v small{font-size:.7rem;color:var(--sub);font-weight:400}
-.tmid select{font-size:.66rem;background:#0e1630;border:1px solid var(--line);border-radius:6px;padding:2px 4px;margin-top:5px}
+.tmid .ctlrow{display:flex;gap:4px;justify-content:center;align-items:stretch;margin-top:5px}
+.tmid select{font-size:.66rem;background:#0e1630;border:1px solid var(--line);border-radius:6px;padding:2px 4px}
+.sfxbtn{font-size:.8rem;background:#0e1630;border:1px solid var(--line);border-radius:6px;padding:1px 6px;line-height:1}
+.sfxbtn:hover{border-color:#5c74b8}
+.sfxbtn.off{opacity:.4}
 
 /* ---------- turn order ---------- */
 .order{display:flex;align-items:center;gap:5px;margin-bottom:8px;background:linear-gradient(180deg,#141c3c,#0f1630);
@@ -57,7 +61,13 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
   border-radius:99px;padding:0 3px;color:var(--sub)}
 .oi.now{transform:scale(1.16);box-shadow:0 0 0 2px #ffe14d,0 0 12px rgba(255,225,77,.55);z-index:2}
 .oi.me{background:#2a2410}
-.oi.dead{opacity:.3}
+.oi.dead{opacity:.55;border-style:dashed}
+.oi.dead svg{opacity:.3}
+/* 気絶中は復活までの残りターン数を大きく重ねて表示 */
+.oi .dn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;font-weight:900;color:#ffc2c2;
+  text-shadow:0 1px 3px #000,0 0 5px #000,0 0 8px #000}
+.oi .dn::after{content:'';position:absolute;top:-7px;right:-5px;font-size:.5rem}
 .oi.done{opacity:.55}
 
 /* ---------- layout ---------- */
@@ -88,35 +98,53 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .cell.zoneE{background:#3a1e2b}
 .cell.gaA{background:#1f5aa8}
 .cell.gaE{background:#8f3030}
-/* いまシュートできるゴール＝明るく、まだできないゴール＝暗く */
-.cell.gaA.gOpen{background:#3286f0}
-.cell.gaE.gOpen{background:#d24747}
-.cell.gaA.gShut{background:#14304f}
-.cell.gaE.gShut{background:#4a1d1d}
-.cell.gaA.dead,.cell.gaE.dead{background:#262b40}
-/* ゴール加速ライン：縦横それぞれのレールを描く。必ず地形色より後に置く
-   （地形側は background ショートハンドなので background-image を上書きさせる必要がある） */
+/* いまシュートできるゴール＝明るく、未開放＝中間、破壊済み＝ほぼ地面と同じ暗さ */
+.cell.gaA.gOpen{background:#3d92f7}
+.cell.gaE.gOpen{background:#dd4f4f}
+.cell.gaA.gShut{background:#1e4b7d}
+.cell.gaE.gShut{background:#6b2c2e}
+.cell.gaA.dead,.cell.gaE.dead{background:#171b28}
+/* ゴール加速エリア：所有チームで色分けし、縦横それぞれのレールを描く。
+   必ず地形色より後に置く（地形側は background ショートハンドなので上書きさせる） */
+.cell.accelA{--rail:rgba(125,215,255,.40)}
+.cell.accelE{--rail:rgba(255,165,150,.38)}
 .cell.accelV{background-image:linear-gradient(90deg,
-  transparent 0 24%,rgba(140,225,255,.34) 24% 30%,transparent 30% 70%,
-  rgba(140,225,255,.34) 70% 76%,transparent 76% 100%)}
+  transparent 0 24%,var(--rail) 24% 30%,transparent 30% 70%,
+  var(--rail) 70% 76%,transparent 76% 100%)}
 .cell.accelH::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
   background:linear-gradient(180deg,
-    transparent 0 24%,rgba(140,225,255,.34) 24% 30%,transparent 30% 70%,
-    rgba(140,225,255,.34) 70% 76%,transparent 76% 100%)}
+    transparent 0 24%,var(--rail) 24% 30%,transparent 30% 70%,
+    var(--rail) 70% 76%,transparent 76% 100%)}
 
 /* goal 3x3 frame */
-.gbox{position:absolute;left:-100%;top:-100%;width:300%;height:300%;border:2px solid;border-radius:9px;
+.gbox{position:absolute;left:-100%;top:-100%;width:300%;height:300%;border:3px solid;border-radius:10px;
   display:flex;align-items:center;justify-content:center;z-index:1;pointer-events:none}
-.gbox.a{border-color:#6fb0ff;box-shadow:inset 0 0 14px rgba(70,140,255,.35)}
-.gbox.e{border-color:#ff9090;box-shadow:inset 0 0 14px rgba(255,90,90,.3)}
-/* 開放中は枠を明るく光らせ、未開放は破線＋暗く落とす */
-.gbox.open.a{border-color:#bfe0ff;box-shadow:inset 0 0 18px rgba(120,190,255,.55),0 0 10px rgba(120,190,255,.45)}
-.gbox.open.e{border-color:#ffd0d0;box-shadow:inset 0 0 18px rgba(255,140,140,.5),0 0 10px rgba(255,140,140,.4)}
-.gbox.closed{border-style:dashed;opacity:.42}
-.gbox.dead{border-style:dotted;opacity:.24}
-.gbox b{font-size:calc(var(--cs)*.42);font-weight:800;text-shadow:0 2px 4px #000c;opacity:.85}
-.gbox .hm{position:absolute;top:3%;left:50%;transform:translateX(-50%);font-style:normal;
-  font-size:calc(var(--cs)*.44);opacity:.9;filter:drop-shadow(0 1px 2px #000)}
+/* --- 生きているゴール：太い実線＋内側の光。数字はチップで読みやすく --- */
+.gbox.a{border-color:#79b6ff;box-shadow:inset 0 0 16px rgba(70,140,255,.4),0 0 6px rgba(70,140,255,.3)}
+.gbox.e{border-color:#ff9a9a;box-shadow:inset 0 0 16px rgba(255,90,90,.36),0 0 6px rgba(255,90,90,.28)}
+/* 開放中（いまシュートできる）：さらに明るく、ゆっくり脈打つ */
+.gbox.open{animation:goalpulse 1.9s ease-in-out infinite}
+.gbox.open.a{border-color:#e2f1ff;box-shadow:inset 0 0 26px rgba(130,200,255,.6),0 0 18px rgba(130,200,255,.55)}
+.gbox.open.e{border-color:#ffe6e6;box-shadow:inset 0 0 26px rgba(255,150,150,.55),0 0 18px rgba(255,150,150,.5)}
+@keyframes goalpulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.28)}}
+/* 未開放（まだ壊せない）：実線のまま少し落とし、鍵アイコンを出す */
+.gbox.closed{opacity:.82;animation:none}
+/* 破壊済み：点線＋斜線ハッチ＋大きな×。生きているゴールとはっきり差を付ける */
+.gbox.dead{border-width:2px;border-style:dotted;opacity:.42;box-shadow:none;
+  border-color:#6a7290;
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.055) 0 4px,transparent 4px 11px)}
+.gbox b{font-size:calc(var(--cs)*.40);font-weight:900;line-height:1.15;
+  padding:0 calc(var(--cs)*.16);border-radius:99px;background:rgba(4,9,20,.62);
+  box-shadow:0 1px 4px #000b}
+.gbox.a b{color:#e2f1ff}
+.gbox.e b{color:#ffe6e6}
+.gbox.open b{font-size:calc(var(--cs)*.46);background:rgba(4,9,20,.5);color:#fff}
+.gbox.dead b{background:none;box-shadow:none;color:#8a93b0;font-size:calc(var(--cs)*.72);padding:0}
+.gbox .hm,.gbox .lk{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;
+  font-size:calc(var(--cs)*.42);filter:drop-shadow(0 1px 2px #000)}
+.gbox .hm{top:3%;opacity:.92}
+.gbox .lk{bottom:3%;opacity:.8}
+.gbox.dead .hm,.gbox.dead .lk{display:none}
 .gbox.open b{opacity:1;color:#fff}
 
 /* ---------- units ---------- */
@@ -162,6 +190,9 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
   background:#08281a;border:1px solid var(--shoot);color:#a9ffcd;border-radius:99px;
   font-size:calc(var(--cs)*.27);font-weight:800;padding:0 4px;line-height:1.35;white-space:nowrap;
   box-shadow:0 1px 4px #000a}
+/* リコール（帰還）ゲージは水色 */
+.chgring.rc{background:conic-gradient(from -90deg,#7fd8ff calc(var(--p)*1%),rgba(4,18,26,.6) 0)}
+.chgtag.rc{background:#082433;border-color:#7fd8ff;color:#bfeaff;bottom:auto;top:calc(var(--cs)*-0.32)}
 
 .pts{position:absolute;top:-3px;right:-3px;background:linear-gradient(180deg,#ffe17a,#f4b93c);color:#4a3200;
   font-size:calc(var(--cs)*.3);font-weight:800;border-radius:99px;padding:0 3px;min-width:calc(var(--cs)*.38);
@@ -206,7 +237,7 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
   16%{opacity:1;transform:translate(-50%,0) scale(1.15)}
   100%{opacity:0;transform:translate(-50%,-26px) scale(1)}}
 .fxtext.dmg{color:#ff9a9a}.fxtext.pt{color:#ffd24c}.fxtext.heal{color:#8dffb8}
-.fxtext.ko{color:#ff6b6b}.fxtext.sc{color:#8dffb8}
+.fxtext.ko{color:#ff6b6b}.fxtext.sc{color:#8dffb8}.fxtext.rc{color:#bfeaff}
 
 /* ---------- panels ---------- */
 .card{background:linear-gradient(180deg,#182144,#111834);border:1px solid var(--line);border-radius:12px;padding:10px 11px}
@@ -232,6 +263,11 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .segs span{flex:1;height:11px;border-radius:3px;background:#0b1a14;border:1px solid #245c42}
 .segs span.on{background:linear-gradient(180deg,#8dffc0,#3ddc8c);border-color:#8dffc0;
   box-shadow:0 0 7px rgba(92,255,168,.65)}
+.shootbox.rc{border-color:#2a5570;background:#08202b}
+.shootbox.rc .hd{color:#bfeaff}
+.shootbox.rc .segs span{background:#08202b;border-color:#2a5570}
+.shootbox.rc .segs span.on{background:linear-gradient(180deg,#bfeaff,#4ab8e0);border-color:#bfeaff;
+  box-shadow:0 0 7px rgba(127,216,255,.65)}
 
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .act{border:1px solid var(--line);background:#0e1630;border-radius:9px;padding:7px 8px;text-align:left;transition:.12s}
@@ -244,6 +280,8 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .act.wide{grid-column:1/-1}
 .act.goal{border-color:#3ddc8c;background:#0f2c1e}
 .act.goal:hover:not(:disabled){background:#164329}
+.act.recall{border-color:#4ab8e0;background:#0d2531}
+.act.recall:hover:not(:disabled){background:#143a4c}
 .hintbar{margin-top:7px;font-size:.7rem;color:#ffe14d;min-height:1.1em;line-height:1.4}
 
 .rlist{display:flex;flex-direction:column;gap:3px}
@@ -315,12 +353,15 @@ details.rules b{color:#e9eefc}
       <div class="t">TURN</div>
       <div class="v"><span id="turnNo">1</span><small> / <span id="turnMax">70</span></small></div>
       <div class="t" style="margin-top:5px" id="phaseTxt">行動を選択</div>
-      <select id="spdSel" title="自動行動の表示速度">
-        <option value="520">速度: ゆっくり</option>
-        <option value="280" selected>速度: ふつう</option>
-        <option value="150">速度: はやい</option>
-        <option value="30">速度: 最速(演出なし)</option>
-      </select>
+      <div class="ctlrow">
+        <select id="spdSel" title="自動行動の表示速度">
+          <option value="520">速度: ゆっくり</option>
+          <option value="280" selected>速度: ふつう</option>
+          <option value="150">速度: はやい</option>
+          <option value="30">速度: 最速(演出なし)</option>
+        </select>
+        <button id="sfxBtn" class="sfxbtn" title="効果音のON/OFF">🔊</button>
+      </div>
     </div>
     <div class="side e">
       <div class="nm">(赤) ENEMY TEAM</div><div class="sc" id="scE">0</div>
@@ -338,9 +379,10 @@ details.rules b{color:#e9eefc}
         <div>
           <b>■ 距離の数え方</b>：移動は<b>上下左右のみ1マス</b>。斜めへ行くには2マスかかります（＝マンハッタン距離）。<b>こうげき・わざの射程、範囲わざの半径も同じ数え方</b>です。<br>
           <b>■ すり抜け</b>：移動の途中に<b>味方ポケモンは通り抜けられます</b>が、<b>敵ポケモンと野生ポケモンは通り抜けられません</b>（壁と同じ扱い）。<b>止まれるのは空いているマスだけ</b>です。<br>
-          <b>■ ゴール加速エリア</b>：<b>自陣の「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線</b>（マップの水色のレール）の上では<b>移動1で2マス</b>進めます。素早さ3なら6マス。自陣側でコの字型につながっており、<b>相手側の加速エリアとはつながっていません</b>（マップ中央には加速エリアがありません）。移動先ハイライトのうち<b>水色に光っているマスが加速エリアを使った到達先</b>です。<br>
+          <b>■ ゴール加速エリア</b>：<b>自陣の「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線</b>（マップの水色のレール）の上では<b>移動1で2マス</b>進めます。素早さ3なら6マス。自陣側でコの字型につながっており、<b>相手側の加速エリアとはつながっていません</b>（マップ中央には加速エリアがありません）。<b>加速できるのは自分のチームの加速エリアだけ</b>で、相手側の加速エリア（赤いレール）に乗っても移動マスは増えません。移動先ハイライトのうち<b>水色に光っているマスが加速エリアを使った到達先</b>です。<br>
           <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。あなた以外の9匹は自動で順に動きます（速度は上のセレクトで変更可）。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
-          <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / 待機」から<b>1つだけ</b>選べます。<br>
+          <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / リコール / 待機」から<b>1つだけ</b>選べます。<br>
+          <b>■ リコール</b>：<b>2ターン</b>かけて<b>自陣ベース（ゴール3）の中心へ帰還し、HPが最大まで回復</b>します。進行中は<b>アイコンの周りに水色のリングゲージ</b>が出ます。<b>ダメージを受けるとキャンセル</b>（別の行動をした場合も中断）。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
           <b>■ 得点の入手</b>：野生ポケモンを倒す／相手ポケモンを倒す（相手が持っていた点＋1をもらう）。<br>
           　・<b>アイコン右下の金枠「◆N」＝ 倒したときに拾える点数</b>（野生ポケモンのみ表示）。<br>
@@ -351,7 +393,8 @@ details.rules b{color:#e9eefc}
           　・<b>シュート中にダメージを受けるとキャンセル</b>され、最初からやり直しです。エリアから出た場合・別の行動をした場合もキャンセルされます。<br>
           <b>■ ベースと回復</b>：マップ<b>左右の端にある「ゴール3」（🏠マーク）が自陣ベース</b>で、気絶からの復帰位置もここです。<b>自陣の生きているゴールエリア内にいるとターン終了時にHPが回復</b>します（ゴール3のエリアは最大HPの20%、それ以外の自陣ゴールは10%）。<br>
           <b>■ ゴールの順番</b>：各チーム5個（上レーン2・下レーン2・中央1）。<b>最初にシュートできるのは「ゴール1」（中央寄りの外側ゴール）だけ</b>です。同じレーンの<b>ゴール1を壊すとそのレーンのゴール2</b>が、<b>ゴール2をどちらか1つ壊すと中央のゴール3</b>がシュート可能になります。ヘッダーの枠が実線のゴールが今シュートできるゴール、破線はまだ開放されていないゴールです。<br>
-          <b>■ 気絶</b>：HPが0になるとスタート地点に戻され、3ターン行動できません（持っていた点は倒した相手へ）。<br>
+          <b>■ 気絶</b>：HPが0になるとスタート地点に戻され、3ターン行動できません（持っていた点は倒した相手へ）。<b>復活までの残りターン数は上の「行動順」欄に数字で表示</b>されます。<br>
+          <b>■ ゴールの見分け方</b>：<b>いまシュートできるゴール＝明るく光る太い枠</b>／<b>まだシュートできないゴール＝🔒付きの落ち着いた枠</b>／<b>破壊済み＝点線＋斜線ハッチ＋大きな×</b>。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
           <b>■ 中央のカジリガメは高得点。52ターン目にサンダーが中央に出現します。</b>
         </div>
@@ -372,6 +415,10 @@ details.rules b{color:#e9eefc}
         <div class="shootbox off" id="shootBox">
           <div class="hd"><span>⚡ シュートゲージ</span><span id="shootTxt">-</span></div>
           <div class="segs" id="shootSegs"></div>
+        </div>
+        <div class="shootbox rc off" id="recallBox">
+          <div class="hd"><span>🏠 リコールゲージ</span><span id="recallTxt">-</span></div>
+          <div class="segs" id="recallSegs"></div>
         </div>
         <div class="acts" id="acts"></div>
         <div class="hintbar" id="hint"></div>
@@ -646,6 +693,7 @@ const TURN_LIMIT  = 70;
 const ZAPDOS_TURN = 52;
 const DMG_K = 150;
 const GOAL_HEAL = 0.10, BASE_HEAL = 0.20;
+const RECALL_TURNS = 2;   /* リコール完了までのターン数 */
 
 /* 移動コスト：通常マス=2 / 加速エリア=1、移動予算 = 素早さ×2
    → 加速エリア上は「移動1で2マス」進める */
@@ -753,14 +801,16 @@ const GOAL_DEFS = [
 ];
 
 /* ゴール加速エリア：同じチームの「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線だけ。
-   敵チームのゴールとはつながらない（中央には加速エリアが無い） */
-const ACCEL=new Set();
+   敵チームのゴールとはつながらない（中央には加速エリアが無い）。
+   チームごとに別のセットを持ち、自陣の加速エリアでしか加速できない */
+const ACCEL={ ally:new Set(), enemy:new Set() };
 (()=>{
-  const line=(r1,c1,r2,c2)=>{
-    if(r1===r2){ for(let c=Math.min(c1,c2);c<=Math.max(c1,c2);c++) if(MAP[r1][c]!=='#') ACCEL.add(r1*W+c); }
-    else if(c1===c2){ for(let r=Math.min(r1,r2);r<=Math.max(r1,r2);r++) if(MAP[r][c1]!=='#') ACCEL.add(r*W+c1); }
-  };
   for(const team of ['ally','enemy']){
+    const set=ACCEL[team];
+    const line=(r1,c1,r2,c2)=>{
+      if(r1===r2){ for(let c=Math.min(c1,c2);c<=Math.max(c1,c2);c++) if(MAP[r1][c]!=='#') set.add(r1*W+c); }
+      else if(c1===c2){ for(let r=Math.min(r1,r2);r<=Math.max(r1,r2);r++) if(MAP[r][c1]!=='#') set.add(r*W+c1); }
+    };
     const gs=GOAL_DEFS.filter(g=>g.team===team);
     const at=(lane,tier)=>gs.find(x=>x.lane===lane&&x.tier===tier);
     const t3=at('mid',3);
@@ -795,7 +845,8 @@ const DIRS=[[-1,0],[1,0],[0,-1],[0,1]];
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const fxOn=()=>SPEED>=60;
 
-const stepCost=(r,c)=>ACCEL.has(key(r,c))?COST_FAST:COST_NORMAL;
+/* 移動コスト。加速は「自陣の加速エリア」に乗ったときだけ効く */
+const stepCost=(r,c,team)=>(ACCEL[team]&&ACCEL[team].has(key(r,c)))?COST_FAST:COST_NORMAL;
 const budgetOf=u=>u.spd*COST_NORMAL;
 
 /* =========================================================
@@ -805,14 +856,14 @@ function makeUnit(def,team,idx){
   return { uid:team+idx, def, team, kind:'poke', name:def.name, spr:SPR[def.id],
     maxHp:def.hp, hp:def.hp, atk:def.atk, dfs:def.def, spd:def.spd, rng:def.rng,
     r:0,c:0, pts:0, cd:[0,0], shield:0, shieldT:0, stun:0, stunNew:0, down:0,
-    charge:0, chargeNeed:0, chargeGid:-1, isPlayer:false, lane:'mid', ord:0 };
+    charge:0, chargeNeed:0, chargeGid:-1, recall:0, isPlayer:false, lane:'mid', ord:0 };
 }
 function makeWild(sp,i){
   const d=WILD_DEFS[sp.t];
   return { uid:'w'+i, team:'wild', kind:'wild', def:d, name:d.name, spr:SPR[sp.t],
     maxHp:d.hp, hp:sp.spawnTurn?0:d.hp, atk:d.atk, dfs:d.def, rng:d.rng, spd:0,
     r:sp.r,c:sp.c, home:{r:sp.r,c:sp.c}, pts:0, shield:0, shieldT:0, stun:0, stunNew:0,
-    charge:0, down:sp.spawnTurn?999:0, spawnTurn:sp.spawnTurn||0, resp:d.resp, ptsGive:d.pts };
+    charge:0, recall:0, down:sp.spawnTurn?999:0, spawnTurn:sp.spawnTurn||0, resp:d.resp, ptsGive:d.pts };
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
@@ -912,7 +963,7 @@ function blockSet(u){
   for(const x of allActors()) if(x!==u&&isAlive(x)&&isFoe(u,x)) s.add(key(x.r,x.c));
   return s;
 }
-function costField(targets,blocked){
+function costField(targets,blocked,team){
   const d=new Int32Array(W*H).fill(-1);
   const buckets=[];
   const push=(c,k)=>{ (buckets[c]||(buckets[c]=[])).push(k); };
@@ -932,7 +983,7 @@ function costField(targets,blocked){
         if(!passable(nr,nc)) continue;
         const nk=key(nr,nc);
         if(blocked&&blocked.has(nk)) continue;
-        const nd=c+stepCost(nr,nc);
+        const nd=c+stepCost(nr,nc,team);
         if(d[nk]>=0&&nd>=d[nk]) continue;
         d[nk]=nd; push(nd,nk);
       }
@@ -956,7 +1007,7 @@ function reachable(u){
         if(!passable(nr,nc)) continue;
         const nk=key(nr,nc);
         if(blocked.has(nk)) continue;
-        const nd=c+stepCost(nr,nc);
+        const nd=c+stepCost(nr,nc,u.team);
         if(nd>budget||(d[nk]>=0&&nd>=d[nk])) continue;
         d[nk]=nd; (buckets[nd]||(buckets[nd]=[])).push(nk);
       }
@@ -973,7 +1024,7 @@ function reachable(u){
 /* dest 方向へ budget 分進む道順（マス列）を返す。止まれない終点は手前まで戻す */
 function pathTo(u,dests,budget){
   const blocked=blockSet(u);
-  const f=costField(dests,blocked);
+  const f=costField(dests,blocked,u.team);
   const path=[]; let cur={r:u.r,c:u.c}, spent=0;
   for(let guard=0;guard<W*H;guard++){
     const cd=f[key(cur.r,cur.c)];
@@ -986,7 +1037,7 @@ function pathTo(u,dests,budget){
       if(blocked.has(nk)) continue;
       const dv=f[nk];
       if(dv<0||dv>=bd) continue;
-      bd=dv; best={r:nr,c:nc}; bc=stepCost(nr,nc);
+      bd=dv; best={r:nr,c:nc}; bc=stepCost(nr,nc,u.team);
     }
     if(!best||spent+bc>budget) break;
     spent+=bc; cur=best; path.push(cur);
@@ -1000,7 +1051,7 @@ function pathTo(u,dests,budget){
   return path;
 }
 function distTo(u,dests){
-  const d=costField(dests,blockSet(u))[key(u.r,u.c)];
+  const d=costField(dests,blockSet(u),u.team)[key(u.r,u.c)];
   return d<0?99999:d;
 }
 
@@ -1029,16 +1080,23 @@ function applyDamage(src,tgt,power,label){
     pushLog('ko',`  └ ${mark(tgt)}${tgt.name} のシュートはキャンセルされた！`);
     floatText(tgt.r,tgt.c,'シュート中断','ko');
   }
+  if(tgt.recall>0){
+    tgt.recall=0;
+    pushLog('ko',`  └ ${mark(tgt)}${tgt.name} のリコールはキャンセルされた！`);
+    floatText(tgt.r,tgt.c,'リコール中断','ko');
+  }
   if(tgt.hp<=0) knockOut(src,tgt);
 }
 function knockOut(src,tgt){
-  tgt.hp=0; tgt.shield=0; tgt.charge=0; tgt.chargeNeed=0;
+  tgt.hp=0; tgt.shield=0; tgt.charge=0; tgt.chargeNeed=0; tgt.recall=0;
   let gain=0;
   if(tgt.kind==='wild') gain=tgt.ptsGive;
   else { gain=tgt.pts+1; tgt.pts=0; }
+  sfx('ko');
   if(src.kind==='poke'&&gain>0){
     src.pts+=gain;
     floatText(src.r,src.c,'+'+gain+'点','pt');
+    sfx('point');
   }
   pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
   tgt.down = tgt.kind==='wild' ? tgt.resp : 3;
@@ -1054,6 +1112,7 @@ function execAction(u,act){
   if(!isAlive(u)||!act) return res;
   if(u.stun>0){ pushLog('w',`${mark(u)}${u.name} は行動できない…`); return res; }
   if(act.type!=='goal'&&u.charge>0){ u.charge=0; u.chargeNeed=0; u.chargeGid=-1; }
+  if(act.type!=='recall'&&u.recall>0){ u.recall=0; pushLog('w',`${mark(u)}${u.name} はリコールをやめた`); }
 
   if(act.type==='wait'||act.type==='none'){ pushLog(logCls(u),`${mark(u)}${u.name} は待機`); return res; }
 
@@ -1063,18 +1122,19 @@ function execAction(u,act){
     if(path.length){
       const end=path[path.length-1];
       pushLog(logCls(u),`👟 ${mark(u)}${u.name} が (${res.from.r},${res.from.c}) → (${end.r},${end.c}) へ移動`);
-      u.r=end.r; u.c=end.c; res.path=path;
+      u.r=end.r; u.c=end.c; res.path=path; sfx('move');
     }else{
       pushLog('w',`${mark(u)}${u.name} は移動できなかった`);
     }
     return res;
   }
   if(act.type==='goal'){ execGoal(u); res.acted=true; return res; }
+  if(act.type==='recall'){ execRecall(u,res); res.acted=true; return res; }
 
   if(act.type==='attack'){
     const t=act.target;
     if(!t||!isAlive(t)||dist(u,t)>u.rng){ pushLog('w',`${mark(u)}${u.name} のこうげきは届かなかった`); return res; }
-    applyDamage(u,t,0,'こうげき'); res.acted=true; return res;
+    sfx('attack'); applyDamage(u,t,0,'こうげき'); res.acted=true; return res;
   }
   if(act.type==='skill'){
     const m=u.def.moves[act.idx];
@@ -1084,6 +1144,7 @@ function execAction(u,act){
     if(m.kind==='single'){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
+        sfx('skSingle');
         applyDamage(u,t,m.power,m.name);
         if(m.stun&&isAlive(t)){ t.stunNew=1; pushLog('w',`  └ ${t.name} は次のターン行動できない！`);
           floatText(t.r,t.c,'行動不能','ko'); }
@@ -1092,6 +1153,7 @@ function execAction(u,act){
     } else if(m.kind==='aoe'){
       const p=act.at;
       if(p&&dist(u,p)<=m.range){
+        sfx('skAoe');
         pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！`);
         const list=foesOf(u).filter(x=>dist(x,p)<=m.radius);
         if(!list.length) pushLog('w','  └ だが誰にも当たらなかった…');
@@ -1101,6 +1163,7 @@ function execAction(u,act){
     } else if(m.kind==='dash'){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
+        sfx('skDash');
         const path=pathTo(u,{r:t.r,c:t.c},m.dash*COST_NORMAL);
         if(path.length){ const e=path[path.length-1]; u.r=e.r; u.c=e.c; res.path=path; }
         if(dist(u,t)<=Math.max(1,u.rng)) applyDamage(u,t,m.power,m.name);
@@ -1111,6 +1174,7 @@ function execAction(u,act){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
         const list = m.radius ? S.units.filter(x=>isAlive(x)&&x.team===u.team&&dist(x,t)<=m.radius) : [t];
+        sfx('skHeal');
         pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！`);
         list.forEach(x=>{ const b=x.hp; x.hp=Math.min(x.maxHp,x.hp+m.heal);
           if(x.hp>b) floatText(x.r,x.c,'+'+(x.hp-b),'heal');
@@ -1119,6 +1183,7 @@ function execAction(u,act){
       }
     } else if(m.kind==='shield'){
       const list=[...new Set([u,...S.units.filter(x=>isAlive(x)&&x.team===u.team&&dist(x,u)<=(m.range||0))])];
+      sfx('skShield');
       list.forEach(x=>{ x.shield=Math.max(x.shield,m.shield); x.shieldT=3; floatText(x.r,x.c,'🛡','heal'); });
       pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！ ${list.length}体にシールド`);
       used=true;
@@ -1141,6 +1206,7 @@ function execGoal(u){
   if(u.charge<u.chargeNeed){
     pushLog(logCls(u),`🎯 ${mark(u)}${u.name} がシュート中… (${u.charge}/${u.chargeNeed})`);
     floatText(u.r,u.c,`${u.charge}/${u.chargeNeed}`,'sc');
+    sfx('shootTick');
     return;
   }
   const amt=Math.min(u.pts,g.cap-g.filled);
@@ -1148,7 +1214,27 @@ function execGoal(u){
   u.charge=0; u.chargeNeed=0; u.chargeGid=-1;
   pushLog('sc',`⭐ ${mark(u)}${u.name} がシュート成功！ ${amt}点（${laneName(g)}ゴール）`);
   floatText(u.r,u.c,`GOAL +${amt}`,'sc');
-  if(g.filled>=g.cap){ g.alive=false; pushLog('sc',`🔥 ${g.team==='ally'?'味方':'敵'}の${laneName(g)}ゴールを破壊！`); }
+  sfx('shootGoal');
+  if(g.filled>=g.cap){ g.alive=false; pushLog('sc',`🔥 ${g.team==='ally'?'味方':'敵'}の${laneName(g)}ゴールを破壊！`); sfx('goalBreak'); }
+}
+/* リコール：2ターンかけて自陣ゴール3（ベース）の中心へ帰還し、HPを全回復する */
+function execRecall(u,res){
+  u.recall++;
+  if(u.recall<RECALL_TURNS){
+    pushLog(logCls(u),`🏠 ${mark(u)}${u.name} がリコール中… (${u.recall}/${RECALL_TURNS})`);
+    floatText(u.r,u.c,`${u.recall}/${RECALL_TURNS}`,'rc');
+    sfx('recallTick');
+    return;
+  }
+  u.recall=0;
+  const p=freeNear(BASE[u.team]);
+  const healed=u.maxHp-u.hp;
+  u.r=p.r; u.c=p.c; u.hp=u.maxHp; u.charge=0; u.chargeNeed=0; u.chargeGid=-1;
+  if(res) res.warped=true;
+  pushLog('sc',`🏠 ${mark(u)}${u.name} がリコール完了！ベースへ帰還し HP全回復${healed>0?`（+${healed}）`:''}`);
+  floatText(p.r,p.c,'RECALL','rc');
+  if(healed>0) floatText(p.r,p.c,'+'+healed,'heal');
+  sfx('recallDone');
 }
 const laneName=g=>g.lane==='top'?'上':(g.lane==='bot'?'下':'中央');
 
@@ -1213,11 +1299,15 @@ function aiAction(u){
   const foes=foesOf(u), pokeFoes=foes.filter(x=>x.kind==='poke');
   const here=goalUnderFoot(u);
   if(u.charge>0&&here&&u.pts>0) return {type:'goal'};
+  if(u.recall>0) return {type:'recall'};   /* リコール継続 */
 
   if(u.hp<u.maxHp*0.3&&pokeFoes.some(x=>dist(u,x)<=5)){
     const spots=healSpots(u.team);
     if(spots.length&&distTo(u,spots)>0){ const a=moveAct(u,spots); if(a) return a; }
   }
+  /* HPが減っていて、周囲が安全でベースが遠いならリコールで帰還する */
+  if(u.hp<u.maxHp*0.45 && !pokeFoes.some(x=>dist(u,x)<=4)
+     && distTo(u,BASE[u.team])>budgetOf(u)*2) return {type:'recall'};
   if(here&&u.pts>0) return {type:'goal'};
 
   const goals=openGoalsFor(u.team);
@@ -1338,6 +1428,85 @@ async function animateMove(u,from,path){
 function clearFx(){ fxAttacker=null; fxShake=[]; hitCells=[]; }
 
 /* =========================================================
+   SFX  — Web Audio API で合成。外部ファイルは使わない。
+   AudioContext はブラウザの自動再生制限があるため、
+   最初のクリック（ポケモン選択）で初期化される。
+   ========================================================= */
+let SFX_ON = true;
+const SFX = (()=>{
+  let ctx=null, master=null;
+  const ac=()=>{
+    if(!ctx){
+      const C=window.AudioContext||window.webkitAudioContext;
+      if(!C) return null;
+      ctx=new C();
+      master=ctx.createGain(); master.gain.value=0.45; master.connect(ctx.destination);
+    }
+    if(ctx.state==='suspended') ctx.resume();
+    return ctx;
+  };
+  /* 単音（周波数スイープ可） */
+  function tone(f,{f2=null,t=0.12,type='sine',v=0.3,d=0}={}){
+    const c=ac(); if(!c) return;
+    const t0=c.currentTime+d;
+    const o=c.createOscillator(), g=c.createGain();
+    o.type=type;
+    o.frequency.setValueAtTime(f,t0);
+    if(f2) o.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t0+t);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(v,t0+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+t);
+    o.connect(g); g.connect(master);
+    o.start(t0); o.stop(t0+t+0.03);
+  }
+  /* ノイズ（打撃・爆発・風切り） */
+  function noise({t=0.12,v=0.25,d=0,f=1200,q=0.8,f2=null}={}){
+    const c=ac(); if(!c) return;
+    const t0=c.currentTime+d;
+    const len=Math.max(1,Math.floor(c.sampleRate*t));
+    const buf=c.createBuffer(1,len,c.sampleRate);
+    const ch=buf.getChannelData(0);
+    for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.6);
+    const src=c.createBufferSource(); src.buffer=buf;
+    const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.Q=q;
+    bp.frequency.setValueAtTime(f,t0);
+    if(f2) bp.frequency.exponentialRampToValueAtTime(Math.max(40,f2),t0+t);
+    const g=c.createGain(); g.gain.setValueAtTime(v,t0);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+t);
+    src.connect(bp); bp.connect(g); g.connect(master);
+    src.start(t0);
+  }
+  const chord=(fs,step,opt)=>fs.forEach((f,i)=>tone(f,{...opt,d:(opt&&opt.d||0)+i*step}));
+  return {
+    select:    ()=>{ tone(880,{t:.07,type:'square',v:.18}); tone(1320,{t:.09,type:'square',v:.14,d:.05}); },
+    turn:      ()=>{ tone(740,{t:.09,type:'triangle',v:.2}); tone(988,{t:.11,type:'triangle',v:.16,d:.07}); },
+    move:      ()=>{ tone(520,{f2:700,t:.06,type:'triangle',v:.15}); noise({t:.05,v:.06,f:2600}); },
+    attack:    ()=>{ noise({t:.09,v:.26,f:1500,f2:400}); tone(210,{f2:90,t:.09,type:'square',v:.16}); },
+    skSingle:  ()=>{ tone(1180,{f2:280,t:.18,type:'sawtooth',v:.2}); noise({t:.07,v:.1,f:3000,d:.02}); },
+    skAoe:     ()=>{ tone(150,{f2:48,t:.3,type:'sine',v:.34}); noise({t:.28,v:.24,f:900,f2:180}); },
+    skDash:    ()=>{ noise({t:.22,v:.24,f:400,f2:2800,q:1.2}); tone(300,{f2:900,t:.16,type:'triangle',v:.16}); },
+    skHeal:    ()=>chord([523,659,784],.06,{t:.2,type:'sine',v:.2}),
+    skShield:  ()=>{ tone(300,{t:.3,type:'sine',v:.2}); tone(452,{t:.3,type:'sine',v:.14,d:.03}); },
+    ko:        ()=>{ tone(420,{f2:70,t:.34,type:'sawtooth',v:.3}); noise({t:.2,v:.16,f:700,f2:120,d:.02}); },
+    point:     ()=>{ tone(1046,{t:.07,type:'square',v:.2}); tone(1568,{t:.12,type:'square',v:.17,d:.06}); },
+    shootTick: ()=>{ tone(700,{t:.07,type:'sine',v:.16}); },
+    shootGoal: ()=>chord([523,659,784,1046],.08,{t:.26,type:'triangle',v:.24}),
+    goalBreak: ()=>{ tone(110,{f2:40,t:.5,type:'sine',v:.36}); noise({t:.45,v:.28,f:1400,f2:150});
+                     chord([392,494,659],.07,{t:.3,type:'square',v:.14,d:.1}); },
+    recallTick:()=>{ tone(430,{f2:700,t:.14,type:'sine',v:.17}); },
+    recallDone:()=>{ tone(420,{f2:1250,t:.26,type:'triangle',v:.24});
+                     chord([784,1046],.07,{t:.22,type:'sine',v:.18,d:.2}); },
+    win:       ()=>chord([523,659,784,1046,1318],.1,{t:.34,type:'triangle',v:.26}),
+    lose:      ()=>chord([440,392,330,262],.13,{t:.4,type:'sawtooth',v:.22}),
+  };
+})();
+/* SFX_ON が false のときと、演出オフ（最速モード）のときは鳴らさない */
+function sfx(name){
+  if(!SFX_ON||!fxOn()) return;
+  try{ const f=SFX[name]; if(f) f(); }catch(e){}
+}
+
+/* =========================================================
    TURN LOOP  (1匹ずつ順番に決定・実行)
    ========================================================= */
 async function runTurn(playerAct){
@@ -1370,7 +1539,11 @@ async function runTurn(playerAct){
   endTurn();
   running=false; clearFx();
   render();
-  if(!S.over) maybeAutoPass();
+  if(!S.over){
+    const me=player();
+    if(isAlive(me)&&me.stun===0) sfx('turn');
+    maybeAutoPass();
+  }
 }
 
 function endTurn(){
@@ -1397,7 +1570,7 @@ function endTurn(){
     if(u.down>0){
       u.down--;
       if(u.down===0){
-        const p=freeSpawn(u.team); u.r=p.r; u.c=p.c; u.hp=u.maxHp; u.shield=0;
+        const p=freeSpawn(u.team); u.r=p.r; u.c=p.c; u.hp=u.maxHp; u.shield=0; u.recall=0;
         pushLog(logCls(u),`🔄 ${mark(u)}${u.name} が復帰した`);
       }
     }
@@ -1450,6 +1623,8 @@ function endGame(win,note){
     `<span style="color:var(--ally)">${S.score.ally}</span> - <span style="color:var(--enemy)">${S.score.enemy}</span>`;
   document.getElementById('rNote').textContent=note;
   document.getElementById('ovResult').classList.remove('hide');
+  const sv=SFX_ON, sp=SPEED; SFX_ON=true; SPEED=Math.max(SPEED,280);   /* 結果音は最速モードでも鳴らす */
+  sfx(win==='ally'?'win':'lose'); SFX_ON=sv; SPEED=sp;
 }
 function pushLog(cls,txt){ S.log.push({cls,txt}); if(S.log.length>400) S.log.splice(0,120); }
 
@@ -1510,6 +1685,7 @@ function pickAct(s){
   const u=player();
   if(!isAlive(u)||u.stun>0) return;
   if(s.type==='goal'){ runTurn({type:'goal'}); return; }
+  if(s.type==='recall'){ runTurn({type:'recall'}); return; }
   if(s.type==='wait'){ runTurn({type:'wait'}); return; }
   if(s.type==='skill'){
     if(u.cd[s.idx]>0) return;
@@ -1566,9 +1742,12 @@ function terrainClass(r,c,openGids){
   else if(c<=13) cls='zoneA';
   else if(c>=W-14) cls='zoneE';
   else cls='';
-  if(ACCEL.has(key(r,c))){
-    const h=(inb(r,c-1)&&ACCEL.has(key(r,c-1)))||(inb(r,c+1)&&ACCEL.has(key(r,c+1)));
-    const v=(inb(r-1,c)&&ACCEL.has(key(r-1,c)))||(inb(r+1,c)&&ACCEL.has(key(r+1,c)));
+  const own = ACCEL.ally.has(key(r,c)) ? 'ally' : (ACCEL.enemy.has(key(r,c)) ? 'enemy' : null);
+  if(own){
+    const A=ACCEL[own];
+    const h=(inb(r,c-1)&&A.has(key(r,c-1)))||(inb(r,c+1)&&A.has(key(r,c+1)));
+    const v=(inb(r-1,c)&&A.has(key(r-1,c)))||(inb(r+1,c)&&A.has(key(r+1,c)));
+    cls+= own==='ally' ? ' accelA' : ' accelE';
     if(h) cls+=' accelH';
     if(v) cls+=' accelV';
   }
@@ -1595,9 +1774,11 @@ function render(){
   document.getElementById('orderStrip').innerHTML='<span class="lbl">行動順</span>'+
     S.order.map(o=>{
       const done=running&&curActor&&S.order.indexOf(o)<S.order.indexOf(curActor);
+      const tip=o.name+(isAlive(o)?'':` / 復活まで ${o.down} ターン`);
       return `<div class="oi ${o.team==='ally'?'a':'e'}${o===curActor&&running?' now':''}${o.isPlayer?' me':''}`+
-             `${isAlive(o)?'':' dead'}${done?' done':''}" title="${o.name}">`+
-             `<span class="no">${o.ord}</span>${o.spr}</div>`;
+             `${isAlive(o)?'':' dead'}${done?' done':''}" title="${tip}">`+
+             `<span class="no">${o.ord}</span>${o.spr}`+
+             (isAlive(o)?'':`<span class="dn">${o.down}</span>`)+`</div>`;
     }).join('');
 
   const openGids=new Set([...openA,...openE]);
@@ -1620,6 +1801,7 @@ function render(){
       const open=g.team==='ally'?openA.includes(g.gid):openE.includes(g.gid);
       html+=`<div class="gbox ${g.team==='ally'?'a':'e'}${!g.alive?' dead':(open?' open':' closed')}">`+
             (g.tier===3?'<i class="hm" title="自陣ベース">🏠</i>':'')+
+            (g.alive&&!open?'<i class="lk" title="まだシュートできません">🔒</i>':'')+
             `<b>${g.alive?(g.cap-g.filled):'×'}</b></div>`;
     }
     const a=occupied.get(k);
@@ -1636,6 +1818,8 @@ function render(){
             (a.shield>0?'<div class="sh"></div>':'')+
             (a.charge>0?`<div class="chgring" style="--p:${Math.round(a.charge/a.chargeNeed*100)}"></div>`+
                         `<div class="chgtag">⚡${a.charge}/${a.chargeNeed}</div>`:'')+
+            (a.recall>0?`<div class="chgring rc" style="--p:${Math.round(a.recall/RECALL_TURNS*100)}"></div>`+
+                        `<div class="chgtag rc">🏠${a.recall}/${RECALL_TURNS}</div>`:'')+
             (a.pts>0?`<div class="pts">${a.pts}</div>`:'')+
             (a.kind==='wild'?`<div class="wpt">◆${a.ptsGive}</div>`:'')+
             (a.stun>0?'<div class="badge">💫</div>':'')+
@@ -1667,6 +1851,11 @@ function render(){
     : (gHere&&u.pts>0?`開始すると ${need} ターン`:(u.pts>0?'ゴールエリア外':'得点なし'));
   document.getElementById('shootSegs').innerHTML=
     Array.from({length:Math.max(1,need)},(_,i)=>`<span class="${i<u.charge?'on':''}"></span>`).join('');
+  document.getElementById('recallBox').className='shootbox rc'+(u.recall>0?'':' off');
+  document.getElementById('recallTxt').textContent =
+    u.recall>0?`${u.recall} / ${RECALL_TURNS} ターン`:`使うと ${RECALL_TURNS} ターン`;
+  document.getElementById('recallSegs').innerHTML=
+    Array.from({length:RECALL_TURNS},(_,i)=>`<span class="${i<u.recall?'on':''}"></span>`).join('');
 
   const A=document.getElementById('acts'); A.innerHTML='';
   const dis=S.over||running||!isAlive(u)||u.stun>0;
@@ -1693,6 +1882,9 @@ function render(){
       gOk?`${need}ターンでシュート完了。ダメージを受けると中断`
         :(gHere?'得点を持っていません':'相手の有効ゴールのエリア内で使えます'),
       {type:'goal'},!gOk,gOk?`⏱${need}`:'',' wide goal');
+  add(u.recall>0?`リコール（継続 ${u.recall}/${RECALL_TURNS}）`:'リコール',
+      `${RECALL_TURNS}ターンで自陣ベース(ゴール3)へ帰還し、HPが全回復。ダメージを受けると中断`,
+      {type:'recall'},false,`🏠${RECALL_TURNS}`,' wide recall');
   add(u.stun>0?'行動不能（ターンを進める）':'待機',(!isAlive(u)?'気絶中です':'何もしないでターンを進める'),
       {type:'wait'},S.over||running||!isAlive(u),'',' wide');
 
@@ -1747,7 +1939,7 @@ function buildPicks(){
         <em>わざ1</em> ${p.moves[0].name}（射程${p.moves[0].range}${p.moves[0].radius?` 半径${p.moves[0].radius}`:''} / CT${p.moves[0].cd}）<br>
         <em>わざ2</em> ${p.moves[1].name}（射程${p.moves[1].range}${p.moves[1].radius?` 半径${p.moves[1].radius}`:''} / CT${p.moves[1].cd}）
       </div>`;
-    b.onclick=()=>startGame(p.id);
+    b.onclick=()=>{ SFX_ON=SFX_WANT; sfx('select'); startGame(p.id); };
     P.appendChild(b);
   });
 }
@@ -1756,7 +1948,14 @@ function fitMap(){
   const avail=wrap.clientWidth-16;
   document.documentElement.style.setProperty('--cs',Math.max(17,Math.min(38,Math.floor(avail/W)))+'px');
 }
+let SFX_WANT=true;   /* ボタンでの希望値。ゲーム開始時に SFX_ON へ反映 */
 document.getElementById('spdSel').addEventListener('change',e=>{ SPEED=+e.target.value; });
+document.getElementById('sfxBtn').addEventListener('click',e=>{
+  SFX_WANT=!SFX_WANT; SFX_ON=SFX_WANT;
+  e.currentTarget.textContent=SFX_WANT?'🔊':'🔇';
+  e.currentTarget.classList.toggle('off',!SFX_WANT);
+  if(SFX_WANT) sfx('select');
+});
 window.addEventListener('resize',fitMap);
 buildPicks(); fitMap();
 </script>
