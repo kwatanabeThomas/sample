@@ -208,6 +208,15 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
   box-shadow:0 1px 3px #000a}
 .badge{position:absolute;top:-4px;left:-3px;font-size:calc(var(--cs)*.3);z-index:5;line-height:1;
   background:#0d142c;border-radius:99px;padding:1px 3px;border:1px solid var(--line)}
+/* レベル表示（左下） */
+.lvb{position:absolute;bottom:-4px;left:-4px;z-index:11;background:#12203c;border:1px solid #7fa6e0;
+  color:#dbe9ff;border-radius:99px;font-size:calc(var(--cs)*.27);font-weight:800;padding:0 3px;line-height:1.3;
+  min-width:calc(var(--cs)*.34);text-align:center;box-shadow:0 1px 3px #000a}
+/* ユナイトわざが使える状態は金色に脈打つ */
+.u.uready .ring{animation:ureadyglow 1.7s ease-in-out infinite}
+@keyframes ureadyglow{
+  0%,100%{box-shadow:0 0 0 2px rgba(4,8,18,.85),0 0 0 3px rgba(255,214,90,.5)}
+  50%{box-shadow:0 0 0 2px rgba(4,8,18,.85),0 0 0 4px rgba(255,214,90,.95),0 0 13px rgba(255,214,90,.7)}}
 .downmk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:calc(var(--cs)*.42);color:#8792b5;z-index:2}
 /* ジャンプ台 */
@@ -269,6 +278,8 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .bigbar i{display:block;height:100%;background:linear-gradient(90deg,#3ce06f,#8ef0a8)}
 .bigbar.s2 i{background:linear-gradient(90deg,#ffc93c,#ffe08a)}
 .bigbar.s1 i{background:linear-gradient(90deg,#ff4d4d,#ff9a9a)}
+.bigbar.xp{height:7px}
+.bigbar.xp i{background:linear-gradient(90deg,#ffd76b,#fff0b8)}
 /* シュートゲージ：セグメント式（HPの連続バーと形を分ける） */
 .shootbox{margin-top:7px;border:1px solid #245c42;background:#0a1f17;border-radius:9px;padding:6px 8px}
 .shootbox .hd{display:flex;justify-content:space-between;font-size:.65rem;color:#8dffc0;font-weight:700;gap:6px}
@@ -298,13 +309,22 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .act.recall:hover:not(:disabled){background:#143a4c}
 .act.jump{border-color:#5fd6a8;background:#0d2b22}
 .act.jump:hover:not(:disabled){background:#154034}
+.act.unite{border-color:#8a6bd8;background:linear-gradient(120deg,#241a4a,#3a1f52)}
+.act.unite.ready{border-color:#ffd76b;background:linear-gradient(120deg,#3a2a12,#4a2350,#1f3a5a);
+  box-shadow:0 0 0 1px rgba(255,215,107,.5) inset,0 0 12px rgba(255,215,107,.28);
+  animation:uniteglow 1.8s ease-in-out infinite}
+@keyframes uniteglow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
+.act.unite .t b{color:#ffe08a}
 .hintbar{margin-top:7px;font-size:.7rem;color:#ffe14d;min-height:1.1em;line-height:1.4}
 
 .rlist{display:flex;flex-direction:column;gap:3px}
 .rrow{display:flex;align-items:center;gap:6px;font-size:.7rem}
 .rrow .e{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center}
 .rrow .e svg{width:22px;height:22px}
-.rrow .n{width:76px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .lv{width:20px;flex:none;text-align:center;font-size:.6rem;font-weight:800;color:#dbe9ff;
+  background:#12203c;border:1px solid #43608f;border-radius:4px;line-height:1.35}
+.rrow .n{width:70px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .p{width:38px}
 .rrow .b{flex:1;height:6px;background:#000a;border-radius:3px;overflow:hidden}
 .rrow .b i{display:block;height:100%}
 .rrow.a .b i{background:var(--ally)} .rrow.e .b i{background:var(--enemy)}
@@ -345,6 +365,7 @@ details.rules b{color:#e9eefc}
 .pick .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px 8px;font-size:.63rem;color:var(--sub);margin:7px 0 5px}
 .pick .mv{margin-top:auto;font-size:.62rem;color:#b9c8ea;line-height:1.5;border-top:1px dashed var(--line);padding-top:5px}
 .pick .mv em{color:#ffe14d;font-style:normal;font-weight:700}
+.pick .mv u{color:#ffb84d;text-decoration:none;font-weight:800}
 .result{background:linear-gradient(180deg,#182144,#0e1430);border:1px solid var(--line);border-radius:16px;
   padding:24px 20px;text-align:center;max-width:820px;margin:0 auto}
 .rmvp{margin-top:10px;font-size:.8rem;color:#ffe14d;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -362,6 +383,8 @@ details.rules b{color:#e9eefc}
 .rtable tbody tr{border-bottom:1px solid rgba(44,56,96,.5)}
 .rtable tr.ra td.nm{color:#a8ccff} .rtable tr.re td.nm{color:#ffb3b3}
 .rtable tr.rme td.nm{color:#ffe14d;font-weight:800}
+.rtable .uleft{font-size:.6rem;color:#ffd76b;border:1px solid #6a5a2a;border-radius:99px;padding:0 4px}
+.rtable td b{color:#dbe9ff}
 .rtable tr.rtot{background:rgba(255,255,255,.05);font-weight:800}
 .rtable tr.rgap td{height:8px;border:none;background:#0b1124}
 .result .big{font-size:2.1rem;font-weight:900;letter-spacing:.06em}
@@ -419,6 +442,8 @@ details.rules b{color:#e9eefc}
           <b>■ リコール</b>：<b>2ターン</b>かけて<b>自陣ベース（ゴール3）の中心へ帰還し、HPが最大まで回復</b>します。進行中は<b>アイコンの周りに水色のリングゲージ</b>が出ます。<b>ダメージを受けるとキャンセル</b>（別の行動をした場合も中断）。<br>
           <b>■ ジャンプ台</b>：<b><span id="jtTxt">35</span>ターン目（試合の折り返し）に自陣ゴール3の隣に🛫が出現</b>します。その上に乗って「ジャンプ台」を使うと<b>マップの奥（相手ゴール1の少し手前）まで一気に飛べます</b>。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
+          <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。レベルが上がると<b>HP・こうげき・ぼうぎょが上昇</b>します（素早さと射程は変わりません）。最大 Lv<span id="mlTxt">12</span>。レベルはアイコン左下の数字と、右パネルの⭐に表示されます。<br>
+          <b>■ ユナイトわざ</b>：<b>Lv<span id="ulTxt">5</span> で解放され、1試合に1回だけ</b>使える超強力なわざです。使えるようになるとアイコンが金色に光り、右パネルのボタンが点灯します。ポケモンごとに専用のわざを持っています。<br>
           <b>■ 得点の入手</b>：野生ポケモンを倒す／相手ポケモンを倒す（相手が持っていた点＋1をもらう）。<br>
           　・<b>アイコン右下の金枠「◆N」＝ 倒したときに拾える点数</b>（野生ポケモンのみ表示）。<br>
           　・<b>アイコン右上の金色の丸い数字＝ そのポケモンが今持っている点数</b>。<br>
@@ -436,6 +461,7 @@ details.rules b{color:#e9eefc}
           <b>■ 射程の表示</b>：こうげき・単体わざ・回復わざを選ぶと<b>届く範囲がマップ上に薄く表示</b>されます。突進わざは<b>踏み込んでも届かない相手は選べません</b>。<br>
           <b>■ 試合終了後にリザルト画面</b>で、10匹それぞれのシュート得点・与ダメージ・被ダメージ・回復量・シールド量・KO数などを確認できます。<br>
           <b>■ 音</b>：ヘッダーの<b>🔊で効果音、🎵でBGM</b>をそれぞれON/OFFできます。BGMは残り15ターンでテンポが上がります。<br>
+          <b>■ リザルト画面</b>には各ポケモンの<b>到達レベル・獲得経験値・ユナイトわざの未使用</b>も表示されます。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
           <b>■ 中央のカジリガメは高得点。52ターン目にサンダーが中央に出現します。</b>
         </div>
@@ -452,6 +478,10 @@ details.rules b{color:#e9eefc}
         <div class="gauge">
           <div class="lb"><span>❤️ HP</span><span id="meHp">-</span></div>
           <div class="bigbar" id="meBar"><i style="width:100%"></i></div>
+        </div>
+        <div class="gauge">
+          <div class="lb"><span id="meLv">⭐ Lv1</span><span id="meXp">-</span></div>
+          <div class="bigbar xp" id="meXpBar"><i style="width:0%"></i></div>
         </div>
         <div class="shootbox off" id="shootBox">
           <div class="hd"><span>⚡ シュートゲージ</span><span id="shootTxt">-</span></div>
@@ -823,6 +853,43 @@ const POKEMON = [
           {name:'プラズマシャワー',kind:'aoe',power:50,range:3,radius:2,cd:4,desc:'周囲に電撃を降らせる'}]},
 ];
 
+/* =========================================================
+   レベル / 経験値
+   ========================================================= */
+const MAX_LV = 12;          /* 最大レベル */
+const UNITE_LV = 5;         /* ユナイトわざが解放されるレベル */
+const XP_WILD = 8;          /* 野生ポケモン：獲得点数 × この値 */
+const XP_KILL_BASE = 24;    /* 相手ポケモン撃破の基礎経験値 */
+const XP_KILL_PER_LV = 10;  /* 相手のレベル × この値を加算（高レベルほど多い） */
+const xpNeed = lv => 16 + lv*10;   /* lv → lv+1 に必要な経験値 */
+
+/* =========================================================
+   ユナイトわざ — 1試合に1回だけ使える超強力なわざ（Lv5以上で解放）
+   ========================================================= */
+const UNITE = {
+  pika:      {name:'ボルテッカー',        kind:'aoe',   power:130,range:4,radius:3,stun:true,desc:'電撃の嵐。範囲の敵を痺れさせる'},
+  ninetales: {name:'フリーズミラージュ',  kind:'aoe',   power:120,range:6,radius:3,stun:true,desc:'遠距離から広範囲を凍結'},
+  chariz:    {name:'シーカーフレイム',    kind:'aoe',   power:145,range:3,radius:3,desc:'周囲を業火で焼き尽くす'},
+  lucario:   {name:'はどうのしどう',      kind:'dash',  power:170,range:7,dash:6,desc:'超距離を踏み込んで貫く'},
+  snorlax:   {name:'ヘヴィフォール',      kind:'aoe',   power:120,range:3,radius:3,stun:true,desc:'巨体で押し潰し動きを止める'},
+  slowbro:   {name:'スロースターター',    kind:'aoe',   power:110,range:5,radius:3,stun:true,desc:'広範囲を鈍らせ拘束する'},
+  gengar:    {name:'ナイトメア',          kind:'aoe',   power:155,range:4,radius:2,stun:true,desc:'悪夢で縛りつけ大ダメージ'},
+  absol:     {name:'ミッドナイトスラッシュ',kind:'dash',power:210,range:7,dash:6,desc:'単体に最大級の一撃'},
+  wiggly:    {name:'ラブリーキッス',      kind:'aoe',   power:60, range:4,radius:3,stun:true,desc:'広範囲を眠らせる制圧わざ'},
+  comfey:    {name:'フラワーフェスタ',    kind:'heal',  heal:400,shield:200,range:6,radius:4,desc:'味方全体を大回復＋シールド'},
+  venusaur:  {name:'バーストブルーム',    kind:'aoe',   power:135,range:5,radius:3,desc:'巨大な花が炸裂する'},
+  blastoise: {name:'ハイドロタイフーン',  kind:'aoe',   power:125,range:4,radius:3,stun:true,desc:'渦で巻き込み押し流す'},
+  greedent:  {name:'フードフィーバー',    kind:'heal',  heal:300,shield:420,range:3,radius:2,desc:'自分と味方に極大シールド'},
+  gardevoir: {name:'フェアリーシンフォニー',kind:'aoe', power:150,range:6,radius:3,desc:'遠距離から広範囲を薙ぎ払う'},
+  decidueye: {name:'シャドーアロー',      kind:'single',power:300,range:9,desc:'マップを貫く超射程の狙撃'},
+  mamoswine: {name:'アイスエイジ',        kind:'aoe',   power:130,range:3,radius:3,stun:true,desc:'氷河で周囲を凍結'},
+  cinderace: {name:'ファイアショット',    kind:'dash',  power:190,range:6,dash:5,desc:'跳び込んで強烈なシュート'},
+  talonflame:{name:'フレアダイブ',        kind:'dash',  power:185,range:8,dash:7,desc:'最長距離から急降下'},
+  blissey:   {name:'ブレスオブライフ',    kind:'heal',  heal:450,shield:250,range:6,radius:4,desc:'味方全体を全快近くまで癒す'},
+  zeraora:   {name:'プラズマゲイル',      kind:'aoe',   power:150,range:4,radius:3,stun:true,desc:'雷の嵐で薙ぎ払う'},
+};
+POKEMON.forEach(p=>{ p.unite = UNITE[p.id]; });
+
 const WILD_DEFS = {
   otachi:  {name:'オタチ',    hp:90,  atk:30, def:10, rng:1, pts:2,  resp:8 },
   ludi:    {name:'ルンパッパ', hp:150, atk:40, def:20, rng:1, pts:3,  resp:12},
@@ -913,7 +980,8 @@ function makeUnit(def,team,idx){
     maxHp:def.hp, hp:def.hp, atk:def.atk, dfs:def.def, spd:def.spd, rng:def.rng,
     r:0,c:0, pts:0, cd:[0,0], shield:0, shieldT:0, stun:0, stunNew:0, down:0,
     charge:0, chargeNeed:0, chargeGid:-1, recall:0, isPlayer:false, lane:'mid', ord:0,
-    st:{dmg:0,taken:0,heal:0,shield:0,scored:0,kills:0,deaths:0,picked:0} };
+    lv:1, xp:0, uniteUsed:false,
+    st:{dmg:0,taken:0,heal:0,shield:0,scored:0,kills:0,deaths:0,picked:0,xp:0} };
 }
 function makeWild(sp,i){
   const d=WILD_DEFS[sp.t];
@@ -921,7 +989,8 @@ function makeWild(sp,i){
     maxHp:d.hp, hp:sp.spawnTurn?0:d.hp, atk:d.atk, dfs:d.def, rng:d.rng, spd:0,
     r:sp.r,c:sp.c, home:{r:sp.r,c:sp.c}, pts:0, shield:0, shieldT:0, stun:0, stunNew:0,
     charge:0, recall:0, down:sp.spawnTurn?999:0, spawnTurn:sp.spawnTurn||0, resp:d.resp, ptsGive:d.pts,
-    st:{dmg:0,taken:0,heal:0,shield:0,scored:0,kills:0,deaths:0,picked:0} };
+    lv:1, xp:0, uniteUsed:true,
+    st:{dmg:0,taken:0,heal:0,shield:0,scored:0,kills:0,deaths:0,picked:0,xp:0} };
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
@@ -1011,6 +1080,34 @@ function openGoalsFor(team){
 }
 function goalUnderFoot(u){ return openGoalsFor(u.team).find(g=>inGoal(g,u.r,u.c))||null; }
 const chargeNeed = pts => Math.min(5, 1+Math.floor(pts/4));
+
+/* レベルに応じてステータスを再計算する（素早さと射程は据え置き） */
+function applyLevel(u){
+  const d=u.def, k=u.lv-1, oldMax=u.maxHp;
+  u.maxHp=Math.round(d.hp *(1+0.06*k));
+  u.atk  =Math.round(d.atk*(1+0.06*k));
+  u.dfs  =Math.round(d.def*(1+0.05*k));
+  u.hp   =Math.min(u.maxHp, u.hp + Math.max(0,u.maxHp-oldMax));   /* 上がった分だけ回復 */
+}
+function gainXp(u,amt){
+  if(!u||u.kind!=='poke'||amt<=0||u.lv>=MAX_LV) return;
+  u.xp+=amt; u.st.xp+=amt;
+  let up=0;
+  while(u.lv<MAX_LV&&u.xp>=xpNeed(u.lv)){ u.xp-=xpNeed(u.lv); u.lv++; up++; }
+  if(u.lv>=MAX_LV) u.xp=0;
+  if(up){
+    applyLevel(u);
+    pushLog('sc',`⬆ ${mark(u)}${u.name} が Lv${u.lv} になった！`);
+    floatText(u.r,u.c,`Lv${u.lv}!`,'pt');
+    sfx('levelup');
+    if(u.lv>=UNITE_LV&&!u.uniteUsed&&u.lv-up<UNITE_LV)
+      pushLog('sc',`✨ ${mark(u)}${u.name} のユナイトわざ「${u.def.unite.name}」が使えるようになった！`);
+  }
+}
+/* ユナイトわざ：Lv5以上・1試合1回 */
+const uniteAvail = u => !!(u.def&&u.def.unite)&&u.kind==='poke'&&u.lv>=UNITE_LV&&!u.uniteUsed;
+const moveAt   = (u,i)=> i===2 ? u.def.unite : u.def.moves[i];
+const skillReady=(u,i)=> i===2 ? uniteAvail(u) : u.cd[i]===0;
 const jumpOpen = ()=>!!S&&S.turn>=JUMP_TURN;
 /* 自陣のジャンプ台に乗っていて、かつ解放済みなら使える */
 function canJump(u){
@@ -1171,6 +1268,12 @@ function knockOut(src,tgt){
     floatText(src.r,src.c,'+'+gain+'点','pt');
     sfx('point');
   }
+  /* とどめを刺したポケモンに経験値。相手のレベルが高いほど多い */
+  if(src.kind==='poke'){
+    const xp = tgt.kind==='wild' ? tgt.ptsGive*XP_WILD
+                                 : XP_KILL_BASE + tgt.lv*XP_KILL_PER_LV;
+    gainXp(src,xp);
+  }
   pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
   tgt.down = tgt.kind==='wild' ? tgt.resp : deathTurns(S.turn);
 }
@@ -1220,8 +1323,9 @@ function execAction(u,act){
     sfx('attack'); applyDamage(u,t,0,'こうげき'); res.acted=true; return res;
   }
   if(act.type==='skill'){
-    const m=u.def.moves[act.idx];
-    if(u.cd[act.idx]>0) return res;
+    const m=moveAt(u,act.idx);
+    if(!m||!skillReady(u,act.idx)) return res;
+    if(act.idx===2){ pushLog('sc',`✨ ${mark(u)}${u.name} の ユナイトわざ「${m.name}」！`); sfx('unite'); }
     let used=false;
 
     if(m.kind==='single'){
@@ -1240,7 +1344,12 @@ function execAction(u,act){
         pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！`);
         const list=foesOf(u).filter(x=>dist(x,p)<=m.radius);
         if(!list.length) pushLog('w','  └ だが誰にも当たらなかった…');
-        list.forEach(x=>{ if(isAlive(x)) applyDamage(u,x,m.power,m.name); });
+        list.forEach(x=>{
+          if(!isAlive(x)) return;
+          applyDamage(u,x,m.power,m.name);
+          if(m.stun&&isAlive(x)){ x.stunNew=1; floatText(x.r,x.c,'行動不能','ko'); }
+        });
+        if(m.stun&&list.length) pushLog('w','  └ 当たった相手は次のターン行動できない！');
         used=true;
       }
     } else if(m.kind==='dash'){
@@ -1262,7 +1371,9 @@ function execAction(u,act){
         list.forEach(x=>{ const b=x.hp; x.hp=Math.min(x.maxHp,x.hp+m.heal);
           u.st.heal+=x.hp-b;
           if(x.hp>b) floatText(x.r,x.c,'+'+(x.hp-b),'heal');
-          pushLog(logCls(u),`  └ ${x.name} を ${x.hp-b} 回復`); });
+          pushLog(logCls(u),`  └ ${x.name} を ${x.hp-b} 回復`);
+          if(m.shield){ x.shield=Math.max(x.shield,m.shield); x.shieldT=3; u.st.shield+=m.shield; } });
+        if(m.shield) pushLog(logCls(u),`  └ さらに 🛡${m.shield} のシールド`);
         used=true;
       }
     } else if(m.kind==='shield'){
@@ -1273,7 +1384,10 @@ function execAction(u,act){
       pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！ ${list.length}体にシールド`);
       used=true;
     }
-    if(used){ u.cd[act.idx]=m.cd; res.acted=true; }
+    if(used){
+      if(act.idx===2) u.uniteUsed=true; else u.cd[act.idx]=m.cd;
+      res.acted=true;
+    }
     return res;
   }
   return res;
@@ -1341,10 +1455,33 @@ const laneName=g=>g.lane==='top'?'上':(g.lane==='bot'?'下':'中央');
 /* =========================================================
    AI
    ========================================================= */
+/* ユナイトわざ(i=2)は評価値を底上げして通常わざより優先させる */
 function skillScore(u,i){
-  const m=u.def.moves[i];
-  if(u.cd[i]>0) return null;
+  const r=skillScoreRaw(u,i);
+  if(r&&i===2) r.sc*=1.8;
+  return r;
+}
+function skillScoreRaw(u,i){
+  const m=moveAt(u,i);
+  if(!m||!skillReady(u,i)) return null;
   const foes=foesOf(u);
+  const pokeFoes=foes.filter(x=>x.kind==='poke');
+  /* ユナイトわざは1試合1回。相手ポケモンに当たる時だけ使う（回復系は味方が弱っている時） */
+  if(i===2){
+    /* 終盤は温存せずに撃つ（使い切らないと損なため条件を緩める） */
+    const need = S.turn > TURN_LIMIT-8 ? 1 : 2;
+    if(m.kind==='heal'){
+      const hurt=[u,...alliesOf(u)].filter(x=>dist(u,x)<=m.range&&x.hp<x.maxHp*0.72).length;
+      if(hurt<need) return null;
+    }else if(m.kind==='aoe'){
+      let best=0;
+      for(const f of pokeFoes){ if(dist(u,f)>m.range) continue;
+        best=Math.max(best,pokeFoes.filter(x=>dist(x,f)<=m.radius).length); }
+      if(best<need) return null;
+    }else{
+      if(!pokeFoes.some(x=>dist(u,x)<=m.range&&(m.kind!=='dash'||dashReaches(u,m,x)))) return null;
+    }
+  }
   if(m.kind==='single'){
     const c=foes.filter(x=>dist(u,x)<=m.range);
     if(!c.length) return null;
@@ -1377,7 +1514,7 @@ function skillScore(u,i){
     return {sc:Math.min(m.heal,c[0].maxHp-c[0].hp)*1.15, act:{type:'skill',idx:i,target:c[0]}};
   }
   if(m.kind==='shield'){
-    if(u.hp>u.maxHp*0.7||!foesOf(u).some(x=>dist(u,x)<=3)) return null;
+    if(i!==2&&(u.hp>u.maxHp*0.7||!foesOf(u).some(x=>dist(u,x)<=3))) return null;
     return {sc:m.shield*0.8, act:{type:'skill',idx:i}};
   }
   return null;
@@ -1417,7 +1554,7 @@ function aiAction(u){
     if(gs[0].d<=budgetOf(u)+6){ const a=moveAct(u,goalTiles(gs[0].g)); if(a) return a; }
   }
   let best=null;
-  for(let i=0;i<2;i++){ const s=skillScore(u,i); if(s&&(!best||s.sc>best.sc)) best=s; }
+  for(let i=0;i<3;i++){ const s=skillScore(u,i); if(s&&(!best||s.sc>best.sc)) best=s; }
   const inR=foes.filter(x=>dist(u,x)<=u.rng);
   if(inR.length){
     inR.sort((a,b)=>{
@@ -1608,6 +1745,10 @@ const SFX = (()=>{
     goalBreak: ()=>{ tone(110,{f2:40,t:.5,type:'sine',v:.36}); noise({t:.45,v:.28,f:1400,f2:150});
                      chord([392,494,659],.07,{t:.3,type:'square',v:.14,d:.1}); },
     jump:      ()=>{ tone(280,{f2:1500,t:.3,type:'triangle',v:.26}); noise({t:.26,v:.16,f:500,f2:3500,q:1.4}); },
+    levelup:   ()=>chord([659,880,1046,1318],.055,{t:.22,type:'triangle',v:.22}),
+    unite:     ()=>{ tone(90,{f2:38,t:.7,type:'sine',v:.4}); noise({t:.6,v:.26,f:2200,f2:200});
+                     chord([523,784,1046,1568],.09,{t:.5,type:'sawtooth',v:.18});
+                     chord([262,392,523],.09,{t:.6,type:'square',v:.12,d:.05}); },
     recallTick:()=>{ tone(430,{f2:700,t:.14,type:'sine',v:.17}); },
     recallDone:()=>{ tone(420,{f2:1250,t:.26,type:'triangle',v:.24});
                      chord([784,1046],.07,{t:.22,type:'sine',v:.18,d:.2}); },
@@ -1862,15 +2003,18 @@ function endGame(win,note){
 function buildResultTable(){
   const num=n=>n.toLocaleString('ja-JP');
   const cols=[['scored','シュート'],['picked','取得点'],['dmg','与ダメ'],['taken','被ダメ'],
-              ['heal','回復'],['shield','シールド'],['kills','KO'],['deaths','ダウン']];
-  const head='<tr><th class="nm">ポケモン</th>'+cols.map(c=>`<th>${c[1]}</th>`).join('')+'</tr>';
+              ['heal','回復'],['shield','シールド'],['kills','KO'],['deaths','ダウン'],['xp','経験値']];
+  const head='<tr><th class="nm">ポケモン</th><th>Lv</th>'+cols.map(c=>`<th>${c[1]}</th>`).join('')+'</tr>';
   const rowOf=a=>`<tr class="${a.team==='ally'?'ra':'re'}${a.isPlayer?' rme':''}">`+
-    `<td class="nm"><span class="ic">${a.spr}</span>${a.name}${a.isPlayer?' <b>(あなた)</b>':''}</td>`+
+    `<td class="nm"><span class="ic">${a.spr}</span>${a.name}${a.isPlayer?' <b>(あなた)</b>':''}`+
+    `${a.uniteUsed?'':' <span class="uleft">✨未使用</span>'}</td>`+
+    `<td><b>${a.lv}</b></td>`+
     cols.map(c=>`<td>${num(a.st[c[0]])}</td>`).join('')+'</tr>';
   const totalOf=(team,label)=>{
     const us=S.units.filter(x=>x.team===team);
     const t=k=>us.reduce((n,x)=>n+x.st[k],0);
     return `<tr class="rtot ${team==='ally'?'ra':'re'}"><td class="nm">${label} 合計</td>`+
+      `<td>${(us.reduce((n,x)=>n+x.lv,0)/us.length).toFixed(1)}</td>`+
       cols.map(c=>`<td>${num(t(c[0]))}</td>`).join('')+'</tr>';
   };
   const best=(team,k)=>{
@@ -1883,11 +2027,11 @@ function buildResultTable(){
   document.getElementById('rTable').innerHTML=
     `<thead>${head}</thead><tbody>`+
     S.units.filter(x=>x.team==='ally').map(rowOf).join('')+totalOf('ally','味方')+
-    `<tr class="rgap"><td colspan="${cols.length+1}"></td></tr>`+
+    `<tr class="rgap"><td colspan="${cols.length+2}"></td></tr>`+
     S.units.filter(x=>x.team==='enemy').map(rowOf).join('')+totalOf('enemy','敵')+
     `</tbody>`;
   const mv=document.getElementById('rMvp');
-  if(mv) mv.innerHTML=`<span class="ic">${mvp.spr}</span> MVP: <b>${mvp.name}</b>`+
+  if(mv) mv.innerHTML=`<span class="ic">${mvp.spr}</span> MVP: <b>${mvp.name}</b> Lv${mvp.lv}`+
     `（シュート ${mvp.st.scored} / 与ダメ ${mvp.st.dmg} / KO ${mvp.st.kills}）`;
 }
 function pushLog(cls,txt){ S.log.push({cls,txt}); if(S.log.length>400) S.log.splice(0,120); }
@@ -1907,8 +2051,8 @@ function validTargets(u,s){
     return out;
   }
   if(s.type!=='skill') return out;
-  const m=u.def.moves[s.idx];
-  if(u.cd[s.idx]>0) return out;
+  const m=moveAt(u,s.idx);
+  if(!m||!skillReady(u,s.idx)) return out;
   if(m.kind==='single'){
     foesOf(u).forEach(t=>{ if(dist(u,t)<=m.range) out.set(key(t.r,t.c),{r:t.r,c:t.c,target:t}); });
   }else if(m.kind==='dash'){
@@ -1926,7 +2070,7 @@ function validTargets(u,s){
 function hlClass(u,s,v){
   if(s.type==='move') return dist(u,v)>u.spd ? 'hlMoveFast' : 'hlMove';
   if(s.type==='attack') return 'hlAtk';
-  const m=u.def.moves[s.idx];
+  const m=moveAt(u,s.idx);
   if(m.kind==='heal'||m.kind==='shield') return 'hlHeal';
   if(m.kind==='aoe') return 'hlArea';
   return 'hlAtk';
@@ -1940,7 +2084,7 @@ function onCellClick(r,c){
   if(sel.type==='move') act={type:'move',to:{r,c}};
   else if(sel.type==='attack') act={type:'attack',target:v.target};
   else{
-    const m=u.def.moves[sel.idx];
+    const m=moveAt(u,sel.idx);
     if(m.kind==='aoe') act={type:'skill',idx:sel.idx,at:{r,c}};
     else if(m.kind==='shield') act={type:'skill',idx:sel.idx};
     else act={type:'skill',idx:sel.idx,target:v.target};
@@ -1956,8 +2100,8 @@ function pickAct(s){
   if(s.type==='jump'){ runTurn({type:'jump'}); return; }
   if(s.type==='wait'){ runTurn({type:'wait'}); return; }
   if(s.type==='skill'){
-    if(u.cd[s.idx]>0) return;
-    if(u.def.moves[s.idx].kind==='shield'){ runTurn({type:'skill',idx:s.idx}); return; }
+    if(!skillReady(u,s.idx)) return;
+    if(moveAt(u,s.idx).kind==='shield'){ runTurn({type:'skill',idx:s.idx}); return; }
   }
   sel=(sel&&sel.type===s.type&&sel.idx===s.idx)?null:s;
   render();
@@ -1981,8 +2125,8 @@ let aoeKeys=[];
 function hoverAoe(r,c){
   let next=[];
   if(r>=0&&sel&&sel.type==='skill'&&!S.over&&!running){
-    const u=player(), m=u.def.moves[sel.idx];
-    if(m.kind==='aoe'&&validTargets(u,sel).has(key(r,c))){
+    const u=player(), m=moveAt(u,sel.idx);
+    if(m&&m.kind==='aoe'&&validTargets(u,sel).has(key(r,c))){
       for(let rr=0;rr<H;rr++)for(let cc=0;cc<W;cc++)
         if(Math.abs(rr-r)+Math.abs(cc-c)<=m.radius) next.push(key(rr,cc));
     }
@@ -2057,8 +2201,8 @@ function render(){
   if(sel&&!running&&!S.over&&isAlive(u)&&u.stun===0){
     let rad=-1;
     if(sel.type==='attack') rad=u.rng;
-    else if(sel.type==='skill'&&u.cd[sel.idx]===0){
-      const m=u.def.moves[sel.idx];
+    else if(sel.type==='skill'&&skillReady(u,sel.idx)){
+      const m=moveAt(u,sel.idx);
       if(m.kind==='single'||m.kind==='dash') rad=m.range;
       else if(m.kind==='heal'){ rad=m.range; rngCls='rngH'; }
     }
@@ -2095,7 +2239,7 @@ function render(){
       const ratio=Math.max(0,a.hp)/a.maxHp;
       const lunge=!!(fxAttacker&&fxAttacker.uid===a.uid);
       const shake=fxShake.includes(a.uid);
-      html+=`<div class="u ${tc}${a.isPlayer?' me':''}${a===curActor&&running?' now':''}`+
+      html+=`<div class="u ${tc}${a.isPlayer?' me':''}${uniteAvail(a)?' uready':''}${a===curActor&&running?' now':''}`+
             `${lunge?' lunge':''}${shake?' shake':''}" title="${unitTip(a)}"`+
             (lunge?` style="--ax:${fxAttacker.ax};--ay:${fxAttacker.ay}"`:'')+'>'+
             `<span class="ring"></span>${a.spr}`+
@@ -2106,7 +2250,7 @@ function render(){
             (a.recall>0?`<div class="chgring rc" style="--p:${Math.round(a.recall/RECALL_TURNS*100)}"></div>`+
                         `<div class="chgtag rc">🏠${a.recall}/${RECALL_TURNS}</div>`:'')+
             (a.pts>0?`<div class="pts">${a.pts}</div>`:'')+
-            (a.kind==='wild'?`<div class="wpt">◆${a.ptsGive}</div>`:'')+
+            (a.kind==='wild'?`<div class="wpt">◆${a.ptsGive}</div>`:`<div class="lvb">${a.lv}</div>`)+
             (a.stun>0?'<div class="badge">💫</div>':'')+
             `</div>`;
     }else if(!a&&downedAt.has(k)){
@@ -2127,6 +2271,11 @@ function render(){
   bar.innerHTML=`<i style="width:${rr*100}%"></i>`;
   document.getElementById('meHp').textContent=
     `${Math.max(0,u.hp)} / ${u.maxHp}${u.shield>0?` (+🛡${u.shield})`:''}　所持得点 ${u.pts}`;
+  document.getElementById('meLv').textContent=`⭐ Lv${u.lv}`+(uniteAvail(u)?'  ✨ユナイトわざ使用可':'');
+  const xpN=u.lv>=MAX_LV?0:xpNeed(u.lv);
+  document.getElementById('meXp').textContent=u.lv>=MAX_LV?'MAX':`EXP ${u.xp} / ${xpN}`;
+  document.getElementById('meXpBar').querySelector('i').style.width=
+    (u.lv>=MAX_LV?100:Math.min(100,u.xp/xpN*100))+'%';
 
   const gHere=isAlive(u)?goalUnderFoot(u):null;
   const helpers=gHere?shootHelpers(u,gHere):0;
@@ -2169,6 +2318,14 @@ function render(){
       gOk?`${need}ターンでシュート完了${helpers?`（味方${helpers}体が補助中）`:''}。ダメージを受けると中断`
         :(gHere?'得点を持っていません':'相手の有効ゴールのエリア内で使えます'),
       {type:'goal'},!gOk,gOk?`⏱${need}`:'',' wide goal');
+  const un=u.def.unite;
+  if(un){
+    const ready=uniteAvail(u);
+    const tag = u.uniteUsed?'使用済み':(u.lv<UNITE_LV?`Lv${UNITE_LV}で解放`:'✨READY');
+    add(`ユナイトわざ: ${un.name}`,
+        `${un.desc}（射程${un.range}${un.radius?` 半径${un.radius}`:''}${un.stun?' / 気絶':''}）1試合1回`,
+        {type:'skill',idx:2},!ready,tag,' wide unite'+(ready?' ready':''));
+  }
   const jOk=canJump(u);
   add('ジャンプ台',
       jOk?'マップ奥まで一気に飛ぶ'
@@ -2187,17 +2344,17 @@ function render(){
   else if(u.stun>0) hint.textContent='行動不能です。自動でターンが進みます。';
   else if(sel){
     const t=sel.type==='move'?'移動先（水色に光るマスは加速エリア経由）':(sel.type==='attack'?'攻撃する相手':
-      (u.def.moves[sel.idx].kind==='aoe'?'着弾させる地点':
-       u.def.moves[sel.idx].kind==='heal'?'回復する味方':'わざの対象'));
+      (moveAt(u,sel.idx).kind==='aoe'?'着弾させる地点':
+       moveAt(u,sel.idx).kind==='heal'?'回復する味方':'わざの対象'));
     hint.textContent=`▶ マップ上で${t}をクリック（もう一度ボタンで解除）`;
   }else hint.textContent=`あなたの番です（行動順 ${u.ord} 番目）。行動を1つ選んでください。`;
 
   const row=a=>{
     const rt=Math.max(0,a.hp)/a.maxHp;
     return `<div class="rrow ${a.team==='ally'?'a':'e'}${isAlive(a)?'':' dead'}${a.isPlayer?' me':''}">`+
-      `<div class="e">${a.spr}</div><div class="n">${a.name}</div>`+
+      `<div class="e">${a.spr}</div><div class="lv">${a.lv}</div><div class="n">${a.name}</div>`+
       `<div class="b"><i style="width:${rt*100}%"></i></div>`+
-      `<div class="p">${a.pts?'★'+a.pts:''}</div>`+
+      `<div class="p">${uniteAvail(a)?'✨':''}${a.pts?'★'+a.pts:''}</div>`+
       `<div class="s">${isAlive(a)?Math.max(0,a.hp):'💤'+a.down}</div></div>`;
   };
   document.getElementById('rosterA').innerHTML=S.units.filter(x=>x.team==='ally').map(row).join('');
@@ -2229,7 +2386,8 @@ function buildPicks(){
         <span>ぼうぎょ ${p.def}</span><span>素早さ ${p.spd}</span><span>射程 ${p.rng}</span><span></span></div>
       <div class="mv">
         <em>わざ1</em> ${p.moves[0].name}（射程${p.moves[0].range}${p.moves[0].radius?` 半径${p.moves[0].radius}`:''} / CT${p.moves[0].cd}）<br>
-        <em>わざ2</em> ${p.moves[1].name}（射程${p.moves[1].range}${p.moves[1].radius?` 半径${p.moves[1].radius}`:''} / CT${p.moves[1].cd}）
+        <em>わざ2</em> ${p.moves[1].name}（射程${p.moves[1].range}${p.moves[1].radius?` 半径${p.moves[1].radius}`:''} / CT${p.moves[1].cd}）<br>
+        <u>ユナイト</u> ${p.unite.name}（射程${p.unite.range}${p.unite.radius?` 半径${p.unite.radius}`:''}）
       </div>`;
     b.onclick=()=>{
       SFX_ON=SFX_WANT; sfx('select');
@@ -2246,6 +2404,8 @@ function fitMap(){
 }
 let SFX_WANT=true;   /* ボタンでの希望値。ゲーム開始時に SFX_ON へ反映 */
 document.getElementById('jtTxt').textContent=JUMP_TURN;
+document.getElementById('mlTxt').textContent=MAX_LV;
+document.getElementById('ulTxt').textContent=UNITE_LV;
 document.getElementById('spdSel').addEventListener('change',e=>{ SPEED=+e.target.value; });
 document.getElementById('bgmBtn').addEventListener('click',e=>{
   BGM_ON=!BGM_ON;
