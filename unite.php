@@ -394,6 +394,7 @@ details.rules b{color:#e9eefc}
           <option value="30">速度: 最速(演出なし)</option>
         </select>
         <button id="sfxBtn" class="sfxbtn" title="効果音のON/OFF">🔊</button>
+        <button id="bgmBtn" class="sfxbtn" title="BGMのON/OFF">🎵</button>
       </div>
     </div>
     <div class="side e">
@@ -434,6 +435,7 @@ details.rules b{color:#e9eefc}
           <b>■ ゴールが壊れると、そのゴールにつながっていた加速エリアも消えます。</b><br>
           <b>■ 射程の表示</b>：こうげき・単体わざ・回復わざを選ぶと<b>届く範囲がマップ上に薄く表示</b>されます。突進わざは<b>踏み込んでも届かない相手は選べません</b>。<br>
           <b>■ 試合終了後にリザルト画面</b>で、10匹それぞれのシュート得点・与ダメージ・被ダメージ・回復量・シールド量・KO数などを確認できます。<br>
+          <b>■ 音</b>：ヘッダーの<b>🔊で効果音、🎵でBGM</b>をそれぞれON/OFFできます。BGMは残り15ターンでテンポが上がります。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
           <b>■ 中央のカジリガメは高得点。52ターン目にサンダーが中央に出現します。</b>
         </div>
@@ -1532,18 +1534,31 @@ function clearFx(){ fxAttacker=null; fxShake=[]; hitCells=[]; }
    最初のクリック（ポケモン選択）で初期化される。
    ========================================================= */
 let SFX_ON = true;
-const SFX = (()=>{
-  let ctx=null, master=null;
-  const ac=()=>{
-    if(!ctx){
-      const C=window.AudioContext||window.webkitAudioContext;
-      if(!C) return null;
-      ctx=new C();
-      master=ctx.createGain(); master.gain.value=0.45; master.connect(ctx.destination);
-    }
-    if(ctx.state==='suspended') ctx.resume();
-    return ctx;
+/* 効果音とBGMで1つの AudioContext を共有する。バスを分けて音量を独立させる */
+const AUDIO = (()=>{
+  let ctx=null, master=null, sfxBus=null, bgmBus=null;
+  return {
+    init(){
+      if(!ctx){
+        const C=window.AudioContext||window.webkitAudioContext;
+        if(!C) return null;
+        ctx=new C();
+        master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination);
+        sfxBus=ctx.createGain(); sfxBus.gain.value=0.9;  sfxBus.connect(master);
+        bgmBus=ctx.createGain(); bgmBus.gain.value=0.26; bgmBus.connect(master);
+      }
+      if(ctx.state==='suspended') ctx.resume();
+      return ctx;
+    },
+    get ctx(){ return ctx; },
+    get sfxBus(){ return sfxBus; },
+    get bgmBus(){ return bgmBus; },
   };
+})();
+
+const SFX = (()=>{
+  const ac=()=>AUDIO.init();
+  const out=()=>AUDIO.sfxBus;
   /* 単音（周波数スイープ可） */
   function tone(f,{f2=null,t=0.12,type='sine',v=0.3,d=0}={}){
     const c=ac(); if(!c) return;
@@ -1555,7 +1570,7 @@ const SFX = (()=>{
     g.gain.setValueAtTime(0.0001,t0);
     g.gain.exponentialRampToValueAtTime(v,t0+0.008);
     g.gain.exponentialRampToValueAtTime(0.0001,t0+t);
-    o.connect(g); g.connect(master);
+    o.connect(g); g.connect(out());
     o.start(t0); o.stop(t0+t+0.03);
   }
   /* ノイズ（打撃・爆発・風切り） */
@@ -1572,7 +1587,7 @@ const SFX = (()=>{
     if(f2) bp.frequency.exponentialRampToValueAtTime(Math.max(40,f2),t0+t);
     const g=c.createGain(); g.gain.setValueAtTime(v,t0);
     g.gain.exponentialRampToValueAtTime(0.0001,t0+t);
-    src.connect(bp); bp.connect(g); g.connect(master);
+    src.connect(bp); bp.connect(g); g.connect(out());
     src.start(t0);
   }
   const chord=(fs,step,opt)=>fs.forEach((f,i)=>tone(f,{...opt,d:(opt&&opt.d||0)+i*step}));
@@ -1600,6 +1615,120 @@ const SFX = (()=>{
     lose:      ()=>chord([440,392,330,262],.13,{t:.4,type:'sawtooth',v:.22}),
   };
 })();
+/* =========================================================
+   BGM — チップチューン風の8小節ループ（コード進行 F-G-Em-Am-F-G-C-C）。
+   合成音なので外部ファイルは不要。AudioContext の時刻で先読みスケジュールする。
+   ========================================================= */
+const BGM = (()=>{
+  const STEPS = 128;                 /* 8小節 × 16分音符16 */
+  let bpm = 134, timer=null, step=0, next=0, playing=false;
+  const stepDur = ()=>(60/bpm)/4;
+  const F = n => 440*Math.pow(2,(n-69)/12);
+
+  /* 各小節のコード（ベース根音と和音構成音） */
+  const CHORD = [
+    {root:41, tri:[53,57,60]},  /* F  */
+    {root:43, tri:[55,59,62]},  /* G  */
+    {root:40, tri:[52,55,59]},  /* Em */
+    {root:45, tri:[57,60,64]},  /* Am */
+    {root:41, tri:[53,57,60]},  /* F  */
+    {root:43, tri:[55,59,62]},  /* G  */
+    {root:36, tri:[48,52,55]},  /* C  */
+    {root:36, tri:[48,52,55]},  /* C  */
+  ];
+  /* メロディ [小節, 小節内の16分位置, MIDI音高, 長さ(16分)] */
+  const MELODY = [
+    [0,0,69,2],[0,2,72,2],[0,4,74,2],[0,6,72,2],[0,8,69,4],[0,12,72,4],
+    [1,0,71,2],[1,2,74,2],[1,4,79,2],[1,6,74,2],[1,8,71,4],[1,12,74,4],
+    [2,0,67,2],[2,2,71,2],[2,4,76,2],[2,6,74,2],[2,8,71,4],[2,12,67,4],
+    [3,0,69,2],[3,2,72,2],[3,4,76,4],[3,8,81,8],
+    [4,0,77,2],[4,2,76,2],[4,4,74,2],[4,6,72,2],[4,8,69,4],[4,12,72,4],
+    [5,0,74,2],[5,2,71,2],[5,4,67,2],[5,6,71,2],[5,8,74,4],[5,12,79,4],
+    [6,0,72,2],[6,2,76,2],[6,4,79,2],[6,6,76,2],[6,8,72,4],[6,12,74,4],
+    [7,0,76,2],[7,2,74,2],[7,4,72,8],
+  ];
+  /* 小節内の8分位置ごとのベース（0=根音 / 1=5度 / 2=オクターブ上） */
+  const BASSPAT = [0,0,1,0,0,0,1,2];
+
+  function osc(freq,t,dur,type,vol,detune){
+    const c=AUDIO.ctx, bus=AUDIO.bgmBus; if(!c||!bus) return;
+    const o=c.createOscillator(), g=c.createGain();
+    o.type=type; o.frequency.value=freq; if(detune) o.detune.value=detune;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(bus);
+    o.start(t); o.stop(t+dur+0.03);
+  }
+  function drum(t,kind){
+    const c=AUDIO.ctx, bus=AUDIO.bgmBus; if(!c||!bus) return;
+    if(kind==='kick'){
+      const o=c.createOscillator(), g=c.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(150,t);
+      o.frequency.exponentialRampToValueAtTime(45,t+0.12);
+      g.gain.setValueAtTime(0.6,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+      o.connect(g); g.connect(bus); o.start(t); o.stop(t+0.2);
+      return;
+    }
+    const len=Math.floor(c.sampleRate*(kind==='snare'?0.14:0.045));
+    const buf=c.createBuffer(1,len,c.sampleRate), ch=buf.getChannelData(0);
+    for(let i=0;i<len;i++) ch[i]=(Math.random()*2-1)*Math.pow(1-i/len,kind==='snare'?1.6:2.6);
+    const src=c.createBufferSource(); src.buffer=buf;
+    const f=c.createBiquadFilter();
+    f.type= kind==='snare' ? 'bandpass' : 'highpass';
+    f.frequency.value= kind==='snare' ? 1900 : 7000; f.Q.value=0.8;
+    const g=c.createGain(); g.gain.value= kind==='snare' ? 0.28 : 0.12;
+    src.connect(f); f.connect(g); g.connect(bus); src.start(t);
+  }
+
+  function playStep(i,t){
+    const bar=i>>4, sub=i&15, ch=CHORD[bar];
+    /* ドラム：キック 1・3拍、スネア 2・4拍、ハイハット 8分 */
+    if(sub===0||sub===8) drum(t,'kick');
+    if(sub===4||sub===12) drum(t,'snare');
+    if(sub%2===0) drum(t,'hat');
+    /* ベース：8分の跳ねるパターン */
+    if(sub%2===0){
+      const kind=BASSPAT[sub>>1];
+      const n = kind===0 ? ch.root : (kind===1 ? ch.root+7 : ch.root+12);
+      osc(F(n),t,stepDur()*1.6,'triangle',0.42);
+    }
+    /* コードのバッキング：1拍目と3拍目に短く重ねる */
+    if(sub===0||sub===8) ch.tri.forEach((n,k)=>osc(F(n),t,stepDur()*2.2,'square',0.075,k===1?6:0));
+    /* メロディ（少しデチューンして重ね、可愛い響きにする） */
+    for(const [b,st,n,d] of MELODY){
+      if(b!==bar||st!==sub) continue;
+      const dur=stepDur()*d*0.92;
+      osc(F(n),   t,dur,'square',0.20);
+      osc(F(n+12),t,dur*0.5,'square',0.05);
+      osc(F(n),   t,dur,'triangle',0.09,8);
+    }
+  }
+
+  function tick(){
+    const c=AUDIO.ctx; if(!c||!playing) return;
+    if(next < c.currentTime) next = c.currentTime + 0.05;   /* タブ復帰時などの巻き戻し防止 */
+    while(next < c.currentTime + 0.15){
+      playStep(step,next);
+      next += stepDur();
+      step = (step+1)%STEPS;
+    }
+  }
+  return {
+    start(){
+      if(playing) return;
+      if(!AUDIO.init()) return;
+      playing=true; step=0; next=AUDIO.ctx.currentTime+0.08;
+      timer=setInterval(tick,25);
+    },
+    stop(){ playing=false; if(timer) clearInterval(timer); timer=null; },
+    /* 終盤はテンポを上げて盛り上げる */
+    setTempo(v){ bpm=v; },
+    get playing(){ return playing; },
+  };
+})();
+let BGM_ON = true;
+
 /* SFX_ON が false のときと、演出オフ（最速モード）のときは鳴らさない */
 function sfx(name){
   if(!SFX_ON||!fxOn()) return;
@@ -1695,6 +1824,7 @@ function endTurn(){
     }
   }
   S.turn++;
+  BGM.setTempo(S.turn>TURN_LIMIT-15?152:134);   /* 終盤はテンポアップ */
   checkEnd();
   if(!S.over) pushLog('th',`ターン ${S.turn}`);
 }
@@ -1716,6 +1846,7 @@ function checkEnd(){
 }
 function endGame(win,note){
   S.over=true;
+  BGM.stop();
   const big=document.getElementById('rBig');
   big.textContent = win==='ally'?'WIN!':(win==='enemy'?'LOSE...':'DRAW');
   big.className='big '+(win==='ally'?'win':(win==='enemy'?'lose':'draw'));
@@ -2100,7 +2231,11 @@ function buildPicks(){
         <em>わざ1</em> ${p.moves[0].name}（射程${p.moves[0].range}${p.moves[0].radius?` 半径${p.moves[0].radius}`:''} / CT${p.moves[0].cd}）<br>
         <em>わざ2</em> ${p.moves[1].name}（射程${p.moves[1].range}${p.moves[1].radius?` 半径${p.moves[1].radius}`:''} / CT${p.moves[1].cd}）
       </div>`;
-    b.onclick=()=>{ SFX_ON=SFX_WANT; sfx('select'); startGame(p.id); };
+    b.onclick=()=>{
+      SFX_ON=SFX_WANT; sfx('select');
+      if(BGM_ON) BGM.start();          /* クリック（ユーザー操作）で音声を解禁する */
+      startGame(p.id);
+    };
     P.appendChild(b);
   });
 }
@@ -2112,6 +2247,12 @@ function fitMap(){
 let SFX_WANT=true;   /* ボタンでの希望値。ゲーム開始時に SFX_ON へ反映 */
 document.getElementById('jtTxt').textContent=JUMP_TURN;
 document.getElementById('spdSel').addEventListener('change',e=>{ SPEED=+e.target.value; });
+document.getElementById('bgmBtn').addEventListener('click',e=>{
+  BGM_ON=!BGM_ON;
+  e.currentTarget.textContent=BGM_ON?'🎵':'🎜';
+  e.currentTarget.classList.toggle('off',!BGM_ON);
+  if(BGM_ON){ if(S&&!S.over) BGM.start(); } else BGM.stop();
+});
 document.getElementById('sfxBtn').addEventListener('click',e=>{
   SFX_WANT=!SFX_WANT; SFX_ON=SFX_WANT;
   e.currentTarget.textContent=SFX_WANT?'🔊':'🔇';
