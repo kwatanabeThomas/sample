@@ -26,6 +26,8 @@ svg{display:block;overflow:visible}
 h1{font-size:1.35rem;letter-spacing:.04em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enemy));padding:3px 8px;border-radius:99px;letter-spacing:.1em}
 .sub{color:var(--sub);font-size:.78rem;margin-top:3px}
+.modetag{margin-left:8px;font-size:.68rem;background:#1d2a52;border:1px solid #4a68a8;color:#cfe0ff;
+  border-radius:99px;padding:1px 8px}
 
 /* ---------- scoreboard ---------- */
 .board{display:flex;align-items:stretch;gap:10px;margin:12px 0 8px;
@@ -353,7 +355,24 @@ details.rules b{color:#e9eefc}
 .ovbox{max-width:1200px;width:100%;margin:auto}
 .ovbox h2{font-size:1.5rem;text-align:center;margin-bottom:4px}
 .ovbox p.lead{text-align:center;color:var(--sub);font-size:.8rem;margin-bottom:14px}
+.modes{display:flex;gap:10px;justify-content:center;margin:12px 0 10px;flex-wrap:wrap}
+.modebtn{border:2px solid var(--line);background:linear-gradient(180deg,#182144,#111834);border-radius:12px;
+  padding:9px 16px;text-align:left;min-width:250px;transition:.13s}
+.modebtn b{display:block;font-size:.92rem}
+.modebtn span{display:block;font-size:.66rem;color:var(--sub);margin-top:2px}
+.modebtn:hover{border-color:#7f9bff}
+.modebtn.on{border-color:#ffe14d;background:linear-gradient(180deg,#2e2a12,#1a1a2e);box-shadow:0 0 12px rgba(255,225,77,.25)}
+.modebtn.on b{color:#ffe14d}
+.selbar{position:sticky;bottom:0;margin-top:12px;padding:10px;display:flex;gap:14px;align-items:center;
+  justify-content:center;background:rgba(8,12,26,.94);border:1px solid var(--line);border-radius:12px}
+.selbar.hide{display:none}
+.selbar .cnt{font-size:.9rem;font-weight:800;color:#ffe14d}
+.selbar .btn{margin-top:0}
+.selbar .btn:disabled{opacity:.4;filter:grayscale(.6)}
 .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:9px}
+.pick.sel{border-color:#ffe14d;box-shadow:0 0 0 2px rgba(255,225,77,.45),0 6px 18px rgba(0,0,0,.5)}
+.pick .no{position:absolute;top:6px;right:8px;font-size:.72rem;font-weight:900;color:#ffe14d}
+.pick{position:relative}
 .pick{border:1px solid var(--line);background:linear-gradient(180deg,#1a2450,#111834);border-radius:12px;
   padding:10px;text-align:left;transition:.13s;display:flex;flex-direction:column}
 .pick:hover{border-color:#7f9bff;transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.45)}
@@ -398,7 +417,7 @@ details.rules b{color:#e9eefc}
 <body>
 <div class="wrap">
   <h1>ターン制ユナイトバトル <span class="tag">5 vs 5 / TURN BASED</span></h1>
-  <div class="sub">行動順に1匹ずつ行動する5対5のチーム戦。相手ゴールに多く得点したチームの勝ち。</div>
+  <div class="sub">行動順に1匹ずつ行動する5対5のチーム戦。相手ゴールに多く得点したチームの勝ち。<span class="modetag" id="modeTxt">1匹プレイ</span></div>
 
   <div class="board">
     <div class="side a">
@@ -437,12 +456,13 @@ details.rules b{color:#e9eefc}
           <b>■ 距離の数え方</b>：移動は<b>上下左右のみ1マス</b>。斜めへ行くには2マスかかります（＝マンハッタン距離）。<b>こうげき・わざの射程、範囲わざの半径も同じ数え方</b>です。<br>
           <b>■ すり抜け</b>：移動の途中に<b>味方ポケモンは通り抜けられます</b>が、<b>敵ポケモンと野生ポケモンは通り抜けられません</b>（壁と同じ扱い）。<b>止まれるのは空いているマスだけ</b>です。<br>
           <b>■ ゴール加速エリア</b>：<b>自陣の「ゴール1↔ゴール2」「ゴール2↔ゴール3」を結ぶ直線</b>（マップの水色のレール）の上では<b>移動1で2マス</b>進めます。素早さ3なら6マス。自陣側でコの字型につながっており、<b>相手側の加速エリアとはつながっていません</b>（マップ中央には加速エリアがありません）。<b>加速できるのは自分のチームの加速エリアだけ</b>で、相手側の加速エリア（赤いレール）に乗っても移動マスは増えません。移動先ハイライトのうち<b>水色に光っているマスが加速エリアを使った到達先</b>です。<br>
-          <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。あなた以外の9匹は自動で順に動きます（速度は上のセレクトで変更可）。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
+          <b>■ ゲームモード</b>：開始時に2つから選べます。<b>「1匹プレイ」＝自分の1匹だけを操作（味方4匹は自動）</b>／<b>「5匹プレイ」＝味方5匹を選び、全員を自分で操作</b>。どちらも相手の5匹は自動で動きます。<br>
+          <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。5匹プレイでは<b>味方の番が来るたびに入力を待ちます</b>（いま操作するポケモンは黄色い枠と「▶ ◯◯ の番」で表示）。自動で動くポケモンの速度は上のセレクトで変更できます。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
           <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / リコール / 待機」から<b>1つだけ</b>選べます。<br>
           <b>■ リコール</b>：<b>2ターン</b>かけて<b>自陣ベース（ゴール3）の中心へ帰還し、HPが最大まで回復</b>します。進行中は<b>アイコンの周りに水色のリングゲージ</b>が出ます。<b>ダメージを受けるとキャンセル</b>（別の行動をした場合も中断）。<br>
           <b>■ ジャンプ台</b>：<b><span id="jtTxt">35</span>ターン目（試合の折り返し）に自陣ゴール3の隣に🛫が出現</b>します。その上に乗って「ジャンプ台」を使うと<b>マップの奥（相手ゴール1の少し手前）まで一気に飛べます</b>。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
-          <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。レベルが上がると<b>HP・こうげき・ぼうぎょが上昇</b>します（素早さと射程は変わりません）。最大 Lv<span id="mlTxt">12</span>。レベルはアイコン左下の数字と、右パネルの⭐に表示されます。<br>
+          <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。とどめを刺したポケモンの<b>周囲3マス以内に味方がいる場合は 6：4 で分配</b>され、4のぶんを周囲の味方で等分します（周囲に誰もいなければ全部もらえます）。レベルが上がると<b>HP・こうげき・ぼうぎょが上昇</b>します（素早さと射程は変わりません）。最大 Lv<span id="mlTxt">12</span>。レベルはアイコン左下の数字と、右パネルの⭐に表示されます。<br>
           <b>■ ユナイトわざ</b>：<b>Lv<span id="ulTxt">5</span> で解放され、1試合に1回だけ</b>使える超強力なわざです。使えるようになるとアイコンが金色に光り、右パネルのボタンが点灯します。ポケモンごとに専用のわざを持っています。<br>
           <b>■ 得点の入手</b>：野生ポケモンを倒す／相手ポケモンを倒す（相手が持っていた点＋1をもらう）。<br>
           　・<b>アイコン右下の金枠「◆N」＝ 倒したときに拾える点数</b>（野生ポケモンのみ表示）。<br>
@@ -510,9 +530,17 @@ details.rules b{color:#e9eefc}
 
 <div class="ov" id="ovSelect">
   <div class="ovbox">
-    <h2>使うポケモンを選ぼう</h2>
-    <p class="lead">全20匹。あなたが選んだ1匹以外の19匹から9匹が、味方4匹・敵5匹にランダムで振り分けられます。</p>
+    <h2>ゲームモードとポケモンを選ぼう</h2>
+    <div class="modes" id="modes">
+      <button class="modebtn on" data-m="1"><b>1匹プレイ</b><span>自分の1匹だけを操作。味方4匹は自動で動きます</span></button>
+      <button class="modebtn" data-m="5"><b>5匹プレイ</b><span>味方5匹を選び、全員を自分で操作します</span></button>
+    </div>
+    <p class="lead" id="selLead"></p>
     <div class="picks" id="picks"></div>
+    <div class="selbar hide" id="selBar">
+      <span class="cnt" id="selCount">0 / 5 匹</span>
+      <button class="btn" id="selGo" disabled>バトル開始</button>
+    </div>
   </div>
 </div>
 
@@ -861,6 +889,8 @@ const UNITE_LV = 5;         /* ユナイトわざが解放されるレベル */
 const XP_WILD = 8;          /* 野生ポケモン：獲得点数 × この値 */
 const XP_KILL_BASE = 24;    /* 相手ポケモン撃破の基礎経験値 */
 const XP_KILL_PER_LV = 10;  /* 相手のレベル × この値を加算（高レベルほど多い） */
+const XP_SELF_RATE = 0.6;   /* とどめを刺した本人の取り分（残りを周囲の味方で等分） */
+const XP_SHARE_RANGE = 3;   /* 「周囲」とみなす距離（マンハッタン） */
 const xpNeed = lv => 16 + lv*10;   /* lv → lv+1 に必要な経験値 */
 
 /* =========================================================
@@ -953,7 +983,6 @@ let sel = null;
 let running = false;
 let curActor = null;
 let SPEED = 280;
-let AUTO_PASS = true;
 let movingUid = null;      // 移動アニメ中は元マスのアイコンを隠す
 let fxAttacker = null;     // {uid,ax,ay}
 let fxShake = [];          // 被弾した uid
@@ -994,13 +1023,17 @@ function makeWild(sp,i){
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-function startGame(pokeId){
-  const pool=POKEMON.filter(p=>p.id!==pokeId); shuffle(pool);
-  const mine=POKEMON.find(p=>p.id===pokeId);
-  const allyD=[mine,...pool.slice(0,4)], enemD=pool.slice(4,9);
+/* ids: 文字列1つ（1匹モード）または5匹分のid配列（5匹モード） */
+function startGame(ids){
+  if(typeof ids==='string') ids=[ids];
+  const mode = ids.length>=5 ? 5 : 1;
+  const chosen = ids.map(id=>POKEMON.find(p=>p.id===id)).filter(Boolean);
+  const pool = POKEMON.filter(p=>!ids.includes(p.id)); shuffle(pool);
+  const allyD = mode===5 ? chosen.slice(0,5) : [chosen[0],...pool.slice(0,4)];
+  const enemD = mode===5 ? pool.slice(0,5)   : pool.slice(4,9);
 
-  S={turn:1,units:[],wilds:[],goals:[],score:{ally:0,enemy:0},log:[],over:false,order:[]};
-  allyD.forEach((d,i)=>{const u=makeUnit(d,'ally',i); if(i===0)u.isPlayer=true; S.units.push(u);});
+  S={turn:1,mode,units:[],wilds:[],goals:[],score:{ally:0,enemy:0},log:[],over:false,order:[]};
+  allyD.forEach((d,i)=>{const u=makeUnit(d,'ally',i); if(mode===5||i===0)u.isPlayer=true; S.units.push(u);});
   enemD.forEach((d,i)=>S.units.push(makeUnit(d,'enemy',i)));
   const LANES=['mid','top','top','bot','bot'];
   ['ally','enemy'].forEach(t=>S.units.filter(u=>u.team===t).forEach((u,i)=>{
@@ -1017,14 +1050,15 @@ function startGame(pokeId){
   S.goals=GOAL_DEFS.map((g,i)=>({...g,gid:i,filled:0,alive:true}));
   initAreas(S.goals); rebuildAccel();
 
-  movingUid=null; clearFx();
-  fxEl.innerHTML='';
+  movingUid=null; ctrlUnit=S.units[0]; awaitingInput=false; inputResolve=null; running=false;
+  clearFx(); fxEl.innerHTML='';
   document.getElementById('ovSelect').classList.add('hide');
   document.getElementById('turnMax').textContent=TURN_LIMIT;
-  pushLog('th','── バトル開始！ ──');
+  document.getElementById('modeTxt').textContent = mode===5?'5匹プレイ':'1匹プレイ';
+  pushLog('th',`── バトル開始！（${mode===5?'5匹プレイ：味方5匹すべてを操作':'1匹プレイ：味方4匹は自動'}）──`);
   pushLog('th','ターン 1');
   render();
-  maybeAutoPass();
+  if(!AUTOPLAY) setTimeout(runTurn,60);
 }
 
 function freeSpawn(team){ return freeNear(BASE[team]); }
@@ -1058,7 +1092,9 @@ function isFoe(a,b){
 }
 function foesOf(u){ return allActors().filter(x=>isAlive(x)&&isFoe(u,x)); }
 function alliesOf(u){ return S.units.filter(x=>isAlive(x)&&x.team===u.team&&x!==u); }
-function player(){ return S.units[0]; }
+let ctrlUnit=null;
+/* 現在あなたが操作しているユニット（未設定なら先頭の味方） */
+function player(){ return (ctrlUnit&&S.units.includes(ctrlUnit))?ctrlUnit:S.units[0]; }
 
 const inGoal=(g,r,c)=>Math.abs(r-g.r)<=1&&Math.abs(c-g.c)<=1;
 function goalTiles(g){
@@ -1268,11 +1304,24 @@ function knockOut(src,tgt){
     floatText(src.r,src.c,'+'+gain+'点','pt');
     sfx('point');
   }
-  /* とどめを刺したポケモンに経験値。相手のレベルが高いほど多い */
+  /* とどめを刺したポケモンに経験値。相手のレベルが高いほど多い。
+     周囲に味方がいる場合は 6:4 で分配し、4 のぶんを味方で等分する */
   if(src.kind==='poke'){
     const xp = tgt.kind==='wild' ? tgt.ptsGive*XP_WILD
                                  : XP_KILL_BASE + tgt.lv*XP_KILL_PER_LV;
-    gainXp(src,xp);
+    const near = alliesOf(src).filter(x=>x.kind==='poke'&&dist(src,x)<=XP_SHARE_RANGE);
+    if(near.length){
+      const mine = Math.round(xp*XP_SELF_RATE);
+      const rest = xp - mine;
+      const each = Math.floor(rest/near.length);
+      const extra = rest - each*near.length;     /* 端数は近い順に1ずつ配る */
+      near.sort((a,b)=>dist(src,a)-dist(src,b));
+      gainXp(src,mine);
+      near.forEach((a,i)=>gainXp(a, each + (i<extra?1:0)));
+      pushLog(logCls(src),`  └ 経験値 ${xp} を分配（本人 ${mine} / 周囲の味方${near.length}体に ${rest}）`);
+    }else{
+      gainXp(src,xp);
+    }
   }
   pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
   tgt.down = tgt.kind==='wild' ? tgt.resp : deathTurns(S.turn);
@@ -1879,19 +1928,45 @@ function sfx(name){
 /* =========================================================
    TURN LOOP  (1匹ずつ順番に決定・実行)
    ========================================================= */
-async function runTurn(playerAct){
+/* あなたが操作するユニットか。1匹モードは選んだ1匹、5匹モードは味方全員 */
+const isPlayerUnit = u => u.team==='ally' && (S.mode===5 || u.isPlayer);
+let awaitingInput=false, inputResolve=null;
+let AUTOPLAY=false;              /* true にすると操作ユニットもAIが動かす（自動検証用） */
+const waitInput = ()=>new Promise(r=>{ inputResolve=r; });
+/* 画面からの行動決定を受け取ってターンを再開する */
+function submitAction(act){
+  if(!awaitingInput||!inputResolve) return;
+  const r=inputResolve; inputResolve=null; awaitingInput=false; sel=null;
+  r(act);
+}
+
+async function runTurn(){
   if(S.over||running) return;
   running=true; sel=null;
+  let chimed=false;
 
   for(const u of S.order){
     if(S.over) break;
-    curActor=u; clearFx();
+    curActor=u; clearFx(); sel=null;
     if(!isAlive(u)) continue;
-    const isAI = u!==player();
-    if(isAI){ render(); await sleep(fxOn()?SPEED*0.28:0); }
 
-    const act = isAI ? aiAction(u) : playerAct;
-    const res = execAction(u,act);
+    let act;
+    if(isPlayerUnit(u)&&!AUTOPLAY){
+      ctrlUnit=u;
+      if(u.stun>0){                       /* 行動不能なら入力を待たずに飛ばす */
+        act={type:'none'}; render();
+        if(fxOn()) await sleep(SPEED*0.4);
+      }else{
+        awaitingInput=true; render();
+        if(!chimed){ sfx('turn'); chimed=true; }
+        act=await waitInput();
+      }
+    }else{
+      render(); if(fxOn()) await sleep(SPEED*0.28);
+      act=aiAction(u);
+    }
+
+    const res=execAction(u,act);
     if(res.path&&res.path.length) await animateMove(u,res.from,res.path);
     render();
     if(fxOn()) await sleep(res.acted?Math.min(SPEED*0.75,360):SPEED*0.22);
@@ -1907,13 +1982,9 @@ async function runTurn(playerAct){
   if(hitCells.length){ render(); if(fxOn()) await sleep(Math.min(SPEED*0.7,340)); }
 
   endTurn();
-  running=false; clearFx();
+  running=false; awaitingInput=false; clearFx();
   render();
-  if(!S.over){
-    const me=player();
-    if(isAlive(me)&&me.stun===0) sfx('turn');
-    maybeAutoPass();
-  }
+  if(!S.over&&!AUTOPLAY) setTimeout(runTurn,40);
 }
 
 function endTurn(){
@@ -1970,11 +2041,6 @@ function endTurn(){
   if(!S.over) pushLog('th',`ターン ${S.turn}`);
 }
 
-function maybeAutoPass(){
-  if(!AUTO_PASS||S.over||running) return;
-  const u=player();
-  if(!isAlive(u)||u.stun>0) setTimeout(()=>{ if(!running&&!S.over) runTurn({type:'none'}); },Math.min(SPEED,420));
-}
 function checkEnd(){
   const aDead=S.goals.filter(g=>g.team==='ally'&&!g.alive).length;
   const eDead=S.goals.filter(g=>g.team==='enemy'&&!g.alive).length;
@@ -2006,7 +2072,7 @@ function buildResultTable(){
               ['heal','回復'],['shield','シールド'],['kills','KO'],['deaths','ダウン'],['xp','経験値']];
   const head='<tr><th class="nm">ポケモン</th><th>Lv</th>'+cols.map(c=>`<th>${c[1]}</th>`).join('')+'</tr>';
   const rowOf=a=>`<tr class="${a.team==='ally'?'ra':'re'}${a.isPlayer?' rme':''}">`+
-    `<td class="nm"><span class="ic">${a.spr}</span>${a.name}${a.isPlayer?' <b>(あなた)</b>':''}`+
+    `<td class="nm"><span class="ic">${a.spr}</span>${a.name}${S.mode===1&&a.isPlayer?' <b>(あなた)</b>':''}`+
     `${a.uniteUsed?'':' <span class="uleft">✨未使用</span>'}</td>`+
     `<td><b>${a.lv}</b></td>`+
     cols.map(c=>`<td>${num(a.st[c[0]])}</td>`).join('')+'</tr>';
@@ -2076,7 +2142,7 @@ function hlClass(u,s,v){
   return 'hlAtk';
 }
 function onCellClick(r,c){
-  if(S.over||running||!sel) return;
+  if(S.over||!awaitingInput||!sel) return;
   const u=player();
   const v=validTargets(u,sel).get(key(r,c));
   if(!v) return;
@@ -2089,19 +2155,19 @@ function onCellClick(r,c){
     else if(m.kind==='shield') act={type:'skill',idx:sel.idx};
     else act={type:'skill',idx:sel.idx,target:v.target};
   }
-  runTurn(act);
+  submitAction(act);
 }
 function pickAct(s){
-  if(S.over||running) return;
+  if(S.over||!awaitingInput) return;
   const u=player();
   if(!isAlive(u)||u.stun>0) return;
-  if(s.type==='goal'){ runTurn({type:'goal'}); return; }
-  if(s.type==='recall'){ runTurn({type:'recall'}); return; }
-  if(s.type==='jump'){ runTurn({type:'jump'}); return; }
-  if(s.type==='wait'){ runTurn({type:'wait'}); return; }
+  if(s.type==='goal'){ submitAction({type:'goal'}); return; }
+  if(s.type==='recall'){ submitAction({type:'recall'}); return; }
+  if(s.type==='jump'){ submitAction({type:'jump'}); return; }
+  if(s.type==='wait'){ submitAction({type:'wait'}); return; }
   if(s.type==='skill'){
     if(!skillReady(u,s.idx)) return;
-    if(moveAt(u,s.idx).kind==='shield'){ runTurn({type:'skill',idx:s.idx}); return; }
+    if(moveAt(u,s.idx).kind==='shield'){ submitAction({type:'skill',idx:s.idx}); return; }
   }
   sel=(sel&&sel.type===s.type&&sel.idx===s.idx)?null:s;
   render();
@@ -2124,7 +2190,7 @@ mapEl.addEventListener('mouseleave',()=>hoverAoe(-1,-1));
 let aoeKeys=[];
 function hoverAoe(r,c){
   let next=[];
-  if(r>=0&&sel&&sel.type==='skill'&&!S.over&&!running){
+  if(r>=0&&sel&&sel.type==='skill'&&!S.over&&awaitingInput){
     const u=player(), m=moveAt(u,sel.idx);
     if(m&&m.kind==='aoe'&&validTargets(u,sel).has(key(r,c))){
       for(let rr=0;rr<H;rr++)for(let cc=0;cc<W;cc++)
@@ -2176,8 +2242,9 @@ function render(){
   document.getElementById('scE').textContent=S.score.enemy;
   document.getElementById('turnNo').textContent=Math.min(S.turn,TURN_LIMIT);
   document.getElementById('phaseTxt').textContent =
-    S.over?'試合終了':(running?(curActor?`${curActor.name} 行動中`:'解決中')
-      :(isAlive(u)?(u.stun>0?'行動不能':'あなたの番'):`気絶中 (復帰まで${u.down})`));
+    S.over?'試合終了'
+    :(awaitingInput?`▶ ${u.name} の番`
+      :(running?(curActor?`${curActor.name} 行動中`:'解決中'):'準備中'));
   const pip=(team,open)=>S.goals.filter(g=>g.team===team).sort((a,b)=>a.tier-b.tier)
     .map(g=>`<span class="gpip ${!g.alive?'dead':(open.includes(g.gid)?'open':'')}">${laneName(g)}${g.tier} ${g.alive?`${Math.max(0,g.cap-g.filled)}/${g.cap}`:'×'}</span>`).join('');
   document.getElementById('gA').innerHTML=pip('ally',openA);
@@ -2195,10 +2262,10 @@ function render(){
 
   const openGids=new Set([...openA,...openE]);
   const jp = jumpOpen()?JUMP_PAD.ally.pad:null, jpE = jumpOpen()?JUMP_PAD.enemy.pad:null;
-  const vt=(sel&&!running&&!S.over)?validTargets(u,sel):new Map();
+  const vt=(sel&&awaitingInput&&!S.over)?validTargets(u,sel):new Map();
   /* 単体系のわざ・こうげき・回復は届く範囲を薄く塗って射程をわかりやすくする */
   const rngSet=new Set(); let rngCls='rngA';
-  if(sel&&!running&&!S.over&&isAlive(u)&&u.stun===0){
+  if(sel&&awaitingInput&&!S.over&&isAlive(u)&&u.stun===0){
     let rad=-1;
     if(sel.type==='attack') rad=u.rng;
     else if(sel.type==='skill'&&skillReady(u,sel.idx)){
@@ -2239,7 +2306,7 @@ function render(){
       const ratio=Math.max(0,a.hp)/a.maxHp;
       const lunge=!!(fxAttacker&&fxAttacker.uid===a.uid);
       const shake=fxShake.includes(a.uid);
-      html+=`<div class="u ${tc}${a.isPlayer?' me':''}${uniteAvail(a)?' uready':''}${a===curActor&&running?' now':''}`+
+      html+=`<div class="u ${tc}${a===player()?' me':''}${uniteAvail(a)?' uready':''}${a===curActor&&running?' now':''}`+
             `${lunge?' lunge':''}${shake?' shake':''}" title="${unitTip(a)}"`+
             (lunge?` style="--ax:${fxAttacker.ax};--ay:${fxAttacker.ay}"`:'')+'>'+
             `<span class="ring"></span>${a.spr}`+
@@ -2294,7 +2361,7 @@ function render(){
     Array.from({length:RECALL_TURNS},(_,i)=>`<span class="${i<u.recall?'on':''}"></span>`).join('');
 
   const A=document.getElementById('acts'); A.innerHTML='';
-  const dis=S.over||running||!isAlive(u)||u.stun>0;
+  const dis=S.over||!awaitingInput||!isAlive(u)||u.stun>0;
   const add=(label,desc,s,off,tag,extra)=>{
     const b=document.createElement('button');
     b.className='act'+(sel&&sel.type===s.type&&sel.idx===s.idx?' sel':'')+(extra||'');
@@ -2335,11 +2402,11 @@ function render(){
       `${RECALL_TURNS}ターンで自陣ベース(ゴール3)へ帰還し、HPが全回復。ダメージを受けると中断`,
       {type:'recall'},false,`🏠${RECALL_TURNS}`,' wide recall');
   add(u.stun>0?'行動不能（ターンを進める）':'待機',(!isAlive(u)?'気絶中です':'何もしないでターンを進める'),
-      {type:'wait'},S.over||running||!isAlive(u),'',' wide');
+      {type:'wait'},S.over||!awaitingInput||!isAlive(u),'',' wide');
 
   const hint=document.getElementById('hint');
   if(S.over) hint.textContent='';
-  else if(running) hint.textContent='自動行動中…';
+  else if(!awaitingInput) hint.textContent=running?'自動行動中…':'…';
   else if(!isAlive(u)) hint.textContent='気絶中です。自動でターンが進みます。';
   else if(u.stun>0) hint.textContent='行動不能です。自動でターンが進みます。';
   else if(sel){
@@ -2347,7 +2414,8 @@ function render(){
       (moveAt(u,sel.idx).kind==='aoe'?'着弾させる地点':
        moveAt(u,sel.idx).kind==='heal'?'回復する味方':'わざの対象'));
     hint.textContent=`▶ マップ上で${t}をクリック（もう一度ボタンで解除）`;
-  }else hint.textContent=`あなたの番です（行動順 ${u.ord} 番目）。行動を1つ選んでください。`;
+  }else hint.textContent=`${S.mode===5?`【${u.name}】`:''}あなたの番です（行動順 ${u.ord} 番目`+
+      `${S.mode===5?` / 味方${S.order.filter(x=>isPlayerUnit(x)&&isAlive(x)&&S.order.indexOf(x)>S.order.indexOf(u)).length}体があとに控えています`:''}）。行動を1つ選んでください。`;
 
   const row=a=>{
     const rt=Math.max(0,a.hp)/a.maxHp;
@@ -2375,12 +2443,39 @@ function unitTip(a){
 /* =========================================================
    BOOT
    ========================================================= */
+let pickMode=1, picked=[];
+function refreshPicks(){
+  document.querySelectorAll('.modebtn').forEach(e=>e.classList.toggle('on',+e.dataset.m===pickMode));
+  document.getElementById('selLead').textContent = pickMode===1
+    ? '全20匹から1匹を選択。残り19匹から9匹が、味方4匹・敵5匹にランダムで振り分けられます。'
+    : '全20匹から味方5匹を選択（クリックで選択／解除）。相手の5匹は残りからランダムで選ばれ、自動で動きます。';
+  document.getElementById('selBar').classList.toggle('hide',pickMode!==5);
+  document.getElementById('selCount').textContent=`${picked.length} / 5 匹`;
+  document.getElementById('selGo').disabled = picked.length!==5;
+  document.querySelectorAll('.pick').forEach(e=>{
+    const i=picked.indexOf(e.dataset.pid);
+    e.classList.toggle('sel',i>=0);
+    const no=e.querySelector('.no'); if(no) no.textContent = i>=0 ? (i+1) : '';
+  });
+}
+function onPick(id){
+  if(pickMode===1){ beginBattle([id]); return; }
+  const i=picked.indexOf(id);
+  if(i>=0) picked.splice(i,1);
+  else if(picked.length<5) picked.push(id);
+  sfx('select'); refreshPicks();
+}
+function beginBattle(ids){
+  SFX_ON=SFX_WANT; sfx('select');
+  if(BGM_ON) BGM.start();          /* クリック（ユーザー操作）で音声を解禁する */
+  startGame(ids);
+}
 function buildPicks(){
   const P=document.getElementById('picks'); P.innerHTML='';
   POKEMON.forEach(p=>{
     const b=document.createElement('button');
-    b.className='pick';
-    b.innerHTML=`<div class="hd"><div class="av">${SPR[p.id]}</div>
+    b.className='pick'; b.dataset.pid=p.id;
+    b.innerHTML=`<span class="no"></span><div class="hd"><div class="av">${SPR[p.id]}</div>
         <span><span class="nm">${p.name}</span><br><span class="ro">${p.role}</span></span></div>
       <div class="stats"><span>HP ${p.hp}</span><span>こうげき ${p.atk}</span>
         <span>ぼうぎょ ${p.def}</span><span>素早さ ${p.spd}</span><span>射程 ${p.rng}</span><span></span></div>
@@ -2389,13 +2484,16 @@ function buildPicks(){
         <em>わざ2</em> ${p.moves[1].name}（射程${p.moves[1].range}${p.moves[1].radius?` 半径${p.moves[1].radius}`:''} / CT${p.moves[1].cd}）<br>
         <u>ユナイト</u> ${p.unite.name}（射程${p.unite.range}${p.unite.radius?` 半径${p.unite.radius}`:''}）
       </div>`;
-    b.onclick=()=>{
-      SFX_ON=SFX_WANT; sfx('select');
-      if(BGM_ON) BGM.start();          /* クリック（ユーザー操作）で音声を解禁する */
-      startGame(p.id);
-    };
+    b.onclick=()=>onPick(p.id);
     P.appendChild(b);
   });
+  document.querySelectorAll('.modebtn').forEach(e=>e.addEventListener('click',()=>{
+    pickMode=+e.dataset.m; picked=[]; sfx('select'); refreshPicks();
+  }));
+  document.getElementById('selGo').addEventListener('click',()=>{
+    if(picked.length===5) beginBattle(picked.slice());
+  });
+  refreshPicks();
 }
 function fitMap(){
   const wrap=document.getElementById('mapWrap');
