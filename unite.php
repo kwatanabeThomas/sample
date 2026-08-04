@@ -462,7 +462,9 @@ details.rules b{color:#e9eefc}
           <b>■ リコール</b>：<b>2ターン</b>かけて<b>自陣ベース（ゴール3）の中心へ帰還し、HPが最大まで回復</b>します。進行中は<b>アイコンの周りに水色のリングゲージ</b>が出ます。<b>ダメージを受けるとキャンセル</b>（別の行動をした場合も中断）。<br>
           <b>■ ジャンプ台</b>：<b><span id="jtTxt">35</span>ターン目（試合の折り返し）に自陣ゴール3の隣に🛫が出現</b>します。その上に乗って「ジャンプ台」を使うと<b>マップの奥（相手ゴール1の少し手前）まで一気に飛べます</b>。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
-          <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。とどめを刺したポケモンの<b>周囲3マス以内に味方がいる場合は 6：4 で分配</b>され、4のぶんを周囲の味方で等分します（周囲に誰もいなければ全部もらえます）。レベルが上がると<b>HP・こうげき・ぼうぎょが上昇</b>します（素早さと射程は変わりません）。最大 Lv<span id="mlTxt">12</span>。レベルはアイコン左下の数字と、右パネルの⭐に表示されます。<br>
+          <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。とどめを刺したポケモンの<b>周囲3マス以内に味方がいる場合は 6：4 で分配</b>され、4のぶんを周囲の味方で等分します（周囲に誰もいなければ全部もらえます）。<br>
+          　・<b>カジリガメ（🐢）だけは例外</b>で、倒すと<b>距離に関係なくチーム全員で等分</b>されます（チーム合計は野生1匹ぶんのまま＝1体あたりは1/5）。<br>
+          　・<b>シュートを決めると、入れた点数 × 3 の経験値</b>が入ります。レベルが上がると<b>HP・こうげき・ぼうぎょが上昇</b>します（素早さと射程は変わりません）。最大 Lv<span id="mlTxt">12</span>。レベルはアイコン左下の数字と、右パネルの⭐に表示されます。<br>
           <b>■ ユナイトわざ</b>：<b>Lv<span id="ulTxt">5</span> で解放され、1試合に1回だけ</b>使える超強力なわざです。使えるようになるとアイコンが金色に光り、右パネルのボタンが点灯します。ポケモンごとに専用のわざを持っています。<br>
           <b>■ 得点の入手</b>：野生ポケモンを倒す／相手ポケモンを倒す（相手が持っていた点＋1をもらう）。<br>
           　・<b>アイコン右下の金枠「◆N」＝ 倒したときに拾える点数</b>（野生ポケモンのみ表示）。<br>
@@ -891,6 +893,7 @@ const XP_KILL_BASE = 24;    /* 相手ポケモン撃破の基礎経験値 */
 const XP_KILL_PER_LV = 10;  /* 相手のレベル × この値を加算（高レベルほど多い） */
 const XP_SELF_RATE = 0.6;   /* とどめを刺した本人の取り分（残りを周囲の味方で等分） */
 const XP_SHARE_RANGE = 3;   /* 「周囲」とみなす距離（マンハッタン） */
+const XP_PER_GOAL_PT = 3;   /* シュート1点あたりの経験値 */
 const xpNeed = lv => 16 + lv*10;   /* lv → lv+1 に必要な経験値 */
 
 /* =========================================================
@@ -924,7 +927,7 @@ const WILD_DEFS = {
   otachi:  {name:'オタチ',    hp:90,  atk:30, def:10, rng:1, pts:2,  resp:8 },
   ludi:    {name:'ルンパッパ', hp:150, atk:40, def:20, rng:1, pts:3,  resp:12},
   bouff:   {name:'バッフロン', hp:180, atk:45, def:25, rng:1, pts:4,  resp:12},
-  drednaw: {name:'カジリガメ', hp:320, atk:60, def:35, rng:1, pts:8,  resp:20},
+  drednaw: {name:'カジリガメ', hp:320, atk:60, def:35, rng:1, pts:8,  resp:20, teamXp:true},
   zapdos:  {name:'サンダー',  hp:700, atk:80, def:40, rng:2, pts:25, resp:99},
 };
 const WILD_SPAWNS = [
@@ -1309,18 +1312,27 @@ function knockOut(src,tgt){
   if(src.kind==='poke'){
     const xp = tgt.kind==='wild' ? tgt.ptsGive*XP_WILD
                                  : XP_KILL_BASE + tgt.lv*XP_KILL_PER_LV;
-    const near = alliesOf(src).filter(x=>x.kind==='poke'&&dist(src,x)<=XP_SHARE_RANGE);
-    if(near.length){
-      const mine = Math.round(xp*XP_SELF_RATE);
-      const rest = xp - mine;
-      const each = Math.floor(rest/near.length);
-      const extra = rest - each*near.length;     /* 端数は近い順に1ずつ配る */
-      near.sort((a,b)=>dist(src,a)-dist(src,b));
-      gainXp(src,mine);
-      near.forEach((a,i)=>gainXp(a, each + (i<extra?1:0)));
-      pushLog(logCls(src),`  └ 経験値 ${xp} を分配（本人 ${mine} / 周囲の味方${near.length}体に ${rest}）`);
+    /* カジリガメのようなチーム目標は、距離に関係なくチーム全員で等分する
+       （チーム合計は野生1匹ぶんのまま。1人あたりは xp / チーム人数） */
+    if(tgt.kind==='wild'&&tgt.def.teamXp){
+      const team=S.units.filter(x=>x.team===src.team);
+      const each=Math.floor(xp/team.length), extra=xp-each*team.length;
+      team.forEach((x,i)=>gainXp(x, each + (i<extra?1:0)));
+      pushLog('sc',`  └ ${tgt.name} 撃破！ ${src.team==='ally'?'味方':'敵'}チーム全員で 経験値${xp} を等分（1体あたり約${each}）`);
     }else{
-      gainXp(src,xp);
+      const near = alliesOf(src).filter(x=>x.kind==='poke'&&dist(src,x)<=XP_SHARE_RANGE);
+      if(near.length){
+        const mine = Math.round(xp*XP_SELF_RATE);
+        const rest = xp - mine;
+        const each = Math.floor(rest/near.length);
+        const extra = rest - each*near.length;   /* 端数は近い順に1ずつ配る */
+        near.sort((a,b)=>dist(src,a)-dist(src,b));
+        gainXp(src,mine);
+        near.forEach((a,i)=>gainXp(a, each + (i<extra?1:0)));
+        pushLog(logCls(src),`  └ 経験値 ${xp} を分配（本人 ${mine} / 周囲の味方${near.length}体に ${rest}）`);
+      }else{
+        gainXp(src,xp);
+      }
     }
   }
   pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
@@ -1473,6 +1485,9 @@ function execGoal(u){
   pushLog('sc',`⭐ ${mark(u)}${u.name} がシュート成功！ ${amt}点（${laneName(g)}ゴール）${over>0?` ※${over}点は超過分`:''}`);
   floatText(u.r,u.c,`GOAL +${amt}`,'sc');
   sfx('shootGoal');
+  /* シュートした点数に比例して経験値が入る */
+  const gxp=amt*XP_PER_GOAL_PT;
+  if(gxp>0){ pushLog(logCls(u),`  └ シュート${amt}点ぶんの 経験値${gxp}`); gainXp(u,gxp); }
   if(g.filled>=g.cap&&g.alive){
     g.alive=false;
     pushLog('sc',`🔥 ${g.team==='ally'?'味方':'敵'}の${laneName(g)}ゴールを破壊！`);
