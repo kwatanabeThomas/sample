@@ -463,7 +463,7 @@ details.rules b{color:#e9eefc}
           <b>■ ジャンプ台</b>：<b><span id="jtTxt">35</span>ターン目（試合の折り返し）に自陣ゴール3の隣に🛫が出現</b>します。その上に乗って「ジャンプ台」を使うと<b>マップの奥（相手ゴール1の少し手前）まで一気に飛べます</b>。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
           <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。とどめを刺したポケモンの<b>周囲3マス以内に味方がいる場合は 6：4 で分配</b>され、4のぶんを周囲の味方で等分します（周囲に誰もいなければ全部もらえます）。<br>
-          　・<b>カジリガメ（🐢）だけは例外</b>で、倒すと<b>距離に関係なくチーム全員で等分</b>されます（チーム合計は野生1匹ぶんのまま＝1体あたりは1/5）。<br>
+          　・<b>カジリガメ（🐢）だけは例外</b>で、<b>野生5匹ぶんの経験値をチーム5匹で等分</b>します。距離は関係なく、<b>全員が野生1匹を倒したのと同じ量</b>を受け取ります。<br>
           　・<b>シュートを決めると、入れた点数 × 3 の経験値</b>が入ります。レベルが上がると<b>HP・こうげき・ぼうぎょが上昇</b>します（素早さと射程は変わりません）。最大 Lv<span id="mlTxt">12</span>。レベルはアイコン左下の数字と、右パネルの⭐に表示されます。<br>
           <b>■ ユナイトわざ</b>：<b>Lv<span id="ulTxt">5</span> で解放され、1試合に1回だけ</b>使える超強力なわざです。使えるようになるとアイコンが金色に光り、右パネルのボタンが点灯します。ポケモンごとに専用のわざを持っています。<br>
           <b>■ 得点の入手</b>：野生ポケモンを倒す／相手ポケモンを倒す（相手が持っていた点＋1をもらう）。<br>
@@ -750,13 +750,18 @@ const SPR = {
   <circle cx="26" cy="39" r="2.8" fill="#e0d8c4"/><circle cx="38" cy="39" r="2.8" fill="#e0d8c4"/>
   <ellipse cx="32" cy="49" rx="7" ry="5" fill="#7a6a52" stroke="#2a2118" stroke-width="2"/>`),
  drednaw: SVG(`
-  <g stroke="#3a2a1c" stroke-width="3" stroke-linejoin="round">
-   <path d="M5 43 Q32 12 59 43Z" fill="#7a5a3a"/>
-   <path d="M5 43 Q32 55 59 43 Q32 60 5 43Z" fill="#46684a"/>
-   <path d="M32 45 Q21 45 21 53 Q21 60 32 60 Q43 60 43 53 Q43 45 32 45Z" fill="#5f8a5a"/></g>
-  <circle cx="26" cy="51" r="2.6" fill="#1f2a1c"/><circle cx="38" cy="51" r="2.6" fill="#1f2a1c"/>
-  <path d="M25 57 h14" stroke="#efe6d0" stroke-width="3" stroke-linecap="round"/>
-  <path d="M15 39 l6-10 5 9 6-11 5 10 6-8" fill="none" stroke="#3a2a1c" stroke-width="2.3" stroke-linejoin="round"/>`),
+  <g stroke="#24401f" stroke-width="3" stroke-linejoin="round">
+   <ellipse cx="27" cy="46" rx="9" ry="6.5" fill="#63a855"/>
+   <ellipse cx="49" cy="46" rx="9" ry="6.5" fill="#4e8f45"/>
+   <path d="M55 30 q10 2 9 11 q-8 1 -12 -6Z" fill="#4e8f45"/>
+   <path d="M15 40 Q35 4 57 40 Z" fill="#5f9a45"/>
+   <path d="M11 39 Q35 52 61 39 Q35 46 11 39 Z" fill="#93c46a"/></g>
+  <g fill="none" stroke="#2f5a26" stroke-width="2.4" stroke-linejoin="round">
+   <path d="M36 15 l10 8 -4 13 -13 0 -4 -13Z"/><path d="M26 23 l-8 12 M46 23 l8 12"/></g>
+  <path d="M19 30 q-14 -6 -17 7 q-2 13 10 13 q11 0 13 -10Z" fill="#8ad277"
+        stroke="#24401f" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="9" cy="33" r="3.1" fill="#16260f"/>
+  <path d="M2 42 q8 5 14 1" fill="none" stroke="#f4efe0" stroke-width="3" stroke-linecap="round"/>`),
  zapdos: SVG(`
   <g stroke="#7a5a10" stroke-width="3" stroke-linejoin="round">
    <path d="M3 26 L21 35 L5 43Z" fill="#f7d02c"/><path d="M61 26 L43 35 L59 43Z" fill="#f7d02c"/>
@@ -1312,13 +1317,14 @@ function knockOut(src,tgt){
   if(src.kind==='poke'){
     const xp = tgt.kind==='wild' ? tgt.ptsGive*XP_WILD
                                  : XP_KILL_BASE + tgt.lv*XP_KILL_PER_LV;
-    /* カジリガメのようなチーム目標は、距離に関係なくチーム全員で等分する
-       （チーム合計は野生1匹ぶんのまま。1人あたりは xp / チーム人数） */
+    /* カジリガメのようなチーム目標は、距離に関係なくチーム全員で等分する。
+       総量は「野生ポケモン × チーム人数」ぶんなので、1体あたりは野生1匹を倒したのと同じ */
     if(tgt.kind==='wild'&&tgt.def.teamXp){
       const team=S.units.filter(x=>x.team===src.team);
-      const each=Math.floor(xp/team.length), extra=xp-each*team.length;
+      const total=xp*team.length;
+      const each=Math.floor(total/team.length), extra=total-each*team.length;
       team.forEach((x,i)=>gainXp(x, each + (i<extra?1:0)));
-      pushLog('sc',`  └ ${tgt.name} 撃破！ ${src.team==='ally'?'味方':'敵'}チーム全員で 経験値${xp} を等分（1体あたり約${each}）`);
+      pushLog('sc',`  └ ${tgt.name} 撃破！ 経験値${total}（野生${team.length}匹ぶん）を ${src.team==='ally'?'味方':'敵'}チーム${team.length}体で等分（1体あたり${each}）`);
     }else{
       const near = alliesOf(src).filter(x=>x.kind==='poke'&&dist(src,x)<=XP_SHARE_RANGE);
       if(near.length){
