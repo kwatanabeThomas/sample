@@ -246,6 +246,9 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .cell.hlAtk{box-shadow:inset 0 0 0 2px #ff8a4c;cursor:pointer}
 .cell.hlHeal{box-shadow:inset 0 0 0 2px #7fd8ff;cursor:pointer}
 .cell.hlArea{box-shadow:inset 0 0 0 2px #ffe14d;cursor:pointer}
+.cell.hlJump{box-shadow:inset 0 0 0 2px #5fd6a8,inset 0 0 12px rgba(95,214,168,.45);cursor:pointer}
+.jland{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.8em;pointer-events:none;filter:drop-shadow(0 0 5px rgba(95,214,168,.9))}
 .cell.aoe::after{content:'';position:absolute;inset:0;background:rgba(255,180,60,.42);z-index:2}
 .cell.hit::after{content:'';position:absolute;inset:0;background:rgba(255,70,70,.55);z-index:2;animation:fade .5s forwards}
 @keyframes fade{to{opacity:0}}
@@ -513,7 +516,7 @@ details.rules b{color:#e9eefc}
           <b>■ 行動順</b>：<b>あなた → 敵1 → 味方2 → 敵2 → …</b> の固定順で、<b>1匹ずつ順番に決定・実行</b>します。5匹プレイでは<b>味方の番が来るたびに入力を待ちます</b>（いま操作するポケモンは黄色い枠と「▶ ◯◯ の番」で表示）。自動で動くポケモンの速度は上のセレクトで変更できます。<b>野生ポケモンは移動しません</b>。全員の行動後にまとめて反撃します。<br>
           <b>■ 行動</b>：毎ターン「移動 / こうげき / わざ1 / わざ2 / ゴール / リコール / 待機」から<b>1つだけ</b>選べます。<br>
           <b>■ リコール</b>：<b>2ターン</b>かけて<b>自陣ベース（ゴール3）の中心へ帰還し、HPが最大まで回復</b>します。進行中は<b>アイコンの周りに水色のリングゲージ</b>が出ます。<b>ダメージを受けるとキャンセル</b>（別の行動をした場合も中断）。<br>
-          <b>■ ジャンプ台</b>：<b><span id="jtTxt">35</span>ターン目（試合の折り返し）に自陣ゴール3の隣に🛫が出現</b>します。その上に乗って「ジャンプ台」を使うと<b>マップの奥（相手ゴール1の少し手前）まで一気に飛べます</b>。<br>
+          <b>■ ジャンプ台</b>：<b><span id="jtTxt">35</span>ターン目（試合の折り返し）に自陣ゴール3の隣に🛫が出現</b>します。その上に乗って「ジャンプ台」を使うと、<b>上ルート・中央・下ルートにそれぞれ「手前 / 奥」の合計6か所ある着地点から1つを選んで飛べます</b>（ボタンを押すとマップに🛫が出るので、飛びたいマスをクリック）。一番奥の着地点でも<b>マップ中央より手前</b>までで、それより奥へは飛べません。誰かが立っている着地点は選べません。<br>
           <b>■ わざ</b>：使うとクールタイム（CT）が発生し、その間は再使用できません。<br>
           <b>■ レベルと経験値</b>：<b>野生ポケモンや相手ポケモンにとどめを刺すと経験値</b>が入ります（相手の<b>レベルが高いほど多く</b>もらえます）。とどめを刺したポケモンの<b>周囲3マス以内に味方がいる場合は 6：4 で分配</b>され、4のぶんを周囲の味方で等分します（周囲に誰もいなければ全部もらえます）。<br>
           　・<b>カジリガメ（🐢）だけは例外</b>で、<b>野生5匹ぶんの経験値をチーム5匹で等分</b>します。距離は関係なく、<b>全員が野生1匹を倒したのと同じ量</b>を受け取ります。<br>
@@ -873,8 +876,19 @@ const START = { ally:START_A, enemy:START_A.map(p=>({r:p.r,c:W-1-p.c})) };
 /* ジャンプ台：試合が折り返したら自陣ゴール3の隣に出現し、乗って使うとマップの奥まで飛べる */
 const JUMP_TURN = Math.floor(TURN_LIMIT/2);
 const JUMP_PAD = {
-  ally :{ pad:{r:8,c:4},     land:{r:8,c:19}     },
-  enemy:{ pad:{r:8,c:W-1-4}, land:{r:8,c:W-1-19} },
+  ally :{ pad:{r:8,c:4}     },
+  enemy:{ pad:{r:8,c:W-1-4} },
+};
+/* 着地点は6か所から選ぶ：上ルート・中央・下ルートに「手前 / 奥」が1つずつ。
+   一番奥でも列16で、マップ中央の列(17)より奥へは飛べない */
+const JUMP_LAND_A = [
+  {r:2, c:10,name:'上ルート 手前'},{r:2, c:16,name:'上ルート 奥'},
+  {r:8, c:10,name:'中央 手前'},   {r:8, c:16,name:'中央 奥'},
+  {r:14,c:10,name:'下ルート 手前'},{r:14,c:16,name:'下ルート 奥'},
+];
+const JUMP_LAND = {
+  ally : JUMP_LAND_A,
+  enemy: JUMP_LAND_A.map(p=>({r:p.r,c:W-1-p.c,name:p.name})),
 };
 
 /* =========================================================
@@ -1212,7 +1226,12 @@ const jumpOpen = ()=>!!S&&S.turn>=JUMP_TURN;
 /* 自陣のジャンプ台に乗っていて、かつ解放済みなら使える */
 function canJump(u){
   if(!jumpOpen()||u.kind!=='poke'||!isAlive(u)||u.stun>0) return false;
-  const pd=JUMP_PAD[u.team]; return !!pd&&u.r===pd.pad.r&&u.c===pd.pad.c;
+  const pd=JUMP_PAD[u.team];
+  return !!pd&&u.r===pd.pad.r&&u.c===pd.pad.c&&jumpSpots(u).length>0;
+}
+/* 今すぐ降りられる着地点だけを返す（誰かが立っているマスは選べない） */
+function jumpSpots(u){
+  return (JUMP_LAND[u.team]||[]).filter(p=>passable(p.r,p.c)&&!unitAt(p.r,p.c));
 }
 
 /* =========================================================
@@ -1440,9 +1459,13 @@ function execAction(u,act){
   if(act.type==='recall'){ execRecall(u,res); res.acted=true; return res; }
   if(act.type==='jump'){
     if(!canJump(u)){ pushLog('w',`${mark(u)}${u.name} はジャンプ台を使えなかった`); return res; }
-    const pd=JUMP_PAD[u.team], p=freeNear(pd.land);
+    const spots=jumpSpots(u);
+    /* 指定された着地点が空いていなければ、残っている候補にまわす */
+    const want=act.to&&spots.find(p=>p.r===act.to.r&&p.c===act.to.c);
+    const p=want||spots[0];
+    if(!p){ pushLog('w',`${mark(u)}${u.name} は着地できる場所がなかった`); return res; }
     u.r=p.r; u.c=p.c;
-    pushLog('sc',`🛫 ${mark(u)}${u.name} がジャンプ台で (${res.from.r},${res.from.c}) → (${p.r},${p.c}) へ飛んだ！`);
+    pushLog('sc',`🛫 ${mark(u)}${u.name} がジャンプ台で ${p.name} (${p.r},${p.c}) へ飛んだ！`);
     floatText(p.r,p.c,'JUMP!','rc');
     sfx('jump');
     res.acted=true; res.warped=true;
@@ -1680,13 +1703,25 @@ function moveAct(u,dests){
   if(e.r===u.r&&e.c===u.c) return null;
   return {type:'move',to:e};
 }
+/* AIの着地点えらび：狙っているゴール（無ければ自分のレーン方向）にいちばん近い候補 */
+function aiJumpSpot(u){
+  const spots=jumpSpots(u);
+  if(!spots.length) return null;
+  const goals=openGoalsFor(u.team);
+  const aim = goals.find(g=>g.lane===u.lane) || goals[0];
+  const laneRow = u.lane==='top' ? 2 : (u.lane==='bot' ? 14 : 8);
+  const ref = aim ? {r:aim.r,c:aim.c} : {r:laneRow, c:u.team==='ally'?W-1:0};
+  /* 自分のレーンの着地点を優先し、その中で狙うゴールに近いほうを選ぶ */
+  return spots.slice().sort((a,b)=>
+    (Math.abs(a.r-laneRow)-Math.abs(b.r-laneRow)) || (dist(a,ref)-dist(b,ref)))[0];
+}
 function aiAction(u){
   if(u.stun>0) return {type:'none'};
   const foes=foesOf(u), pokeFoes=foes.filter(x=>x.kind==='poke');
   const here=goalUnderFoot(u);
   if(u.charge>0&&here&&u.pts>0) return {type:'goal'};
   if(u.recall>0) return {type:'recall'};   /* リコール継続 */
-  if(canJump(u)&&u.hp>u.maxHp*0.5) return {type:'jump'};   /* ジャンプ台で一気に前進 */
+  if(canJump(u)&&u.hp>u.maxHp*0.5) return {type:'jump',to:aiJumpSpot(u)};   /* ジャンプ台で一気に前進 */
 
   if(u.hp<u.maxHp*0.3&&pokeFoes.some(x=>dist(u,x)<=5)){
     const spots=healSpots(u.team);
@@ -1908,7 +1943,7 @@ function clearFx(){ fxAttacker=null; fxShake=[]; hitCells=[]; }
 let SFX_ON = true;
 /* 効果音とBGMで1つの AudioContext を共有する。バスを分けて音量を独立させる */
 const AUDIO = (()=>{
-  let ctx=null, master=null, sfxBus=null, bgmBus=null;
+  let ctx=null, master=null, sfxBus=null, bgmBus=null, lastRevive=-1e9;
   return {
     init(){
       if(!ctx){
@@ -1921,6 +1956,15 @@ const AUDIO = (()=>{
       }
       if(ctx.state==='suspended') ctx.resume();
       return ctx;
+    },
+    /* 端末のスリープ・タブの休止・音声出力の切替などでブラウザに止められた
+       AudioContext を鳴らし直す。呼びすぎないよう1秒に1回までにしておく */
+    revive(){
+      if(!ctx||ctx.state==='running') return;
+      const t=(typeof performance!=='undefined'?performance.now():0);
+      if(t-lastRevive<1000) return;
+      lastRevive=t;
+      try{ ctx.resume(); }catch(e){}
     },
     get ctx(){ return ctx; },
     get sfxBus(){ return sfxBus; },
@@ -1998,6 +2042,8 @@ const SFX = (()=>{
 const BGM = (()=>{
   const STEPS = 128;                 /* 8小節 × 16分音符16 */
   let bpm = 134, timer=null, step=0, next=0, playing=false;
+  /* 先読み時間。描画が重いときやタブ切替でタイマーが遅れても音が切れないよう長めに取る */
+  const LOOKAHEAD = 0.6;
   const stepDur = ()=>(60/bpm)/4;
   const F = n => 440*Math.pow(2,(n-69)/12);
 
@@ -2083,8 +2129,9 @@ const BGM = (()=>{
 
   function tick(){
     const c=AUDIO.ctx; if(!c||!playing) return;
+    if(c.state!=='running'){ AUDIO.revive(); return; }       /* 止められていたら鳴らし直す */
     if(next < c.currentTime) next = c.currentTime + 0.05;   /* タブ復帰時などの巻き戻し防止 */
-    while(next < c.currentTime + 0.15){
+    while(next < c.currentTime + LOOKAHEAD){
       playStep(step,next);
       next += stepDur();
       step = (step+1)%STEPS;
@@ -2313,6 +2360,10 @@ function validTargets(u,s){
     foesOf(u).forEach(t=>{ if(dist(u,t)<=u.rng) out.set(key(t.r,t.c),{r:t.r,c:t.c,target:t}); });
     return out;
   }
+  if(s.type==='jump'){
+    if(canJump(u)) jumpSpots(u).forEach(p=>out.set(key(p.r,p.c),{r:p.r,c:p.c,name:p.name}));
+    return out;
+  }
   if(s.type!=='skill') return out;
   const m=moveAt(u,s.idx);
   if(!m||!skillReady(u,s.idx)) return out;
@@ -2333,6 +2384,7 @@ function validTargets(u,s){
 function hlClass(u,s,v){
   if(s.type==='move') return dist(u,v)>u.spd ? 'hlMoveFast' : 'hlMove';
   if(s.type==='attack') return 'hlAtk';
+  if(s.type==='jump') return 'hlJump';
   const m=moveAt(u,s.idx);
   if(m.kind==='heal'||m.kind==='shield') return 'hlHeal';
   if(m.kind==='aoe') return 'hlArea';
@@ -2345,6 +2397,7 @@ function onCellClick(r,c){
   if(!v) return;
   let act=null;
   if(sel.type==='move') act={type:'move',to:{r,c}};
+  else if(sel.type==='jump') act={type:'jump',to:{r,c}};
   else if(sel.type==='attack') act={type:'attack',target:v.target};
   else{
     const m=moveAt(u,sel.idx);
@@ -2360,7 +2413,7 @@ function pickAct(s){
   if(!isAlive(u)||u.stun>0) return;
   if(s.type==='goal'){ submitAction({type:'goal'}); return; }
   if(s.type==='recall'){ submitAction({type:'recall'}); return; }
-  if(s.type==='jump'){ submitAction({type:'jump'}); return; }
+  if(s.type==='jump'&&!canJump(u)) return;
   if(s.type==='wait'){ submitAction({type:'wait'}); return; }
   if(s.type==='skill'){
     if(!skillReady(u,s.idx)) return;
@@ -2495,6 +2548,7 @@ function render(){
             (g.alive&&!open?'<i class="lk" title="まだシュートできません">🔒</i>':'')+
             `<b>${g.alive?`${Math.max(0,g.cap-g.filled)}<em>/${g.cap}</em>`:'×'}</b></div>`;
     }
+    if(v&&sel&&sel.type==='jump') html+=`<div class="jland" title="${v.name}">🛫</div>`;
     if(jp&&jp.r===r&&jp.c===c) html+='<div class="jpad" title="ジャンプ台：乗って「ジャンプ」で前線へ飛べる">🛫</div>';
     if(jpE&&jpE.r===r&&jpE.c===c) html+='<div class="jpad e" title="相手のジャンプ台">🛫</div>';
     const a=occupied.get(k);
@@ -2593,7 +2647,7 @@ function render(){
   }
   const jOk=canJump(u);
   add('ジャンプ台',
-      jOk?'マップ奥まで一気に飛ぶ'
+      jOk?'6か所の着地点から選んで前線へ飛ぶ'
         :(jumpOpen()?'自陣ジャンプ台の上でのみ使えます':`${JUMP_TURN}ターン目に自陣ゴール3の隣に出現します`),
       {type:'jump'},!jOk,'🛫',' wide jump');
   add(u.recall>0?`リコール（継続 ${u.recall}/${RECALL_TURNS}）`:'リコール',
@@ -2608,9 +2662,10 @@ function render(){
   else if(!isAlive(u)) hint.textContent='気絶中です。自動でターンが進みます。';
   else if(u.stun>0) hint.textContent='行動不能です。自動でターンが進みます。';
   else if(sel){
-    const t=sel.type==='move'?'移動先（水色に光るマスは加速エリア経由）':(sel.type==='attack'?'攻撃する相手':
+    const t=sel.type==='move'?'移動先（水色に光るマスは加速エリア経由）':
+      (sel.type==='jump'?'着地点（緑ワクの6か所から1つ。マップ中央より奥へは飛べません）':(sel.type==='attack'?'攻撃する相手':
       (moveAt(u,sel.idx).kind==='aoe'?'着弾させる地点':
-       moveAt(u,sel.idx).kind==='heal'?'回復する味方':'わざの対象'));
+       moveAt(u,sel.idx).kind==='heal'?'回復する味方':'わざの対象')));
     hint.textContent=`▶ マップ上で${t}をクリック（もう一度ボタンで解除）`;
   }else hint.textContent=`${S.mode===5?`【${u.name}】`:''}あなたの番です（行動順 ${u.ord} 番目`+
       `${S.mode===5?` / 味方${S.order.filter(x=>isPlayerUnit(x)&&isAlive(x)&&S.order.indexOf(x)>S.order.indexOf(u)).length}体があとに控えています`:''}）。行動を1つ選んでください。`;
@@ -2719,6 +2774,17 @@ document.getElementById('sfxBtn').addEventListener('click',e=>{
   e.currentTarget.classList.toggle('off',!SFX_WANT);
   if(SFX_WANT) sfx('select');
 });
+/* タブから戻ってきた・ウィンドウを触った、などのタイミングで音声を復帰させる。
+   ブラウザは裏に回ったページの AudioContext を止めることがあり、放っておくと
+   BGMだけ鳴らないままになるため */
+function reviveAudio(){
+  AUDIO.revive();
+  if(BGM_ON&&S&&!S.over&&!BGM.playing) BGM.start();
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) reviveAudio(); });
+window.addEventListener('focus',reviveAudio);
+window.addEventListener('pointerdown',reviveAudio,true);
+window.addEventListener('keydown',reviveAudio,true);
 window.addEventListener('resize',fitMap);
 buildPicks(); fitMap();
 </script>
