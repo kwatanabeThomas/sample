@@ -45,11 +45,16 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .tmid .t{font-size:.68rem;color:var(--sub);letter-spacing:.1em}
 .tmid .v{font-size:1.2rem;font-weight:700}
 .tmid .v small{font-size:.7rem;color:var(--sub);font-weight:400}
-.tmid .ctlrow{display:flex;gap:4px;justify-content:center;align-items:stretch;margin-top:5px}
+.tmid .ctlrow{display:flex;gap:4px;justify-content:center;align-items:stretch;margin-top:5px;flex-wrap:wrap}
 .tmid select{font-size:.66rem;background:#0e1630;border:1px solid var(--line);border-radius:6px;padding:2px 4px}
 .sfxbtn{font-size:.8rem;background:#0e1630;border:1px solid var(--line);border-radius:6px;padding:1px 6px;line-height:1}
 .sfxbtn:hover{border-color:#5c74b8}
 .sfxbtn.off{opacity:.4}
+/* 手動／おまかせ の切り替え */
+.autobtn{font-size:.72rem;font-weight:800;letter-spacing:.02em;white-space:nowrap;line-height:1.5;
+  background:#10281c;border:1px solid #3d7a56;color:#bff0d0;border-radius:6px;padding:1px 9px}
+.autobtn:hover{border-color:#5fc78c}
+.autobtn.auto{background:#2a2044;border-color:#8a6bd8;color:#e2cfff}
 
 /* ---------- turn order ---------- */
 .order{display:flex;align-items:center;gap:5px;margin-bottom:8px;background:linear-gradient(180deg,#141c3c,#0f1630);
@@ -77,6 +82,8 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .left{flex:1;min-width:0;max-width:100%}
 .right{width:330px;flex:none;display:flex;flex-direction:column;gap:10px}
 @media(max-width:1120px){.main{flex-direction:column}.right{width:100%}}
+/* 狭い画面ではヘッダーのボタン列を折り返して、左右のゴール表示と重ならないようにする */
+@media(max-width:560px){.tmid{max-width:150px}.tmid .ctlrow{gap:3px}}
 
 /* ---------- map ---------- */
 #mapWrap{background:linear-gradient(180deg,#0f1630,#0a1022);border:1px solid var(--line);border-radius:12px;
@@ -480,6 +487,7 @@ details.rules b{color:#e9eefc}
           <option value="150">速度: はやい</option>
           <option value="30">速度: 最速(演出なし)</option>
         </select>
+        <button id="autoBtn" class="autobtn" title="あなたのポケモンを自分で操作するか、AIにまかせるかを切り替えます">🕹 手動</button>
         <button id="sfxBtn" class="sfxbtn" title="効果音のON/OFF">🔊</button>
         <button id="bgmBtn" class="sfxbtn" title="BGMのON/OFF">🎵</button>
       </div>
@@ -531,6 +539,7 @@ details.rules b{color:#e9eefc}
           <b>■ リザルト画面</b>には各ポケモンの<b>到達レベル・獲得経験値・ユナイトわざの未使用</b>も表示されます。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
           <b>■ 中央のカジリガメは高得点。<span id="ztTxt">50</span>ターン目にサンダーが中央に出現します。</b>サンダーを倒すと<b>倒したチームの全員が <span id="zpTxt">25</span>点ずつ得点を持ち、さらに全員が大量の経験値</b>を得られます（バッジの「◆25全」が目印）。<br>
+          <b>■ 手動 / おまかせ</b>：画面上部の「🕹 手動」ボタンで、あなたが操作するポケモンをAIにまかせる「🤖 おまかせ」に切り替えられます。1匹プレイでも5匹プレイでも共通で、いつでも押せます（自分の番の途中で押した場合は、その場でAIが行動を決めてターンが進みます）。<br>
           <b>■ わざのエフェクト</b>：単体わざは弾が飛び、範囲わざは衝撃波、突進わざは斬撃、回復はきらめき、シールドは展開エフェクトが出ます。ユナイトわざは画面フラッシュとわざ名バナーで演出されます。
         </div>
       </details>
@@ -2109,7 +2118,17 @@ function sfx(name){
 const isPlayerUnit = u => u.team==='ally' && (S.mode===5 || u.isPlayer);
 let awaitingInput=false, inputResolve=null;
 let AUTOPLAY=false;              /* true にすると操作ユニットもAIが動かす（自動検証用） */
+let autoMe=false;                /* 「おまかせ」ボタン。操作ユニットを他のポケモンと同じくAIが動かす */
 const waitInput = ()=>new Promise(r=>{ inputResolve=r; });
+/* 手動 ⇄ おまかせ の切り替え。1匹モードでも5匹モードでも同じボタンで効く */
+function setAutoMe(on){
+  autoMe=!!on;
+  const b=document.getElementById('autoBtn');
+  if(b){ b.textContent=autoMe?'🤖 おまかせ':'🕹 手動'; b.classList.toggle('auto',autoMe); }
+  /* 入力待ちの最中に切り替えた場合は、その場でAIに引き継いでターンを止めない */
+  if(autoMe&&awaitingInput&&curActor) submitAction(aiAction(curActor));
+  else if(S) render();
+}
 /* 画面からの行動決定を受け取ってターンを再開する */
 function submitAction(act){
   if(!awaitingInput||!inputResolve) return;
@@ -2128,9 +2147,9 @@ async function runTurn(){
     if(!isAlive(u)) continue;
 
     let act;
-    if(isPlayerUnit(u)&&!AUTOPLAY){
-      ctrlUnit=u;
-      if(u.stun>0){                       /* 行動不能なら入力を待たずに飛ばす */
+    if(isPlayerUnit(u)) ctrlUnit=u;   /* おまかせ中も右パネルは行動中の味方を映す */
+    if(isPlayerUnit(u)&&!AUTOPLAY&&!autoMe){
+      if(u.stun>0){                     /* 行動不能なら入力を待たずに飛ばす */
         act={type:'none'}; render();
         if(fxOn()) await sleep(SPEED*0.4);
       }else{
@@ -2422,7 +2441,7 @@ function render(){
   document.getElementById('phaseTxt').textContent =
     S.over?'試合終了'
     :(awaitingInput?`▶ ${u.name} の番`
-      :(running?(curActor?`${curActor.name} 行動中`:'解決中'):'準備中'));
+      :(running?(curActor?`${curActor.name} 行動中${autoMe&&isPlayerUnit(curActor)?'（おまかせ）':''}`:'解決中'):'準備中'));
   const pip=(team,open)=>S.goals.filter(g=>g.team===team).sort((a,b)=>a.tier-b.tier)
     .map(g=>`<span class="gpip ${!g.alive?'dead':(open.includes(g.gid)?'open':'')}">${laneName(g)}${g.tier} ${g.alive?`${Math.max(0,g.cap-g.filled)}/${g.cap}`:'×'}</span>`).join('');
   document.getElementById('gA').innerHTML=pip('ally',openA);
@@ -2585,7 +2604,7 @@ function render(){
 
   const hint=document.getElementById('hint');
   if(S.over) hint.textContent='';
-  else if(!awaitingInput) hint.textContent=running?'自動行動中…':'…';
+  else if(!awaitingInput) hint.textContent=running?(autoMe?'おまかせ中…（「🤖 おまかせ」を押すと手動に戻せます）':'自動行動中…'):'…';
   else if(!isAlive(u)) hint.textContent='気絶中です。自動でターンが進みます。';
   else if(u.stun>0) hint.textContent='行動不能です。自動でターンが進みます。';
   else if(sel){
@@ -2687,6 +2706,7 @@ document.getElementById('ztTxt').textContent=ZAPDOS_TURN;
 document.getElementById('zpTxt').textContent=WILD_DEFS.zapdos.pts;
 document.getElementById('ulTxt').textContent=UNITE_LV;
 document.getElementById('spdSel').addEventListener('change',e=>{ SPEED=+e.target.value; });
+document.getElementById('autoBtn').addEventListener('click',()=>{ sfx('select'); setAutoMe(!autoMe); });
 document.getElementById('bgmBtn').addEventListener('click',e=>{
   BGM_ON=!BGM_ON;
   e.currentTarget.textContent=BGM_ON?'🎵':'🎜';
