@@ -205,6 +205,8 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
   font-size:calc(var(--cs)*.3);font-weight:800;border-radius:99px;padding:0 3px;min-width:calc(var(--cs)*.38);
   text-align:center;z-index:12;box-shadow:0 1px 3px #000d,0 0 0 1.5px rgba(6,10,22,.85)}
 /* 野生ポケモンを倒したときに拾える点数（枠だけ金色＝所持点バッジと区別） */
+.wpt.team{background:#3a2a08;border-color:#ffd76b;color:#ffe9a8;box-shadow:0 0 8px rgba(255,215,107,.6)}
+.wpt em{font-style:normal;font-size:.82em;margin-left:1px}
 .wpt{position:absolute;bottom:-5px;right:-4px;z-index:5;background:#2a2410;border:1px solid var(--wild);
   color:#ffd97a;border-radius:99px;font-size:calc(var(--cs)*.27);font-weight:800;padding:0 3px;line-height:1.3;
   box-shadow:0 1px 3px #000a}
@@ -240,6 +242,49 @@ h1 .tag{font-size:.62rem;background:linear-gradient(90deg,var(--ally),var(--enem
 .cell.aoe::after{content:'';position:absolute;inset:0;background:rgba(255,180,60,.42);z-index:2}
 .cell.hit::after{content:'';position:absolute;inset:0;background:rgba(255,70,70,.55);z-index:2;animation:fade .5s forwards}
 @keyframes fade{to{opacity:0}}
+
+/* ---------- わざエフェクト ---------- */
+.fxring{position:absolute;z-index:25;border-radius:50%;border:3px solid;pointer-events:none;
+  animation:fxringA .55s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes fxringA{0%{transform:translate(-50%,-50%) scale(.12);opacity:1}
+  70%{opacity:.75}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.fxburst{position:absolute;z-index:26;border-radius:50%;pointer-events:none;
+  animation:fxburstA .42s ease-out forwards}
+@keyframes fxburstA{0%{transform:translate(-50%,-50%) scale(.15);opacity:1}
+  55%{opacity:.9}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
+.fxshot{position:absolute;z-index:27;border-radius:50%;pointer-events:none;will-change:transform}
+.fxslash{position:absolute;z-index:27;pointer-events:none;
+  animation:fxslashA .34s ease-out forwards}
+.fxslash i{position:absolute;left:0;top:50%;height:5px;width:100%;border-radius:3px;
+  background:linear-gradient(90deg,transparent,#fff,transparent)}
+.fxslash i:nth-child(1){transform:translateY(-50%) rotate(38deg)}
+.fxslash i:nth-child(2){transform:translateY(-50%) rotate(-38deg)}
+@keyframes fxslashA{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}
+  25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}}
+.fxspark{position:absolute;z-index:27;pointer-events:none;border-radius:50%;
+  animation:fxsparkA .85s ease-out forwards}
+@keyframes fxsparkA{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+  20%{opacity:1}100%{opacity:0;transform:translate(-50%,-190%) scale(.7)}}
+.fxshield{position:absolute;z-index:26;border-radius:50%;pointer-events:none;
+  border:3px solid #9fe0ff;background:radial-gradient(circle,rgba(140,215,255,.34),transparent 68%);
+  animation:fxshieldA .6s ease-out forwards}
+@keyframes fxshieldA{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}
+  30%{transform:translate(-50%,-50%) scale(1.06);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.fxflash{position:absolute;inset:0;z-index:28;pointer-events:none;
+  animation:fxflashA .6s ease-out forwards}
+@keyframes fxflashA{0%{opacity:0}14%{opacity:.8}100%{opacity:0}}
+.fxbanner{position:absolute;left:50%;top:34%;z-index:31;pointer-events:none;white-space:nowrap;
+  font-weight:900;padding:6px 20px;border-radius:99px;color:#2a1a00;
+  background:linear-gradient(90deg,#ffd76b,#ff9ad2,#8fd0ff);
+  text-shadow:0 1px 0 rgba(255,255,255,.55);box-shadow:0 6px 24px rgba(0,0,0,.65);
+  animation:fxbannerA 1.5s ease-out forwards}
+@keyframes fxbannerA{0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
+  14%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+  24%{transform:translate(-50%,-50%) scale(1)}
+  78%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
 
 /* ---------- fx layer ---------- */
 .fxtok{position:absolute;left:0;top:0;z-index:24;display:flex;align-items:center;justify-content:center;
@@ -485,7 +530,8 @@ details.rules b{color:#e9eefc}
           <b>■ 音</b>：ヘッダーの<b>🔊で効果音、🎵でBGM</b>をそれぞれON/OFFできます。BGMは残り15ターンでテンポが上がります。<br>
           <b>■ リザルト画面</b>には各ポケモンの<b>到達レベル・獲得経験値・ユナイトわざの未使用</b>も表示されます。<br>
           <b>■ 勝敗</b>：制限ターン終了時に得点が多いチームの勝ち。相手ゴールを5個すべて壊すと即勝利。<br>
-          <b>■ 中央のカジリガメは高得点。52ターン目にサンダーが中央に出現します。</b>
+          <b>■ 中央のカジリガメは高得点。<span id="ztTxt">50</span>ターン目にサンダーが中央に出現します。</b>サンダーを倒すと<b>倒したチームの全員が <span id="zpTxt">25</span>点ずつ得点を持ち、さらに全員が大量の経験値</b>を得られます（バッジの「◆25全」が目印）。<br>
+          <b>■ わざのエフェクト</b>：単体わざは弾が飛び、範囲わざは衝撃波、突進わざは斬撃、回復はきらめき、シールドは展開エフェクトが出ます。ユナイトわざは画面フラッシュとわざ名バナーで演出されます。
         </div>
       </details>
     </div>
@@ -798,7 +844,7 @@ const MAP = (()=>{
 })();
 
 const TURN_LIMIT  = 70;
-const ZAPDOS_TURN = 52;
+const ZAPDOS_TURN = 50;
 const DMG_K = 150;
 const GOAL_HEAL = 0.10, BASE_HEAL = 0.20;
 const RECALL_TURNS = 2;   /* リコール完了までのターン数 */
@@ -933,7 +979,8 @@ const WILD_DEFS = {
   ludi:    {name:'ルンパッパ', hp:150, atk:40, def:20, rng:1, pts:3,  resp:12},
   bouff:   {name:'バッフロン', hp:180, atk:45, def:25, rng:1, pts:4,  resp:12},
   drednaw: {name:'カジリガメ', hp:320, atk:60, def:35, rng:1, pts:8,  resp:20, teamXp:true},
-  zapdos:  {name:'サンダー',  hp:700, atk:80, def:40, rng:2, pts:25, resp:99},
+  /* teamPts/teamXp: 倒したチーム全員が ptsGive ぶんの得点と経験値を受け取る */
+  zapdos:  {name:'サンダー',  hp:700, atk:80, def:40, rng:2, pts:25, resp:99, teamPts:true, teamXp:true},
 };
 const WILD_SPAWNS = [
   {t:'otachi',r:2,c:7},{t:'otachi',r:2,c:27},{t:'otachi',r:14,c:7},{t:'otachi',r:14,c:27},
@@ -1301,13 +1348,22 @@ function applyDamage(src,tgt,power,label){
 }
 function knockOut(src,tgt){
   tgt.hp=0; tgt.shield=0; tgt.charge=0; tgt.chargeNeed=0; tgt.recall=0;
+  const teamPts = tgt.kind==='wild' && !!tgt.def.teamPts;
   let gain=0;
   if(tgt.kind==='wild') gain=tgt.ptsGive;
   else { gain=tgt.pts+1; tgt.pts=0; }
   sfx('ko');
   if(tgt.kind==='poke') tgt.st.deaths++;
   if(src.kind==='poke'&&tgt.kind==='poke') src.st.kills++;
-  if(src.kind==='poke'&&gain>0){
+  if(src.kind==='poke'&&teamPts&&gain>0){
+    /* サンダーのような大型目標は、チーム全員が同額の得点を持つ */
+    const team=S.units.filter(x=>x.team===src.team);
+    team.forEach(x=>{ x.pts+=gain; x.st.picked+=gain;
+      if(isAlive(x)) floatText(x.r,x.c,'+'+gain+'点','pt'); });
+    pushLog('sc',`  └ ${src.team==='ally'?'味方':'敵'}チーム全員が ${gain}点 を獲得！（合計${gain*team.length}点）`);
+    fxRing(tgt.r,tgt.c,5,'#ffd76b'); fxBurst(tgt.r,tgt.c,'#fff0a0',3.4);
+    sfx('point');
+  }else if(src.kind==='poke'&&gain>0){
     src.pts+=gain; src.st.picked+=gain;
     floatText(src.r,src.c,'+'+gain+'点','pt');
     sfx('point');
@@ -1341,7 +1397,7 @@ function knockOut(src,tgt){
       }
     }
   }
-  pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
+  pushLog('ko',`💥 ${mark(tgt)}${tgt.name} がダウン！${src.kind==='poke'&&!teamPts?` ${mark(src)}${src.name} が ${gain}点 獲得`:''}`);
   tgt.down = tgt.kind==='wild' ? tgt.resp : deathTurns(S.turn);
 }
 const mark=u=>u.team==='ally'?'🔵':(u.team==='enemy'?'🔴':'⚪');
@@ -1387,18 +1443,26 @@ function execAction(u,act){
   if(act.type==='attack'){
     const t=act.target;
     if(!t||!isAlive(t)||dist(u,t)>u.rng){ pushLog('w',`${mark(u)}${u.name} のこうげきは届かなかった`); return res; }
-    sfx('attack'); applyDamage(u,t,0,'こうげき'); res.acted=true; return res;
+    sfx('attack');
+    if(dist(u,t)>1) fxShot(u,t,teamColor(u));
+    fxBurst(t.r,t.c,teamColor(u),1.05);
+    applyDamage(u,t,0,'こうげき'); res.acted=true; return res;
   }
   if(act.type==='skill'){
     const m=moveAt(u,act.idx);
     if(!m||!skillReady(u,act.idx)) return res;
-    if(act.idx===2){ pushLog('sc',`✨ ${mark(u)}${u.name} の ユナイトわざ「${m.name}」！`); sfx('unite'); }
+    const ULT=act.idx===2;
+    const FX = ULT ? '#ffd76b'
+      : (m.kind==='heal'?'#8dffb8':(m.kind==='shield'?'#9fe0ff':
+        (m.kind==='aoe'?'#ffb247':(m.kind==='dash'?'#fff0a0':teamColor(u)))));
+    if(ULT){ pushLog('sc',`✨ ${mark(u)}${u.name} の ユナイトわざ「${m.name}」！`); sfx('unite'); fxUnite(u,m); }
     let used=false;
 
     if(m.kind==='single'){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
         sfx('skSingle');
+        fxShot(u,t,FX); fxBurst(t.r,t.c,FX,ULT?2.2:1.5);
         applyDamage(u,t,m.power,m.name);
         if(m.stun&&isAlive(t)){ t.stunNew=1; pushLog('w',`  └ ${t.name} は次のターン行動できない！`);
           floatText(t.r,t.c,'行動不能','ko'); }
@@ -1408,6 +1472,7 @@ function execAction(u,act){
       const p=act.at;
       if(p&&dist(u,p)<=m.range){
         sfx('skAoe');
+        fxRing(p.r,p.c,m.radius,FX); fxBurst(p.r,p.c,FX,ULT?2.4:1.7);
         pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！`);
         const list=foesOf(u).filter(x=>dist(x,p)<=m.radius);
         if(!list.length) pushLog('w','  └ だが誰にも当たらなかった…');
@@ -1423,6 +1488,7 @@ function execAction(u,act){
       const t=act.target;
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
         sfx('skDash');
+        fxSlash(t.r,t.c,FX); fxBurst(t.r,t.c,FX,ULT?2:1.35);
         const path=pathTo(u,{r:t.r,c:t.c},m.dash*COST_NORMAL);
         if(path.length){ const e=path[path.length-1]; u.r=e.r; u.c=e.c; res.path=path; }
         if(dist(u,t)<=Math.max(1,u.rng)) applyDamage(u,t,m.power,m.name);
@@ -1434,12 +1500,14 @@ function execAction(u,act){
       if(t&&isAlive(t)&&dist(u,t)<=m.range){
         const list = m.radius ? S.units.filter(x=>isAlive(x)&&x.team===u.team&&dist(x,t)<=m.radius) : [t];
         sfx('skHeal');
+        if(m.radius) fxRing(t.r,t.c,m.radius,FX);
         pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！`);
         list.forEach(x=>{ const b=x.hp; x.hp=Math.min(x.maxHp,x.hp+m.heal);
           u.st.heal+=x.hp-b;
           if(x.hp>b) floatText(x.r,x.c,'+'+(x.hp-b),'heal');
+          fxSparkle(x.r,x.c,FX);
           pushLog(logCls(u),`  └ ${x.name} を ${x.hp-b} 回復`);
-          if(m.shield){ x.shield=Math.max(x.shield,m.shield); x.shieldT=3; u.st.shield+=m.shield; } });
+          if(m.shield){ x.shield=Math.max(x.shield,m.shield); x.shieldT=3; u.st.shield+=m.shield; fxShield(x.r,x.c); } });
         if(m.shield) pushLog(logCls(u),`  └ さらに 🛡${m.shield} のシールド`);
         used=true;
       }
@@ -1447,7 +1515,7 @@ function execAction(u,act){
       const list=[...new Set([u,...S.units.filter(x=>isAlive(x)&&x.team===u.team&&dist(x,u)<=(m.range||0))])];
       sfx('skShield');
       list.forEach(x=>{ x.shield=Math.max(x.shield,m.shield); x.shieldT=3;
-        u.st.shield+=m.shield; floatText(x.r,x.c,'🛡','heal'); });
+        u.st.shield+=m.shield; fxShield(x.r,x.c); floatText(x.r,x.c,'🛡','heal'); });
       pushLog(logCls(u),`${mark(u)}${u.name} の ${m.name}！ ${list.length}体にシールド`);
       used=true;
     }
@@ -1490,6 +1558,7 @@ function execGoal(u){
   u.charge=0; u.chargeNeed=0; u.chargeGid=-1;
   pushLog('sc',`⭐ ${mark(u)}${u.name} がシュート成功！ ${amt}点（${laneName(g)}ゴール）${over>0?` ※${over}点は超過分`:''}`);
   floatText(u.r,u.c,`GOAL +${amt}`,'sc');
+  fxRing(u.r,u.c,2,'#8dffb8'); fxBurst(u.r,u.c,'#8dffb8',1.8);
   sfx('shootGoal');
   /* シュートした点数に比例して経験値が入る */
   const gxp=amt*XP_PER_GOAL_PT;
@@ -1498,6 +1567,7 @@ function execGoal(u){
     g.alive=false;
     pushLog('sc',`🔥 ${g.team==='ally'?'味方':'敵'}の${laneName(g)}ゴールを破壊！`);
     sfx('goalBreak');
+    fxRing(g.r,g.c,4,'#ffd76b'); fxBurst(g.r,g.c,'#ff9a5a',3);
     rebuildAccel();   /* 壊れたゴールにつながる加速エリアを消す */
   }
 }
@@ -1732,6 +1802,92 @@ async function animateMove(u,from,path){
   }
   tok.remove();
   movingUid=null;
+}
+/* ---------- わざエフェクト ---------- */
+const teamColor = u => u.team==='ally' ? '#8fd0ff' : (u.team==='enemy' ? '#ffb0a0' : '#ffe6a0');
+function fxEl_(cls,r,c,size,style){
+  const cs=CS(), d=document.createElement('div');
+  d.className=cls;
+  d.style.left=(c*cs+cs/2)+'px'; d.style.top=(r*cs+cs/2)+'px';
+  /* 中心合わせは transform:translate(-50%,-50%) に統一する（keyframes も同じ指定を持つ）。
+     ここで margin を足すと二重にずれるので入れないこと */
+  if(size){ d.style.width=size+'px'; d.style.height=size+'px'; }
+  d.style.transform='translate(-50%,-50%)';
+  if(style) Object.assign(d.style,style);
+  fxEl.appendChild(d);
+  return d;
+}
+/* 範囲わざの衝撃波（半径はマス数） */
+function fxRing(r,c,radius,color){
+  if(!fxOn()) return;
+  const cs=CS(), size=(radius*2+1)*cs;
+  const d=fxEl_('fxring',r,c,size,{borderColor:color,boxShadow:`0 0 18px ${color}`});
+  setTimeout(()=>d.remove(),600);
+}
+/* 着弾の爆発 */
+function fxBurst(r,c,color,scale){
+  if(!fxOn()) return;
+  const cs=CS(), size=cs*(scale||1.25);
+  const d=fxEl_('fxburst',r,c,size,{background:`radial-gradient(circle,#fff 8%,${color} 42%,transparent 72%)`});
+  setTimeout(()=>d.remove(),460);
+}
+/* 飛翔体（撃った側から対象へ飛ぶ） */
+function fxShot(a,b,color){
+  if(!fxOn()) return;
+  const cs=CS(), size=Math.max(6,cs*0.3);
+  const d=fxEl_('fxshot',a.r,a.c,size,
+    {background:`radial-gradient(circle,#fff,${color})`,boxShadow:`0 0 12px ${color}`});
+  const dx=(b.c-a.c)*cs, dy=(b.r-a.r)*cs;
+  requestAnimationFrame(()=>{
+    d.style.transition='transform 150ms linear';
+    d.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;
+  });
+  setTimeout(()=>d.remove(),200);
+}
+/* 斬撃（突進わざ） */
+function fxSlash(r,c,color){
+  if(!fxOn()) return;
+  const cs=CS(), size=cs*1.9;
+  const d=fxEl_('fxslash',r,c,size,{});
+  d.innerHTML='<i></i><i></i>';
+  [...d.children].forEach(i=>{
+    i.style.background=`linear-gradient(90deg,transparent,#fff 42%,${color} 62%,transparent)`;
+    i.style.boxShadow=`0 0 10px ${color}`;
+  });
+  setTimeout(()=>d.remove(),380);
+}
+/* 回復のきらめき */
+function fxSparkle(r,c,color){
+  if(!fxOn()) return;
+  const cs=CS();
+  for(let i=0;i<4;i++){
+    const size=Math.max(4,cs*0.18);
+    const d=fxEl_('fxspark',r,c,size,
+      {background:color,boxShadow:`0 0 8px ${color}`,animationDelay:(i*70)+'ms'});
+    d.style.marginLeft=((i-1.5)*cs*0.22)+'px';
+    setTimeout(()=>d.remove(),1000+i*70);
+  }
+}
+/* シールド展開 */
+function fxShield(r,c){
+  if(!fxOn()) return;
+  const d=fxEl_('fxshield',r,c,CS()*1.5,{});
+  setTimeout(()=>d.remove(),640);
+}
+/* ユナイトわざの大演出（画面フラッシュ＋わざ名バナー） */
+function fxUnite(u,m){
+  if(!fxOn()) return;
+  const f=document.createElement('div');
+  f.className='fxflash';
+  f.style.background=`radial-gradient(circle at ${(u.c+0.5)*CS()}px ${(u.r+0.5)*CS()}px,`+
+    'rgba(255,255,255,.95),rgba(255,214,90,.7) 25%,rgba(160,120,255,.35) 55%,transparent 78%)';
+  fxEl.appendChild(f); setTimeout(()=>f.remove(),640);
+  const b=document.createElement('div');
+  b.className='fxbanner';
+  b.style.fontSize=Math.max(13,CS()*0.55)+'px';
+  b.textContent=`✨ ${u.name}　${m.name}`;
+  fxEl.appendChild(b); setTimeout(()=>b.remove(),1550);
+  fxRing(u.r,u.c,4,'#ffd76b');
 }
 function clearFx(){ fxAttacker=null; fxShake=[]; hitCells=[]; }
 
@@ -2046,7 +2202,8 @@ function endTurn(){
     if(w.spawnTurn&&w.down===999){
       if(S.turn+1>=w.spawnTurn&&!unitAt(w.home.r,w.home.c)){
         w.down=0; w.hp=w.maxHp; w.r=w.home.r; w.c=w.home.c;
-        pushLog('sc',`⚡ ${w.name} が中央に出現！（${w.ptsGive}点）`);
+        pushLog('sc',`⚡ ${w.name} が中央に出現！（倒すとチーム全員が ${w.ptsGive}点＋大量の経験値）`);
+        fxRing(w.r,w.c,4,'#ffd76b'); fxBurst(w.r,w.c,'#fff0a0',3);
       }
       continue;
     }
@@ -2338,7 +2495,8 @@ function render(){
             (a.recall>0?`<div class="chgring rc" style="--p:${Math.round(a.recall/RECALL_TURNS*100)}"></div>`+
                         `<div class="chgtag rc">🏠${a.recall}/${RECALL_TURNS}</div>`:'')+
             (a.pts>0?`<div class="pts">${a.pts}</div>`:'')+
-            (a.kind==='wild'?`<div class="wpt">◆${a.ptsGive}</div>`:`<div class="lvb">${a.lv}</div>`)+
+            (a.kind==='wild'?`<div class="wpt${a.def.teamPts?' team':''}">◆${a.ptsGive}${a.def.teamPts?'<em>全</em>':''}</div>`
+                            :`<div class="lvb">${a.lv}</div>`)+
             (a.stun>0?'<div class="badge">💫</div>':'')+
             `</div>`;
     }else if(!a&&downedAt.has(k)){
@@ -2456,7 +2614,8 @@ function render(){
 function unitTip(a){
   return `${a.name}（${a.team==='ally'?'味方':a.team==='enemy'?'敵':'野生'}）\n`+
     `HP ${Math.max(0,a.hp)}/${a.maxHp}\n素早さ ${a.spd} / 射程 ${a.rng}`+
-    (a.kind==='wild'?`\n倒すと ${a.ptsGive}点`:'')+
+    (a.kind==='wild'?(a.def.teamPts?`\n倒すとチーム全員が ${a.ptsGive}点＋大量の経験値`
+                                    :`\n倒すと ${a.ptsGive}点`):'')+
     (a.pts?`\n所持得点 ${a.pts}`:'')+
     (a.charge>0?`\nシュート中 ${a.charge}/${a.chargeNeed}`:'');
 }
@@ -2524,6 +2683,8 @@ function fitMap(){
 let SFX_WANT=true;   /* ボタンでの希望値。ゲーム開始時に SFX_ON へ反映 */
 document.getElementById('jtTxt').textContent=JUMP_TURN;
 document.getElementById('mlTxt').textContent=MAX_LV;
+document.getElementById('ztTxt').textContent=ZAPDOS_TURN;
+document.getElementById('zpTxt').textContent=WILD_DEFS.zapdos.pts;
 document.getElementById('ulTxt').textContent=UNITE_LV;
 document.getElementById('spdSel').addEventListener('change',e=>{ SPEED=+e.target.value; });
 document.getElementById('bgmBtn').addEventListener('click',e=>{
