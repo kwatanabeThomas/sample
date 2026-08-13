@@ -785,6 +785,95 @@ const SPR = {
   <path d="M32 19 l-4.5 8 h9Z" fill="#4ad2f0"/>
   <circle cx="25" cy="34" r="3.2" fill="#f2d024"/><circle cx="39" cy="34" r="3.2" fill="#f2d024"/>
   <path d="M22 45 Q32 53 42 45 Q32 49 22 45Z" fill="#f2d024" stroke="#1d2138" stroke-width="2" stroke-linejoin="round"/>`),
+ /* --- 追加の10匹 --- */
+ psyduck: SVG(`
+  <g stroke="#a07219" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+   <path d="M25 14 L21 3" fill="none"/><path d="M32 11 L32 1" fill="none"/><path d="M39 14 L43 3" fill="none"/>
+   <circle cx="32" cy="35" r="20" fill="#f8d94b"/>
+   <ellipse cx="32" cy="46" rx="13" ry="6.5" fill="#f0ad38"/></g>
+  <path d="M32 40 v13" fill="none" stroke="#c98f22" stroke-width="2"/>
+  <circle cx="24" cy="30" r="6" fill="#fffdf2" stroke="#a07219" stroke-width="2.4"/>
+  <circle cx="40" cy="30" r="6" fill="#fffdf2" stroke="#a07219" stroke-width="2.4"/>
+  <circle cx="24" cy="30" r="2.4" fill="#2b2418"/><circle cx="40" cy="30" r="2.4" fill="#2b2418"/>`),
+ machamp: SVG(`
+  <g stroke="#2f4a63" stroke-width="3" stroke-linejoin="round">
+   <path d="M4 28 L19 23 L21 33Z" fill="#8fa6c8"/><path d="M60 28 L45 23 L43 33Z" fill="#8fa6c8"/>
+   <path d="M7 44 L21 38 L23 48Z" fill="#8fa6c8"/><path d="M57 44 L43 38 L41 48Z" fill="#8fa6c8"/>
+   <ellipse cx="32" cy="36" rx="18" ry="20" fill="#a8bede"/></g>
+  <path d="M22 19 L26 8 L30 19Z" fill="#d7e2f2" stroke="#2f4a63" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M34 19 L38 8 L42 19Z" fill="#d7e2f2" stroke="#2f4a63" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="25" cy="33" r="3.2" fill="#1d2c3c"/><circle cx="39" cy="33" r="3.2" fill="#1d2c3c"/>
+  <path d="M25 44 q7 6 14 0" fill="none" stroke="#1d2c3c" stroke-width="2.8" stroke-linecap="round"/>`),
+ infernape: SVG(`
+  <g stroke="#6b3a18" stroke-width="3" stroke-linejoin="round">
+   <path d="M21 18 Q26 1 32 10 Q38 -1 43 18Z" fill="#f4922c"/>
+   <circle cx="16" cy="28" r="7" fill="#c9761f"/><circle cx="48" cy="28" r="7" fill="#c9761f"/>
+   <circle cx="32" cy="38" r="18" fill="#efdcbc"/></g>
+  <path d="M24 17 Q28 5 32 12 Q36 4 40 17Z" fill="#ffd24a"/>
+  <circle cx="25" cy="35" r="3.2" fill="#3a2412"/><circle cx="39" cy="35" r="3.2" fill="#3a2412"/>
+  <circle cx="32" cy="42" r="2.2" fill="#3a2412"/>
+  <path d="M24 46 q8 7 16 0" fill="none" stroke="#3a2412" stroke-width="2.8" stroke-linecap="round"/>`),
+ sylveon: SVG(`
+  <g stroke="#bc6289" stroke-width="3" stroke-linejoin="round">
+   <path d="M16 26 L9 5 L27 19Z" fill="#f6ddea"/><path d="M48 26 L55 5 L37 19Z" fill="#f6ddea"/>
+   <path d="M32 15 C19 15 13 27 15 39 C17 51 25 57 32 57 C39 57 47 51 49 39 C51 27 45 15 32 15Z" fill="#fbeef4"/></g>
+  <path d="M7 38 q-5 9 3 12 q3-7 9-8Z" fill="#f3a8c8" stroke="#bc6289" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M57 38 q5 9 -3 12 q-3-7 -9-8Z" fill="#f3a8c8" stroke="#bc6289" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="25" cy="34" r="3.2" fill="#3f6ba8"/><circle cx="39" cy="34" r="3.2" fill="#3f6ba8"/>
+  <path d="M32 41 l-3 3.5 h6Z" fill="#e08fb4"/>
+  <path d="M26 49 q6 5 12 0" fill="none" stroke="#e08fb4" stroke-width="2.4" stroke-linecap="round"/>`),
+ lapras: SVG(`
+  <g stroke="#2b4f7a" stroke-width="3" stroke-linejoin="round">
+   <path d="M31 27 L26 10 L40 20Z" fill="#7fb3cf"/><path d="M45 26 L45 9 L55 21Z" fill="#7fb3cf"/>
+   <ellipse cx="35" cy="42" rx="23" ry="16" fill="#9ecfe4"/>
+   <path d="M17 48 q18 10 36 0 q-4 11 -18 11 q-14 0 -18 -11Z" fill="#e6ddc6"/></g>
+  <path d="M22 33 q0 7 6 11" fill="none" stroke="#2b4f7a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M22 33 q0 7 6 11" fill="none" stroke="#b3e0f2" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="19" cy="23" rx="11.5" ry="9.5" fill="#b3e0f2" stroke="#2b4f7a" stroke-width="3"/>
+  <circle cx="15" cy="21" r="2.6" fill="#1d3550"/><circle cx="24" cy="21" r="2.6" fill="#1d3550"/>`),
+ dragapult: SVG(`
+  <g stroke="#1f4a44" stroke-width="3" stroke-linejoin="round">
+   <path d="M3 21 L24 30 L5 39Z" fill="#3f8f86"/><path d="M61 21 L40 30 L59 39Z" fill="#3f8f86"/>
+   <ellipse cx="32" cy="35" rx="17" ry="20" fill="#57b3a6"/></g>
+  <path d="M32 13 L25 27 h14Z" fill="#e0f4ef" stroke="#1f4a44" stroke-width="2.4" stroke-linejoin="round"/>
+  <circle cx="25" cy="35" r="3.2" fill="#0f2e2b"/><circle cx="39" cy="35" r="3.2" fill="#0f2e2b"/>
+  <circle cx="22" cy="46" r="3.4" fill="#f06a8a"/><circle cx="42" cy="46" r="3.4" fill="#f06a8a"/>
+  <path d="M27 45 q5 4 10 0" fill="none" stroke="#0f2e2b" stroke-width="2.6" stroke-linecap="round"/>`),
+ mimikyu: SVG(`
+  <g stroke="#8d7a2e" stroke-width="3" stroke-linejoin="round">
+   <path d="M18 24 L10 4 L28 18Z" fill="#e8dc94"/><path d="M46 24 L54 4 L36 18Z" fill="#e8dc94"/>
+   <path d="M32 14 C17 14 11 30 14 44 Q18 58 32 58 Q46 58 50 44 C53 30 47 14 32 14Z" fill="#efe4a2"/></g>
+  <path d="M10 4 L16 15 L21 10Z" fill="#3c3520"/><path d="M54 4 L48 15 L43 10Z" fill="#3c3520"/>
+  <path d="M20 31 l7 5 -7 5" fill="none" stroke="#2b2716" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M44 31 l-7 5 7 5" fill="none" stroke="#2b2716" stroke-width="2.8" stroke-linejoin="round"/>
+  <circle cx="19" cy="46" r="3.6" fill="#e88aa0"/><circle cx="45" cy="46" r="3.6" fill="#e88aa0"/>
+  <path d="M28 48 q4 4 8 0" fill="none" stroke="#2b2716" stroke-width="2.6" stroke-linecap="round"/>`),
+ scizor: SVG(`
+  <g stroke="#7a1f1f" stroke-width="3" stroke-linejoin="round">
+   <path d="M13 25 A10 10 0 1 0 13 45 L13 39 A4.5 4.5 0 1 1 13 31Z" fill="#d8402f"/>
+   <path d="M51 25 A10 10 0 1 1 51 45 L51 39 A4.5 4.5 0 1 0 51 31Z" fill="#d8402f"/>
+   <path d="M22 19 L16 5 L29 15Z" fill="#e0503c"/><path d="M42 19 L48 5 L35 15Z" fill="#e0503c"/>
+   <ellipse cx="32" cy="36" rx="16" ry="19" fill="#e2543f"/></g>
+  <circle cx="25" cy="33" r="3.4" fill="#f2d64a"/><circle cx="39" cy="33" r="3.4" fill="#f2d64a"/>
+  <path d="M24 45 q8 6 16 0" fill="none" stroke="#5c1616" stroke-width="2.8" stroke-linecap="round"/>`),
+ sableye: SVG(`
+  <g stroke="#3a2a52" stroke-width="3" stroke-linejoin="round">
+   <path d="M18 21 L12 6 L29 17Z" fill="#6b4f96"/><path d="M46 21 L52 6 L35 17Z" fill="#6b4f96"/>
+   <ellipse cx="32" cy="37" rx="19" ry="19" fill="#7a5aa8"/></g>
+  <path d="M32 19 l-5 9 h10Z" fill="#a98fd8"/>
+  <path d="M17 27 L27 32 L17 40 L12 33Z" fill="#5ad8e0" stroke="#2c4d55" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M47 27 L37 32 L47 40 L52 33Z" fill="#e05a8a" stroke="#5c2440" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M22 46 q10 9 20 0 q-10 4 -20 0Z" fill="#efe9f7" stroke="#3a2a52" stroke-width="2.2" stroke-linejoin="round"/>`),
+ jolteon: SVG(`
+  <g stroke="#9c7a12" stroke-width="3" stroke-linejoin="round">
+   <path d="M14 24 L8 3 L27 18Z" fill="#f2d94a"/><path d="M50 24 L56 3 L37 18Z" fill="#f2d94a"/>
+   <path d="M32 14 C19 14 13 27 15 39 C17 51 25 57 32 57 C39 57 47 51 49 39 C51 27 45 14 32 14Z" fill="#f7e35c"/></g>
+  <path d="M6 33 l11 4 -10 5" fill="none" stroke="#e0c020" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M58 33 l-11 4 10 5" fill="none" stroke="#e0c020" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M32 19 l-6 10 h12Z" fill="#fff3a8"/>
+  <circle cx="25" cy="35" r="3.2" fill="#3a2f0c"/><circle cx="39" cy="35" r="3.2" fill="#3a2f0c"/>
+  <path d="M32 43 l-3 3.5 h6Z" fill="#c9a41a"/>
+  <path d="M26 50 q6 5 12 0" fill="none" stroke="#c9a41a" stroke-width="2.4" stroke-linecap="round"/>`),
  /* --- wild --- */
  otachi: SVG(`
   <g stroke="#6b4a22" stroke-width="3" stroke-linejoin="round">
@@ -955,6 +1044,36 @@ const POKEMON = [
  { id:'zeraora', name:'ゼラオラ', role:'スピード', hp:460, atk:72, def:26, spd:5, rng:1,
    moves:[{name:'スパーク',kind:'dash',power:80,range:5,dash:5,cd:3,desc:'電気を纏って突進'},
           {name:'プラズマシャワー',kind:'aoe',power:50,range:3,radius:2,cd:4,desc:'周囲に電撃を降らせる'}]},
+ { id:'psyduck', name:'コダック', role:'サポート', hp:540, atk:50, def:38, spd:3, rng:3,
+   moves:[{name:'みずでっぽう',kind:'single',power:62,range:4,cd:2,desc:'水を撃って遠くの敵を狙う'},
+          {name:'ずつう',kind:'aoe',power:40,range:3,radius:1,cd:5,stun:true,desc:'頭痛の衝撃波。近くの敵を次ターン行動不能に'}]},
+ { id:'machamp', name:'カイリキー', role:'バランス', hp:700, atk:62, def:46, spd:3, rng:1,
+   moves:[{name:'ばくれつパンチ',kind:'dash',power:80,range:5,dash:4,cd:3,desc:'踏み込んで拳を叩き込む'},
+          {name:'じごくぐるま',kind:'aoe',power:55,range:2,radius:2,cd:4,desc:'回転して周囲をまとめて投げ飛ばす'}]},
+ { id:'infernape', name:'ゴウカザル', role:'スピード', hp:480, atk:70, def:28, spd:5, rng:1,
+   moves:[{name:'とびひざげり',kind:'dash',power:88,range:6,dash:5,cd:3,desc:'跳び込んで膝を打ち込む'},
+          {name:'マッハパンチ',kind:'single',power:52,range:2,cd:1,desc:'CTが短い連打向けの一撃'}]},
+ { id:'sylveon', name:'ニンフィア', role:'アタック', hp:520, atk:66, def:34, spd:3, rng:4,
+   moves:[{name:'ドレインキッス',kind:'single',power:70,range:5,cd:2,desc:'遠くの敵1体を狙い撃つ'},
+          {name:'ハイパーボイス',kind:'aoe',power:50,range:4,radius:2,cd:4,desc:'声の衝撃で範囲攻撃'}]},
+ { id:'lapras', name:'ラプラス', role:'ディフェンス', hp:810, atk:48, def:56, spd:2, rng:3,
+   moves:[{name:'ふぶき',kind:'aoe',power:48,range:4,radius:2,cd:4,desc:'吹雪で広めに削る'},
+          {name:'うたかたのアリア',kind:'shield',shield:210,range:3,cd:5,desc:'自分と周囲の味方にシールド'}]},
+ { id:'dragapult', name:'ドラパルト', role:'アタック', hp:470, atk:72, def:26, spd:4, rng:5,
+   moves:[{name:'ドラゴンアロー',kind:'single',power:78,range:6,cd:3,desc:'超射程の単体高火力'},
+          {name:'ゴーストダイブ',kind:'aoe',power:45,range:4,radius:2,cd:4,desc:'子ドラゴンを撃ち込んで範囲攻撃'}]},
+ { id:'mimikyu', name:'ミミッキュ', role:'ディフェンス', hp:760, atk:54, def:52, spd:3, rng:2,
+   moves:[{name:'シャドークロー',kind:'dash',power:70,range:4,dash:3,cd:3,desc:'影の爪で踏み込んで斬る'},
+          {name:'ばけのかわ',kind:'shield',shield:240,range:1,cd:5,desc:'布をかぶり直して固いシールド'}]},
+ { id:'scizor', name:'ハッサム', role:'バランス', hp:640, atk:64, def:44, spd:4, rng:1,
+   moves:[{name:'バレットパンチ',kind:'dash',power:75,range:5,dash:4,cd:3,desc:'先制の鋼パンチで踏み込む'},
+          {name:'シザークロス',kind:'single',power:68,range:2,cd:2,desc:'ハサミで近距離の敵を斬る'}]},
+ { id:'sableye', name:'ヤミラミ', role:'サポート', hp:560, atk:46, def:42, spd:4, rng:3,
+   moves:[{name:'ふいうち',kind:'single',power:50,range:3,cd:4,stun:true,desc:'不意を突いて次ターン行動不能に'},
+          {name:'ナイトヘッド',kind:'shield',shield:200,range:3,cd:5,desc:'影で味方を包んでシールド'}]},
+ { id:'jolteon', name:'サンダース', role:'スピード', hp:470, atk:70, def:28, spd:5, rng:3,
+   moves:[{name:'10まんボルト',kind:'single',power:72,range:5,cd:3,desc:'遠くの敵1体に高圧電流'},
+          {name:'ほうでん',kind:'aoe',power:48,range:2,radius:2,cd:3,desc:'体から電気を放って周囲を巻き込む'}]},
 ];
 
 /* =========================================================
@@ -994,6 +1113,16 @@ const UNITE = {
   talonflame:{name:'フレアダイブ',        kind:'dash',  power:185,range:8,dash:7,desc:'最長距離から急降下'},
   blissey:   {name:'ブレスオブライフ',    kind:'heal',  heal:450,shield:250,range:6,radius:4,desc:'味方全体を全快近くまで癒す'},
   zeraora:   {name:'プラズマゲイル',      kind:'aoe',   power:150,range:4,radius:3,stun:true,desc:'雷の嵐で薙ぎ払う'},
+  psyduck:   {name:'サイコアウトバースト',kind:'aoe',power:115,range:4,radius:3,stun:true,desc:'溜め込んだ念で周囲を吹き飛ばし痺れさせる'},
+  machamp:   {name:'メガトンインパクト',  kind:'dash', power:195,range:6,dash:5,desc:'四本の腕で渾身の一撃'},
+  infernape: {name:'ブレイズインフェルノ',kind:'aoe',  power:150,range:3,radius:3,desc:'炎を纏って周囲を焼き払う'},
+  sylveon:   {name:'フェアリーフリル',    kind:'aoe',  power:140,range:5,radius:3,desc:'リボンの奔流で薙ぎ払う'},
+  lapras:    {name:'オーシャンループ',    kind:'aoe',  power:120,range:4,radius:3,stun:true,desc:'大波で巻き込み動きを止める'},
+  dragapult: {name:'ファントムストーム',  kind:'aoe',  power:145,range:6,radius:2,desc:'遠距離から子ドラゴンを一斉射出'},
+  mimikyu:   {name:'ミミックカーニバル',  kind:'aoe',  power:130,range:3,radius:2,stun:true,desc:'正体を晒して周囲を恐怖で縛る'},
+  scizor:    {name:'メタルバースト',      kind:'dash', power:185,range:7,dash:6,desc:'鋼のハサミで一気に踏み込み斬る'},
+  sableye:   {name:'ダークトリック',      kind:'aoe',  power:90, range:4,radius:3,stun:true,desc:'影に引きずり込んで広範囲を拘束'},
+  jolteon:   {name:'サンダーストーム',    kind:'aoe',  power:145,range:4,radius:3,stun:true,desc:'雷雲を呼び周囲を撃ち抜く'},
 };
 POKEMON.forEach(p=>{ p.unite = UNITE[p.id]; });
 
@@ -2701,8 +2830,8 @@ let pickMode=1, picked=[];
 function refreshPicks(){
   document.querySelectorAll('.modebtn').forEach(e=>e.classList.toggle('on',+e.dataset.m===pickMode));
   document.getElementById('selLead').textContent = pickMode===1
-    ? '全20匹から1匹を選択。残り19匹から9匹が、味方4匹・敵5匹にランダムで振り分けられます。'
-    : '全20匹から味方5匹を選択（クリックで選択／解除）。相手の5匹は残りからランダムで選ばれ、自動で動きます。';
+    ? '全30匹から1匹を選択。残り29匹から9匹が、味方4匹・敵5匹にランダムで振り分けられます。'
+    : '全30匹から味方5匹を選択（クリックで選択／解除）。相手の5匹は残りからランダムで選ばれ、自動で動きます。';
   document.getElementById('selBar').classList.toggle('hide',pickMode!==5);
   document.getElementById('selCount').textContent=`${picked.length} / 5 匹`;
   document.getElementById('selGo').disabled = picked.length!==5;
