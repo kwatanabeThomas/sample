@@ -78,7 +78,26 @@ main{max-width:960px; margin:0 auto; padding:18px 16px 80px}
 .badge.lv3{background:rgba(34,184,207,.15); color:var(--lv3)}
 .tagpill{font-size:.68rem; color:var(--dim); border:1px solid var(--line); padding:2px 8px; border-radius:5px}
 .p-title{font-size:1.15rem; font-weight:700; margin:6px 0 14px; line-height:1.45}
-.timer{margin-left:auto; font-family:var(--mono); font-size:.8rem; color:var(--dim)}
+.brand{cursor:pointer; user-select:none; border-radius:10px; padding:2px 4px; transition:.15s}
+.brand:hover{background:rgba(77,171,247,.08)}
+.brand:hover .logo{box-shadow:0 0 0 2px rgba(77,171,247,.35)}
+.brand:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+/* ---- code choice ---- */
+.code-options{display:flex; flex-direction:column; gap:10px; margin-top:6px}
+.code-option{border:1px solid var(--line); border-radius:10px; background:#0b0e13; cursor:pointer; overflow:hidden; transition:.15s}
+.code-option:hover{border-color:var(--accent)}
+.code-option.on{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.code-option.ok{border-color:var(--ok)}
+.code-option.ng{border-color:var(--ng)}
+.co-head{display:flex; align-items:center; gap:9px; padding:6px 11px; background:var(--panel2); font-size:.74rem; color:var(--muted); border-bottom:1px solid var(--line)}
+.co-key{width:21px; height:21px; border-radius:6px; background:var(--line); color:var(--fg); display:grid; place-items:center; font-weight:800; font-size:.72rem; font-family:var(--mono)}
+.code-option.on .co-key{background:var(--accent); color:#08111c}
+.code-option.ok .co-key{background:var(--ok); color:#08111c}
+.code-option.ng .co-key{background:var(--ng); color:#1a0808}
+.co-code{margin:0; padding:11px 13px; font-family:var(--mono); font-size:.78rem; line-height:1.55; white-space:pre; overflow-x:auto; color:#d6e4f0}
+.co-note{padding:9px 13px; border-top:1px dashed var(--line); font-size:.8rem; background:var(--panel2)}
+.co-note.ok{color:var(--ok)}
+.co-note.ng{color:#ffa8a8}
 .p-body{font-size:.93rem; white-space:pre-wrap; word-break:break-word}
 .sub{margin-top:16px}
 .sub-title{font-size:.75rem; color:var(--accent); font-weight:700; letter-spacing:.06em; margin-bottom:5px}
@@ -172,7 +191,7 @@ pre.code{
 <body>
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="brand">
+    <div class="brand" id="homeBtn" role="button" tabindex="0" title="トップに戻る">
       <div class="logo">AC</div>
       <div>
         <h1>アルゴ脳トレ</h1>
@@ -226,7 +245,7 @@ pre.code{
         <div class="field-label">解答形式</div>
         <div class="row" id="formatChips">
           <button class="chip on" data-format="answer">答えモード（入力例の答えを暗算・筆算）</button>
-          <button class="chip" data-format="code">コードモード（JavaScriptで提出・自動採点）</button>
+          <button class="chip" data-format="code">コード選択モード（4つから正しいコードを選ぶ）</button>
         </div>
       </div>
       <div class="row" style="margin-top:4px">
@@ -239,7 +258,6 @@ pre.code{
       <div class="p-head">
         <span class="badge" id="pLevel"></span>
         <span id="pTags"></span>
-        <span class="timer" id="pTimer">00:00</span>
       </div>
       <div class="p-title" id="pTitle"></div>
       <div class="p-body" id="pStatement"></div>
@@ -267,9 +285,8 @@ pre.code{
           <input type="text" id="answerInput" placeholder="答えを入力（例: 42 / Yes）" autocomplete="off" spellcheck="false">
         </div>
         <div id="codeMode" class="hidden">
-          <div class="field-label">solve(input) を実装してください（input は入力全体の文字列）</div>
-          <textarea id="codeInput" spellcheck="false"></textarea>
-          <div class="note">⚠ ブラウザ上で実行します。無限ループを書くとページが固まるので、その場合は再読み込みしてください。</div>
+          <div class="field-label">この問題を正しく解いているコードはどれでしょう？（キーボードの A〜D でも選べます）</div>
+          <div class="code-options" id="codeOptions"></div>
         </div>
         <div class="row" style="margin-top:12px">
           <button class="btn" id="submitBtn">提出する</button>
@@ -403,8 +420,6 @@ const PROBLEMS = [
   const [a, b, x] = input.split(/\\s+/).map(Number);
   return x - a * b;
 }`,
-  codePy:`a, b, x = map(int, input().split())
-print(x - a * b)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -413,7 +428,12 @@ public class Main {
         int a = sc.nextInt(), b = sc.nextInt(), x = sc.nextInt();
         System.out.println(x - a * b);
     }
-}`
+}`,
+  quiz:[
+    {note:`合計金額を A×B ではなく A+B として計算している`, edits:[[`x - a * b`,`x - a - b`]]},
+    {note:`引く向きが逆で、おつりではなく不足額になっている`, edits:[[`x - a * b`,`a * b - x`]]},
+    {note:`入力を受け取る順番が問題文と違っている`, edits:[[`const [a, b, x]`,`const [x, a, b]`]]}
+  ]
 },
 {
   kind:'algo', id:'a02', level:1, tags:['実装'], title:'最大値と最小値の差',
@@ -433,9 +453,6 @@ public class Main {
   const a = lines[1].trim().split(/\\s+/).map(Number);
   return Math.max(...a) - Math.min(...a);
 }`,
-  codePy:`n = int(input())
-a = list(map(int, input().split()))
-print(max(a) - min(a))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -450,7 +467,12 @@ public class Main {
         }
         System.out.println(max - min);
     }
-}`
+}`,
+  quiz:[
+    {note:`最大と最小を引く順番が逆で、答えが負になる`, edits:[[`Math.max(...a) - Math.min(...a)`,`Math.min(...a) - Math.max(...a)`]]},
+    {note:`数列の行ではなく 1 行目（N の行）を読んでいる`, edits:[[`const a = lines[1]`,`const a = lines[0]`]]},
+    {note:`最小値ではなく先頭の要素との差を取っている`, edits:[[`Math.max(...a) - Math.min(...a)`,`Math.max(...a) - a[0]`]]}
+  ]
 },
 {
   kind:'algo', id:'a03', level:1, tags:['数学'], title:'K の倍数はいくつ？',
@@ -468,8 +490,6 @@ N ≤ 10^9 なので、for 文で 1 つずつ数えると（言語にもより�
   const [n, k] = input.split(/\\s+/).map(Number);
   return Math.floor(n / k);
 }`,
-  codePy:`n, k = map(int, input().split())
-print(n // k)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -478,7 +498,12 @@ public class Main {
         long n = sc.nextLong(), k = sc.nextLong();
         System.out.println(n / k);
     }
-}`
+}`,
+  quiz:[
+    {note:`割る向きが逆になっている`, edits:[[`Math.floor(n / k)`,`Math.floor(k / n)`]]},
+    {note:`切り捨てをしていないので小数が返る`, edits:[[`return Math.floor(n / k);`,`return n / k;`]]},
+    {note:`必要のない +1 をしていて、常に 1 多い`, edits:[[`Math.floor(n / k)`,`Math.floor(n / k) + 1`]]}
+  ]
 },
 {
   kind:'algo', id:'a04', level:1, tags:['文字列'], title:'回文かどうか',
@@ -498,8 +523,6 @@ S が回文（前から読んでも後ろから読んでも同じ）であれば
   const rev = s.split("").reverse().join("");
   return s === rev ? "Yes" : "No";
 }`,
-  codePy:`s = input()
-print("Yes" if s == s[::-1] else "No")`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -509,7 +532,12 @@ public class Main {
         String rev = new StringBuilder(s).reverse().toString();
         System.out.println(s.equals(rev) ? "Yes" : "No");
     }
-}`
+}`,
+  quiz:[
+    {note:`Yes と No が逆になっている`, edits:[[`s === rev ? "Yes" : "No"`,`s === rev ? "No" : "Yes"`]]},
+    {note:`反転ではなく並べ替え（ソート）をしている`, edits:[[`.reverse().join("")`,`.sort().join("")`]]},
+    {note:`反転しておらず、常に Yes になる`, edits:[[`const rev = s.split("").reverse().join("");`,`const rev = s;`]]}
+  ]
 },
 {
   kind:'algo', id:'a05', level:1, tags:['実装','数学'], title:'平均点以上は何人？',
@@ -532,10 +560,6 @@ public class Main {
   const sum = a.reduce((p, c) => p + c, 0);
   return a.filter(x => x * n >= sum).length;
 }`,
-  codePy:`n = int(input())
-a = list(map(int, input().split()))
-s = sum(a)
-print(sum(1 for x in a if x * n >= s))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -554,7 +578,12 @@ public class Main {
         }
         System.out.println(cnt);
     }
-}`
+}`,
+  quiz:[
+    {note:`「平均以上」なのに等号を含めておらず、平均ちょうどの人を数えない`, edits:[[`x * n >= sum`,`x * n > sum`]]},
+    {note:`掛ける相手を間違えていて、式の意味が違う`, edits:[[`x * n >= sum`,`x * sum >= n`]]},
+    {note:`平均を切り捨ててから比べているので、境界で誤る`, edits:[[`x * n >= sum`,`x >= Math.floor(sum / n)`]]}
+  ]
 },
 {
   kind:'algo', id:'a06', level:1, tags:['数学'], title:'偶数の総和',
@@ -574,9 +603,6 @@ public class Main {
   const m = Math.floor(n / 2);
   return m * (m + 1);
 }`,
-  codePy:`n = int(input())
-m = n // 2
-print(m * (m + 1))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -586,7 +612,12 @@ public class Main {
         long m = n / 2;
         System.out.println(m * (m + 1));  // int だと桁あふれするので long
     }
-}`
+}`,
+  quiz:[
+    {note:`和の公式が m(m−1) になっている`, edits:[[`m * (m + 1)`,`m * (m - 1)`]]},
+    {note:`偶数の個数 m の求め方がずれている`, edits:[[`Math.floor(n / 2)`,`Math.floor((n + 1) / 2)`]]},
+    {note:`偶数だけでなく 1 から N までの全部の和を求めている`, edits:[[`return m * (m + 1);`,`return n * (n + 1) / 2;`]]}
+  ]
 },
 {
   kind:'algo', id:'a07', level:1, tags:['文字列'], title:'大文字と小文字を入れ替える',
@@ -610,8 +641,6 @@ XOR 32 で大小を反転させるテクニックもあります。`,
   }
   return res;
 }`,
-  codePy:`s = input()
-print(s.swapcase())`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -624,7 +653,12 @@ public class Main {
         }
         System.out.println(sb);
     }
-}`
+}`,
+  quiz:[
+    {note:`変換の向きが逆で、元の文字列がそのまま返る`, edits:[[`? c.toLowerCase() : c.toUpperCase()`,`? c.toUpperCase() : c.toLowerCase()`]]},
+    {note:`前に足しているので、文字の順番が逆になる`, edits:[[`res += (c === c.toUpperCase()) ? c.toLowerCase() : c.toUpperCase();`,`res = ((c === c.toUpperCase()) ? c.toLowerCase() : c.toUpperCase()) + res;`]]},
+    {note:`先に全部大文字にしてしまい、元の大小の情報が失われている`, edits:[[`for (const c of s) {`,`for (const c of s.toUpperCase()) {`]]}
+  ]
 },
 {
   kind:'algo', id:'a08', level:1, tags:['実装'], title:'じゃんけんの勝敗',
@@ -651,16 +685,6 @@ public class Main {
   if (s === t) return "Draw";
   return ((s + 1) % 3 === t) ? "Takahashi" : "Aoki";
 }`,
-  codePy:`s = input()
-t = input()
-order = "GCP"
-i, j = order.index(s), order.index(t)
-if i == j:
-    print("Draw")
-elif (i + 1) % 3 == j:
-    print("Takahashi")
-else:
-    print("Aoki")`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -673,7 +697,12 @@ public class Main {
         else if ((i + 1) % 3 == j) System.out.println("Takahashi");
         else System.out.println("Aoki");
     }
-}`
+}`,
+  quiz:[
+    {note:`勝敗の向きが逆になっている`, edits:[[`((s + 1) % 3 === t)`,`((t + 1) % 3 === s)`]]},
+    {note:`手の並び順が勝ち負けの関係と合っていない`, edits:[[`const order = "GCP";`,`const order = "GPC";`]]},
+    {note:`ずらす量が違うため、勝ち負けの判定が 1 つずれている`, edits:[[`((s + 1) % 3 === t)`,`((s + 2) % 3 === t)`]]}
+  ]
 },
 /* ---------------- Lv2 初級 ---------------- */
 {
@@ -683,7 +712,7 @@ public class Main {
 できるなら Yes、できないなら No を出力してください。`,
   constraints:['3 ≤ N ≤ 100','1 ≤ A_i ≤ 10^5','1 ≤ K ≤ 10^9','入力はすべて整数'],
   inputFormat:'N K\nA_1 A_2 ... A_N',
-  cases:[{in:'5 12\n1 2 3 4 5',out:'Yes'},{in:'4 100\n1 2 3 4',out:'No'},{in:'3 6\n1 2 3',out:'Yes'},{in:'6 3\n1 1 1 5 5 5',out:'Yes'}],
+  cases:[{in:'5 12\n1 2 3 4 5',out:'Yes'},{in:'4 100\n1 2 3 4',out:'No'},{in:'3 6\n1 2 3',out:'Yes'},{in:'6 3\n1 1 1 5 5 5',out:'Yes'},{in:'4 7\n1 5 6 7',out:'No'}],
   hint:'N ≤ 100 なので、3 つの組み合わせをすべて試しても 100^3 = 10^6 通りしかありません。',
   idea:`「制約を見て、全部試して間に合うかを見積もる」典型問題です。
 N ≤ 100 なら 3 重ループは高々 100 × 100 × 100 = 10^6 回で、1 秒あれば余裕で終わります。
@@ -704,10 +733,6 @@ i < j < k と順序を固定してループすれば、同じ組を重複して�
         if (a[i] + a[j] + a[l] === k) return "Yes";
   return "No";
 }`,
-  codePy:`from itertools import combinations
-n, k = map(int, input().split())
-a = list(map(int, input().split()))
-print("Yes" if any(sum(c) == k for c in combinations(a, 3)) else "No")`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -725,7 +750,12 @@ public class Main {
                     }
         System.out.println("No");
     }
-}`
+}`,
+  quiz:[
+    {note:`3 重ループの範囲が重なっており、同じ要素を何度も使ってしまう`, edits:[[`for (let l = j + 1; l < n; l++)`,`for (let l = 0; l < n; l++)`]]},
+    {note:`3 つではなく 2 つの和を調べている`, edits:[[`a[i] + a[j] + a[l] === k`,`a[i] + a[j] === k`]]},
+    {note:`「ちょうど K」ではなく「K 以下」で判定している`, edits:[[`a[i] + a[j] + a[l] === k`,`a[i] + a[j] + a[l] <= k`]]}
+  ]
 },
 {
   kind:'algo', id:'b02', level:2, tags:['文字列','数え上げ'], title:'いちばん多い文字',
@@ -752,12 +782,6 @@ S の中で最も多く出現する文字を出力してください。
   for (let i = 1; i < 26; i++) if (cnt[i] > cnt[best]) best = i;
   return String.fromCharCode(97 + best);
 }`,
-  codePy:`s = input()
-cnt = [0] * 26
-for c in s:
-    cnt[ord(c) - 97] += 1
-best = max(range(26), key=lambda i: (cnt[i], -i))
-print(chr(97 + best))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -772,7 +796,12 @@ public class Main {
         }
         System.out.println((char) ('a' + best));
     }
-}`
+}`,
+  quiz:[
+    {note:`比較が >= なので、同数のとき辞書順で大きい文字が残ってしまう`, edits:[[`cnt[i] > cnt[best]`,`cnt[i] >= cnt[best]`]]},
+    {note:`最大値を探す初期位置が z になっていて、a と比較されない`, edits:[[`let best = 0;`,`let best = 25;`]]},
+    {note:`文字コードの引く値がずれていて、数える配列の位置が 1 つずれる`, edits:[[`c.charCodeAt(0) - 97`,`c.charCodeAt(0) - 96`]]}
+  ]
 },
 {
   kind:'algo', id:'b03', level:2, tags:['数学','実装'], title:'2 つの区間の重なり',
@@ -795,8 +824,6 @@ public class Main {
   const [a, b, c, d] = input.split(/\\s+/).map(Number);
   return Math.max(0, Math.min(b, d) - Math.max(a, c));
 }`,
-  codePy:`a, b, c, d = map(int, input().split())
-print(max(0, min(b, d) - max(a, c)))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -805,7 +832,12 @@ public class Main {
         long a = sc.nextLong(), b = sc.nextLong(), c = sc.nextLong(), d = sc.nextLong();
         System.out.println(Math.max(0, Math.min(b, d) - Math.max(a, c)));
     }
-}`
+}`,
+  quiz:[
+    {note:`重なりではなく、2 つの区間を覆う全体の幅を求めている`, edits:[[`Math.min(b, d) - Math.max(a, c)`,`Math.max(b, d) - Math.min(a, c)`]]},
+    {note:`重なっていないときに負の長さを返してしまう`, edits:[[`return Math.max(0, Math.min(b, d) - Math.max(a, c));`,`return Math.min(b, d) - Math.max(a, c);`]]},
+    {note:`入力の受け取り方がずれていて、区間の対応が崩れている`, edits:[[`const [a, b, c, d]`,`const [a, c, b, d]`]]}
+  ]
 },
 {
   kind:'algo', id:'b04', level:2, tags:['累積和'], title:'長さ K の連続区間の最大和',
@@ -838,14 +870,6 @@ public class Main {
   }
   return best;
 }`,
-  codePy:`n, k = map(int, input().split())
-a = list(map(int, input().split()))
-s = sum(a[:k])
-best = s
-for i in range(k, n):
-    s += a[i] - a[i - k]
-    best = max(best, s)
-print(best)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -866,7 +890,12 @@ public class Main {
         }
         System.out.println(best);
     }
-}`
+}`,
+  quiz:[
+    {note:`答えの初期値が 0 なので、すべて負のときに誤る`, edits:[[`let best = sum;`,`let best = 0;`]]},
+    {note:`窓をずらすときに抜く要素が 1 つずれている`, edits:[[`sum += a[i] - a[i - k];`,`sum += a[i] - a[i - k + 1];`]]},
+    {note:`最初の窓の合計を作るとき、要素が 1 つ足りない`, edits:[[`for (let i = 0; i < k; i++) sum += a[i];`,`for (let i = 0; i < k - 1; i++) sum += a[i];`]]}
+  ]
 },
 {
   kind:'algo', id:'b05', level:2, tags:['貪欲法'], title:'硬貨の最小枚数',
@@ -896,12 +925,6 @@ public class Main {
   }
   return cnt;
 }`,
-  codePy:`n = int(input())
-cnt = 0
-for c in (500, 100, 50, 10, 5, 1):
-    cnt += n // c
-    n %= c
-print(cnt)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -915,7 +938,15 @@ public class Main {
         }
         System.out.println(cnt);
     }
-}`
+}`,
+  quiz:[
+    {note:`小さい硬貨から使っているので枚数が最小にならない`, edits:[[`[500, 100, 50, 10, 5, 1]`,`[1, 5, 10, 50, 100, 500]`]]},
+    {note:`あまりを更新していないので、同じ額を何度も支払っている`, edits:[[`    cnt += Math.floor(n / c);
+    n %= c;
+`,`    cnt += Math.floor(n / c);
+`]]},
+    {note:`切り上げているので、払いすぎの枚数になる`, edits:[[`Math.floor(n / c)`,`Math.ceil(n / c)`]]}
+  ]
 },
 {
   kind:'algo', id:'b06', level:2, tags:['ソート'], title:'中央値',
@@ -923,7 +954,7 @@ public class Main {
 これらを小さい順に並べたとき、ちょうど真ん中に来る値（中央値）を出力してください。`,
   constraints:['1 ≤ N ≤ 10^5','N は奇数','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
   inputFormat:'N\nA_1 A_2 ... A_N',
-  cases:[{in:'5\n3 1 4 1 5',out:'3'},{in:'1\n7',out:'7'},{in:'3\n10 -5 0',out:'0'},{in:'7\n1 1 1 2 2 2 2',out:'2'}],
+  cases:[{in:'5\n3 1 4 1 5',out:'3'},{in:'1\n7',out:'7'},{in:'3\n10 -5 0',out:'0'},{in:'7\n1 1 1 2 2 2 2',out:'2'},{in:'5\n10 9 100 2 30',out:'10'}],
   hint:'ソートしてから (N-1)/2 番目（0 始まり）を見ます。',
   idea:`ソートして真ん中の要素を取り出すだけです。0 始まりの添字なら (N − 1) / 2 番目、
 1 始まりなら (N + 1) / 2 番目です。
@@ -941,9 +972,6 @@ JavaScript の Array.prototype.sort は引数なしだと「文字列として�
   a.sort((x, y) => x - y);
   return a[(n - 1) / 2];
 }`,
-  codePy:`n = int(input())
-a = sorted(map(int, input().split()))
-print(a[(n - 1) // 2])`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -957,7 +985,12 @@ public class Main {
         Arrays.sort(a);
         System.out.println(a[(n - 1) / 2]);
     }
-}`
+}`,
+  quiz:[
+    {note:`比較関数がないので、数値ではなく文字列として辞書順に並ぶ`, edits:[[`a.sort((x, y) => x - y);`,`a.sort();`]]},
+    {note:`中央の位置の計算がずれていて、添字が整数にならない`, edits:[[`a[(n - 1) / 2]`,`a[n / 2]`]]},
+    {note:`中央より 1 つ手前の要素を返している`, edits:[[`a[(n - 1) / 2]`,`a[Math.floor(n / 2) - 1]`]]}
+  ]
 },
 {
   kind:'algo', id:'b07', level:2, tags:['実装','シミュレーション'], title:'次の日',
@@ -990,17 +1023,6 @@ M が 13 になったら M = 1 にして Y を 1 増やす、と繰り上げて�
   if (m > 12) { m = 1; y++; }
   return y + " " + m + " " + d;
 }`,
-  codePy:`y, m, d = map(int, input().split())
-leap = (y % 4 == 0 and y % 100 != 0) or y % 400 == 0
-days = [31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-d += 1
-if d > days[m - 1]:
-    d = 1
-    m += 1
-if m > 12:
-    m = 1
-    y += 1
-print(y, m, d)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1014,7 +1036,12 @@ public class Main {
         if (m > 12) { m = 1; y++; }
         System.out.println(y + " " + m + " " + d);
     }
-}`
+}`,
+  quiz:[
+    {note:`うるう年の判定が 4 の倍数だけになっていて、100 年・400 年の例外がない`, edits:[[`(y % 4 === 0 && y % 100 !== 0) || y % 400 === 0`,`y % 4 === 0`]]},
+    {note:`月末の判定が >= なので、1 日早く翌月になる`, edits:[[`if (d > days[m - 1])`,`if (d >= days[m - 1])`]]},
+    {note:`12 月から 1 月へ繰り上がるときに年を増やし忘れている`, edits:[[`if (m > 12) { m = 1; y++; }`,`if (m > 12) { m = 1; }`]]}
+  ]
 },
 {
   kind:'algo', id:'b08', level:2, tags:['シミュレーション'], title:'カードの入れ替え',
@@ -1051,14 +1078,6 @@ Python なら sys.stdin.readline、C++ なら endl の代わりに '\\n' など�
   }
   return card.join(" ");
 }`,
-  codePy:`import sys
-input = sys.stdin.readline
-n, m = map(int, input().split())
-card = list(range(1, n + 1))
-for _ in range(m):
-    x, y = map(int, input().split())
-    card[x - 1], card[y - 1] = card[y - 1], card[x - 1]
-print(*card)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1082,7 +1101,18 @@ public class Main {
         }
         System.out.println(sb);
     }
-}`
+}`,
+  quiz:[
+    {note:`一時変数に退避せず上書きしているので、交換になっていない`, edits:[[`    card[x - 1] = card[y - 1];
+    card[y - 1] = t;`,`    card[x - 1] = card[y - 1];
+    card[y - 1] = card[x - 1];`]]},
+    {note:`ループの範囲が足りず、最後の操作を実行していない`, edits:[[`for (let i = 1; i <= m; i++) {`,`for (let i = 1; i < m; i++) {`]]},
+    {note:`1 始まりの位置をそのまま 0 始まりの配列に使っている`, edits:[[`    const t = card[x - 1];
+    card[x - 1] = card[y - 1];
+    card[y - 1] = t;`,`    const t = card[x];
+    card[x] = card[y];
+    card[y] = t;`]]}
+  ]
 },
 {
   kind:'algo', id:'b09', level:2, tags:['ソート','実装'], title:'何種類ある？',
@@ -1109,10 +1139,6 @@ public class Main {
   for (let i = 1; i <= n; i++) set.add(lines[i].trim());
   return set.size;
 }`,
-  codePy:`import sys
-data = sys.stdin.read().split()
-n = int(data[0])
-print(len(set(data[1:1 + n])))`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1124,7 +1150,16 @@ public class Main {
         for (int i = 0; i < n; i++) set.add(br.readLine().trim());
         System.out.println(set.size());
     }
-}`
+}`,
+  quiz:[
+    {note:`1 行目（N の行）まで数に入れてしまっている`, edits:[[`for (let i = 1; i <= n; i++) set.add`,`for (let i = 0; i < n; i++) set.add`]]},
+    {note:`種類数ではなく個数を返している`, edits:[[`return set.size;`,`return n;`]]},
+    {note:`集合ではなく配列に入れているので、重複が除かれない`, edits:[[`  const set = new Set();
+  for (let i = 1; i <= n; i++) set.add(lines[i].trim());
+  return set.size;`,`  const arr = [];
+  for (let i = 1; i <= n; i++) arr.push(lines[i].trim());
+  return arr.length;`]]}
+  ]
 },
 /* ---------------- Lv3 中級 ---------------- */
 {
@@ -1167,20 +1202,6 @@ public class Main {
   }
   return lo;
 }`,
-  codePy:`n, x = map(int, input().split())
-a = list(map(int, input().split()))
-
-def ok(t):
-    return sum(t // v for v in a) >= x
-
-lo, hi = 1, max(a) * x
-while lo < hi:
-    mid = (lo + hi) // 2
-    if ok(mid):
-        hi = mid
-    else:
-        lo = mid + 1
-print(lo)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1214,7 +1235,12 @@ public class Main {
         }
         System.out.println(lo);
     }
-}`
+}`,
+  quiz:[
+    {note:`二分探索の更新の向きが逆になっている`, edits:[[`if (ok(mid)) hi = mid; else lo = mid + 1;`,`if (ok(mid)) lo = mid + 1; else hi = mid;`]]},
+    {note:`探索範囲の上限が小さすぎて、答えが範囲の外にある`, edits:[[`let lo = 1, hi = Math.max(...a) * x;`,`let lo = 1, hi = Math.max(...a);`]]},
+    {note:`「X 個以上」の等号が落ちていて、ちょうど X 個の時刻を見逃す`, edits:[[`if (s >= x) return true;`,`if (s > x) return true;`]]}
+  ]
 },
 {
   kind:'algo', id:'c02', level:3, tags:['動的計画法'], title:'部分和は作れるか',
@@ -1250,15 +1276,6 @@ dp[j] = 「これまでに見た数のうちいくつかを選んで、和 j が
       if (dp[j - v]) dp[j] = true;
   return dp[k] ? "Yes" : "No";
 }`,
-  codePy:`n, k = map(int, input().split())
-a = list(map(int, input().split()))
-dp = [False] * (k + 1)
-dp[0] = True
-for v in a:
-    for j in range(k, v - 1, -1):
-        if dp[j - v]:
-            dp[j] = True
-print("Yes" if dp[k] else "No")`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1275,7 +1292,12 @@ public class Main {
         }
         System.out.println(dp[k] ? "Yes" : "No");
     }
-}`
+}`,
+  quiz:[
+    {note:`ループの向きが逆で、同じ要素を何度も選べてしまう`, edits:[[`for (let j = k; j >= v; j--)`,`for (let j = v; j <= k; j++)`]]},
+    {note:`dp[0] の初期化が false なので、何も作れないことになる`, edits:[[`dp[0] = true;`,`dp[0] = false;`]]},
+    {note:`最後に見る添字が 1 つずれている`, edits:[[`return dp[k] ? "Yes" : "No";`,`return dp[k - 1] ? "Yes" : "No";`]]}
+  ]
 },
 {
   kind:'algo', id:'c03', level:3, tags:['動的計画法','数学'], title:'階段の上り方',
@@ -1311,12 +1333,6 @@ dp[i] = dp[i−1] + dp[i−2] が成り立ちます（フィボナッチ数列�
   }
   return cur;
 }`,
-  codePy:`n = int(input())
-MOD = 998244353
-prev, cur = 1, 1  # dp[0], dp[1]
-for _ in range(2, n + 1):
-    prev, cur = cur, (prev + cur) % MOD
-print(cur)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1332,7 +1348,12 @@ public class Main {
         }
         System.out.println(cur);
     }
-}`
+}`,
+  quiz:[
+    {note:`dp[0] を 0 にしているため、数え方が 1 つずれる`, edits:[[`let prev = 1, cur = 1;`,`let prev = 0, cur = 1;`]]},
+    {note:`mod を取っていないので、N が大きいと値が壊れる`, edits:[[`const next = (prev + cur) % MOD;`,`const next = prev + cur;`]]},
+    {note:`ループ回数が 1 回足りず、N 段目まで計算していない`, edits:[[`for (let i = 2; i <= n; i++)`,`for (let i = 2; i < n; i++)`]]}
+  ]
 },
 {
   kind:'algo', id:'c04', level:3, tags:['グラフ'], title:'グループはいくつ？',
@@ -1343,7 +1364,7 @@ M 個の friendship 関係があり、i 番目は「U_i と V_i は友達であ�
 グループはいくつありますか。（誰とも友達でない人も 1 つのグループとします）`,
   constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ U_i, V_i ≤ N','入力はすべて整数'],
   inputFormat:'N M\nU_1 V_1\n...\nU_M V_M',
-  cases:[{in:'5 3\n1 2\n2 3\n4 5',out:'2'},{in:'3 0',out:'3'},{in:'4 4\n1 2\n2 3\n3 1\n1 4',out:'1'},{in:'6 2\n1 6\n3 4',out:'4'}],
+  cases:[{in:'5 3\n1 2\n2 3\n4 5',out:'2'},{in:'3 0',out:'3'},{in:'4 4\n1 2\n2 3\n3 1\n1 4',out:'1'},{in:'6 2\n1 6\n3 4',out:'4'},{in:'3 1\n3 1',out:'2'}],
   hint:'まだ訪れていない人から探索を始めた回数が、そのままグループの数です。',
   idea:`これは無向グラフの連結成分の個数を数える問題です。
 
@@ -1384,30 +1405,6 @@ M 個の friendship 関係があり、i 番目は「U_i と V_i は友達であ�
   }
   return groups;
 }`,
-  codePy:`import sys
-from collections import deque
-data = sys.stdin.read().split()
-n, m = int(data[0]), int(data[1])
-g = [[] for _ in range(n + 1)]
-for i in range(m):
-    u, v = int(data[2 + 2 * i]), int(data[3 + 2 * i])
-    g[u].append(v)
-    g[v].append(u)
-seen = [False] * (n + 1)
-groups = 0
-for s in range(1, n + 1):
-    if seen[s]:
-        continue
-    groups += 1
-    seen[s] = True
-    q = deque([s])
-    while q:
-        cur = q.popleft()
-        for nx in g[cur]:
-            if not seen[nx]:
-                seen[nx] = True
-                q.append(nx)
-print(groups)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1441,7 +1438,13 @@ public class Main {
         }
         System.out.println(groups);
     }
-}`
+}`,
+  quiz:[
+    {note:`無向グラフなのに片方向しか辺を張っていない`, edits:[[`    g[u].push(v);
+    g[v].push(u);`,`    g[u].push(v);`]]},
+    {note:`頂点数ではなく辺数でループしていて、孤立した頂点を数えられない`, edits:[[`for (let s = 1; s <= n; s++) {`,`for (let s = 1; s <= m; s++) {`]]},
+    {note:`探索を始めていないので、つながっている頂点も別グループとして数える`, edits:[[`const stack = [s];`,`const stack = [];`]]}
+  ]
 },
 {
   kind:'algo', id:'c05', level:3, tags:['グラフ','幅優先探索'], title:'迷路の最短経路',
@@ -1453,7 +1456,7 @@ S から G まで移動するのに必要な最小の手数を出力してくだ
 S と G はそれぞれちょうど 1 つ存在し、通行可能です。`,
   constraints:['1 ≤ H, W ≤ 1000','各マスは . # S G のいずれか'],
   inputFormat:'H W\n(1 行目のマス目)\n...\n(H 行目のマス目)',
-  cases:[{in:'3 3\nS..\n.#.\n..G',out:'4'},{in:'2 2\nS#\n#G',out:'-1'},{in:'1 5\nS...G',out:'4'},{in:'3 4\nS#.G\n.#..\n....',out:'7'}],
+  cases:[{in:'3 3\nS..\n.#.\n..G',out:'4'},{in:'2 2\nS#\n#G',out:'-1'},{in:'1 5\nS...G',out:'4'},{in:'3 4\nS#.G\n.#..\n....',out:'7'},{in:'3 6\nS.....\n.####.\nG.....',out:'2'}],
   hint:'「1 手あたりのコストがすべて同じ」最短経路は、幅優先探索（BFS）で求まります。',
   idea:`辺の重みがすべて 1 の最短経路は BFS で求まります。
 BFS はスタートから近い順にマスを訪問するため、初めてゴールに到達したときの手数が最小です。
@@ -1497,28 +1500,6 @@ BFS はスタートから近い順にマスを訪問するため、初めてゴ�
   }
   return dist[gr][gc];
 }`,
-  codePy:`import sys
-from collections import deque
-data = sys.stdin.read().split("\\n")
-h, w = map(int, data[0].split())
-grid = [data[i + 1] for i in range(h)]
-for i in range(h):
-    for j in range(w):
-        if grid[i][j] == "S":
-            sr, sc = i, j
-        if grid[i][j] == "G":
-            gr, gc = i, j
-dist = [[-1] * w for _ in range(h)]
-dist[sr][sc] = 0
-q = deque([(sr, sc)])
-while q:
-    r, c = q.popleft()
-    for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < h and 0 <= nc < w and grid[nr][nc] != "#" and dist[nr][nc] == -1:
-            dist[nr][nc] = dist[r][c] + 1
-            q.append((nr, nc))
-print(dist[gr][gc])`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1554,7 +1535,17 @@ public class Main {
         }
         System.out.println(dist[gr][gc]);
     }
-}`
+}`,
+  quiz:[
+    {note:`キューではなくスタックを使っている（深さ優先）ので最短にならない`, edits:[[`  let queue = [[sr, sc]], head = 0;
+  while (head < queue.length) {
+    const [r, c] = queue[head++];`,`  const stack = [[sr, sc]];
+  while (stack.length) {
+    const [r, c] = stack.pop();`],[`      queue.push([nr, nc]);`,`      stack.push([nr, nc]);`]]},
+    {note:`マス目の範囲外チェックがないので、外にはみ出して壊れる`, edits:[[`      if (nr < 0 || nr >= h || nc < 0 || nc >= w) continue;
+`,``]]},
+    {note:`距離を積み上げず、常に 1 を入れている`, edits:[[`dist[nr][nc] = dist[r][c] + 1;`,`dist[nr][nc] = 1;`]]}
+  ]
 },
 {
   kind:'algo', id:'c06', level:3, tags:['累積和'], title:'区間の和クエリ',
@@ -1594,18 +1585,6 @@ P を長さ N+1 にして P[0] = 0 を先頭に置くのがコツです。
   }
   return out.join("\\n");
 }`,
-  codePy:`import sys
-from itertools import accumulate
-data = sys.stdin.read().split()
-n, q = int(data[0]), int(data[1])
-a = list(map(int, data[2:2 + n]))
-p = [0] + list(accumulate(a))
-out = []
-for i in range(q):
-    l = int(data[2 + n + 2 * i])
-    r = int(data[3 + n + 2 * i])
-    out.append(p[r] - p[l - 1])
-print("\\n".join(map(str, out)))`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1625,7 +1604,12 @@ public class Main {
         }
         System.out.print(sb);
     }
-}`
+}`,
+  quiz:[
+    {note:`引く累積和の添字が 1 つずれている（左端を含められていない）`, edits:[[`out.push(p[r] - p[l - 1]);`,`out.push(p[r] - p[l]);`]]},
+    {note:`累積和になっておらず、元の値のままになっている`, edits:[[`p[i + 1] = p[i] + a[i];`,`p[i] = p[i] + a[i];`]]},
+    {note:`右端の要素を含めていない`, edits:[[`out.push(p[r] - p[l - 1]);`,`out.push(p[r - 1] - p[l - 1]);`]]}
+  ]
 },
 {
   kind:'algo', id:'c07', level:3, tags:['しゃくとり法'], title:'和が K 以下の最長区間',
@@ -1634,7 +1618,7 @@ public class Main {
 最も長いものの長さを求めてください。そのような部分列が存在しない場合は 0 を出力してください。`,
   constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ K ≤ 10^14','1 ≤ A_i ≤ 10^9','入力はすべて整数'],
   inputFormat:'N K\nA_1 A_2 ... A_N',
-  cases:[{in:'6 10\n3 1 4 1 5 9',out:'4'},{in:'3 1\n2 3 4',out:'0'},{in:'4 100\n1 2 3 4',out:'4'},{in:'5 5\n5 5 5 5 5',out:'1'}],
+  cases:[{in:'6 10\n3 1 4 1 5 9',out:'4'},{in:'3 1\n2 3 4',out:'0'},{in:'4 100\n1 2 3 4',out:'4'},{in:'5 5\n5 5 5 5 5',out:'1'},{in:'6 10\n9 1 1 1 1 1',out:'5'}],
   hint:'左端を 1 つ右にずらすと、条件を満たす右端は決して左には戻りません。',
   idea:`すべての区間を試すと O(N^2) で間に合いません。ここで「しゃくとり法（尺取り法 / 2 ポインタ）」を使います。
 
@@ -1663,22 +1647,6 @@ l も r も高々 N 回しか進まないので、二重ループに見えて計
   }
   return best;
 }`,
-  codePy:`n, k = map(int, input().split())
-a = list(map(int, input().split()))
-s = 0
-r = 0
-best = 0
-for l in range(n):
-    if r < l:
-        r = l
-        s = 0
-    while r < n and s + a[r] <= k:
-        s += a[r]
-        r += 1
-    best = max(best, r - l)
-    if r > l:
-        s -= a[l]
-print(best)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1701,7 +1669,13 @@ public class Main {
         }
         System.out.println(best);
     }
-}`
+}`,
+  quiz:[
+    {note:`左端を進めるときに合計から抜いていないので、和がずれ続ける`, edits:[[`    if (r > l) sum -= a[l];
+`,``]]},
+    {note:`「K 以下」の等号が落ちていて、ちょうど K の区間を数えられない`, edits:[[`sum + a[r] <= k`,`sum + a[r] < k`]]},
+    {note:`答えの初期値が 1 なので、条件を満たす区間がないときも 1 を返す`, edits:[[`let sum = 0, r = 0, best = 0;`,`let sum = 0, r = 0, best = 1;`]]}
+  ]
 },
 {
   kind:'algo', id:'c08', level:3, tags:['貪欲法','ソート'], title:'予定を最大何個入れられるか',
@@ -1713,7 +1687,7 @@ public class Main {
 最大で何個の予定を入れられますか。`,
   constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ L_i < R_i ≤ 10^9','入力はすべて整数'],
   inputFormat:'N\nL_1 R_1\n...\nL_N R_N',
-  cases:[{in:'4\n1 3\n2 5\n4 7\n6 8',out:'2'},{in:'3\n1 2\n3 4\n5 6',out:'3'},{in:'1\n5 100',out:'1'},{in:'5\n1 10\n2 3\n4 5\n6 7\n8 9',out:'4'}],
+  cases:[{in:'4\n1 3\n2 5\n4 7\n6 8',out:'2'},{in:'3\n1 2\n3 4\n5 6',out:'3'},{in:'1\n5 100',out:'1'},{in:'5\n1 10\n2 3\n4 5\n6 7\n8 9',out:'4'},{in:'3\n1 2\n2 3\n3 4',out:'2'}],
   hint:'「早く終わる予定」から順に選んでいくのが最適です。開始時刻順ではありません。',
   idea:`区間スケジューリング問題と呼ばれる、貪欲法の代表例です。
 
@@ -1747,22 +1721,6 @@ public class Main {
   }
   return cnt;
 }`,
-  codePy:`import sys
-data = sys.stdin.read().split()
-n = int(data[0])
-arr = []
-for i in range(n):
-    l = int(data[1 + 2 * i])
-    r = int(data[2 + 2 * i])
-    arr.append((r, l))
-arr.sort()
-cnt = 0
-last = -1
-for r, l in arr:
-    if l > last:
-        cnt += 1
-        last = r
-print(cnt)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -1784,7 +1742,12 @@ public class Main {
         }
         System.out.println(cnt);
     }
-}`
+}`,
+  quiz:[
+    {note:`終了時刻ではなく開始時刻でソートしている`, edits:[[`arr.sort((x, y) => x[1] - y[1]);`,`arr.sort((x, y) => x[0] - y[0]);`]]},
+    {note:`比較が >= なので、端点が接する区間まで選んでしまう`, edits:[[`if (l > last)`,`if (l >= last)`]]},
+    {note:`直前の終了時刻ではなく開始時刻を記録している`, edits:[[`{ cnt++; last = r; }`,`{ cnt++; last = l; }`]]}
+  ]
 },
 {
   kind:'algo', id:'c09', level:3, tags:['数学'], title:'約数の個数',
@@ -1819,16 +1782,6 @@ d と N / d の 2 個を数えれば、すべての約数を漏れなく数え�
   }
   return cnt;
 }`,
-  codePy:`n = int(input())
-cnt = 0
-i = 1
-while i * i <= n:
-    if n % i == 0:
-        cnt += 1
-        if i != n // i:
-            cnt += 1
-    i += 1
-print(cnt)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1844,7 +1797,13 @@ public class Main {
         }
         System.out.println(cnt);
     }
-}`
+}`,
+  quiz:[
+    {note:`ペアのもう一方（N / i）を数えていない`, edits:[[`      cnt++;
+      if (i !== n / i) cnt++;`,`      cnt++;`]]},
+    {note:`平方数のときに同じ約数を 2 回数えてしまう`, edits:[[`      if (i !== n / i) cnt++;`,`      cnt++;`]]},
+    {note:`√N で打ち切らず N まで回しているので、二重に数えてしまう（しかも遅い）`, edits:[[`for (let i = 1; i * i <= n; i++)`,`for (let i = 1; i <= n; i++)`]]}
+  ]
 },
 {
   kind:'algo', id:'c10', level:3, tags:['文字列','実装'], title:'ランレングス圧縮',
@@ -1880,9 +1839,6 @@ Python の文字列も不変なので、リストに append して "".join す�
   out.push(cur + cnt);
   return out.join("");
 }`,
-  codePy:`from itertools import groupby
-s = input()
-print("".join(c + str(len(list(g))) for c, g in groupby(s)))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1904,7 +1860,13 @@ public class Main {
         sb.append(cur).append(cnt);   // 最後の区間を忘れずに
         System.out.println(sb);
     }
-}`
+}`,
+  quiz:[
+    {note:`最後の区間を出力し忘れている`, edits:[[`  out.push(cur + cnt);
+  return out.join("");`,`  return out.join("");`]]},
+    {note:`個数の初期値が 0 なので、すべて 1 少なくなる`, edits:[[`let cur = s[0], cnt = 1;`,`let cur = s[0], cnt = 0;`]]},
+    {note:`先頭の文字を 2 回数えている`, edits:[[`for (let i = 1; i < s.length; i++)`,`for (let i = 0; i < s.length; i++)`]]}
+  ]
 }
 /* ---------------- 追加問題 ---------------- */
 ,{
@@ -1934,8 +1896,6 @@ N % 10 で一の位が取れ、N /= 10 で 1 けた減ります。N が 0 にな
   for (const c of s) sum += Number(c);
   return sum;
 }`,
-  codePy:`n = input().strip()
-print(sum(int(c) for c in n))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1946,7 +1906,12 @@ public class Main {
         for (char c : s.toCharArray()) sum += c - '0';
         System.out.println(sum);
     }
-}`
+}`,
+  quiz:[
+    {note:`数値に変換していないので、文字列の連結になっている`, edits:[[`sum += Number(c);`,`sum += c;`]]},
+    {note:`合計の初期値が 1 になっている`, edits:[[`let sum = 0;`,`let sum = 1;`]]},
+    {note:`一の位しか見ていない`, edits:[[`  for (const c of s) sum += Number(c);`,`  sum = Number(s) % 10;`]]}
+  ]
 },{
   kind:'algo', id:'a10', level:1, tags:['文字列'], title:'同じ位置の同じ文字',
   statement:`同じ長さの文字列 S と T が与えられます。
@@ -1973,9 +1938,6 @@ i 文字目どうしを比べたとき、同じ文字である位置はいくつ
   for (let i = 0; i < s.length; i++) if (s[i] === t[i]) cnt++;
   return cnt;
 }`,
-  codePy:`s = input()
-t = input()
-print(sum(1 for a, b in zip(s, t) if a == b))`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -1988,7 +1950,12 @@ public class Main {
         }
         System.out.println(cnt);
     }
-}`
+}`,
+  quiz:[
+    {note:`一致ではなく不一致の個数を数えている`, edits:[[`if (s[i] === t[i]) cnt++;`,`if (s[i] !== t[i]) cnt++;`]]},
+    {note:`先頭の文字を見ていない`, edits:[[`for (let i = 0; i < s.length; i++)`,`for (let i = 1; i < s.length; i++)`]]},
+    {note:`同じ行を 2 回読んでいるので、常に文字列の長さが返る`, edits:[[`const s = lines[0].trim(), t = lines[1].trim();`,`const s = lines[0].trim(), t = lines[0].trim();`]]}
+  ]
 },{
   kind:'algo', id:'a11', level:1, tags:['数学'], title:'グループ分け',
   statement:`N 人の生徒を、1 グループあたり最大 K 人のグループに分けます。
@@ -2016,8 +1983,6 @@ N や K が 10^15 を超えるような大きな値になると、小数の精�
   const [n, k] = input.trim().split(/\\s+/).map(Number);
   return Math.floor((n + k - 1) / k);
 }`,
-  codePy:`n, k = map(int, input().split())
-print(-(-n // k))   # 切り上げ除算のイディオム`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -2026,7 +1991,12 @@ public class Main {
         long n = sc.nextLong(), k = sc.nextLong();
         System.out.println((n + k - 1) / k);
     }
-}`
+}`,
+  quiz:[
+    {note:`切り捨てのままなので、あまりの人が入るグループが足りない`, edits:[[`Math.floor((n + k - 1) / k)`,`Math.floor(n / k)`]]},
+    {note:`常に 1 を足しているので、割り切れるときに 1 多い`, edits:[[`Math.floor((n + k - 1) / k)`,`Math.floor(n / k) + 1`]]},
+    {note:`四捨五入しているので、あまりが小さいときに切り捨てられる`, edits:[[`Math.floor((n + k - 1) / k)`,`Math.round(n / k)`]]}
+  ]
 },{
   kind:'algo', id:'a12', level:1, tags:['実装','数学'], title:'秒を時分秒に直す',
   statement:`S 秒を「H 時間 M 分 T 秒」の形に直します。
@@ -2056,8 +2026,6 @@ n 進法への変換（割った余りを並べる）にもそのまま使えま
   const rest = s % 3600;
   return h + " " + Math.floor(rest / 60) + " " + (rest % 60);
 }`,
-  codePy:`s = int(input())
-print(s // 3600, s % 3600 // 60, s % 60)`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -2068,7 +2036,12 @@ public class Main {
         int rest = s % 3600;
         System.out.println(h + " " + (rest / 60) + " " + (rest % 60));
     }
-}`
+}`,
+  quiz:[
+    {note:`あまりを更新していないので、分の値が 60 を超える`, edits:[[`const rest = s % 3600;`,`const rest = s;`]]},
+    {note:`60 ではなく 100 で割っていて、60 進法になっていない`, edits:[[`Math.floor(rest / 60)`,`Math.floor(rest / 100)`]]},
+    {note:`分と秒の出力が入れ替わっている`, edits:[[`return h + " " + Math.floor(rest / 60) + " " + (rest % 60);`,`return h + " " + (rest % 60) + " " + Math.floor(rest / 60);`]]}
+  ]
 },{
   kind:'algo', id:'b10', level:2, tags:['数学'], title:'素数判定',
   statement:`正の整数 N が与えられます。
@@ -2077,7 +2050,7 @@ N が素数なら Yes を、そうでなければ No を出力してください
 素数とは、1 より大きく、1 と自分自身以外に正の約数を持たない整数のことです。`,
   constraints:['1 ≤ N ≤ 10^12','N は整数'],
   inputFormat:'N',
-  cases:[{in:'7',out:'Yes'},{in:'1',out:'No'},{in:'91',out:'No'},{in:'2',out:'Yes'},{in:'999999999989',out:'Yes',big:true}],
+  cases:[{in:'7',out:'Yes'},{in:'1',out:'No'},{in:'91',out:'No'},{in:'2',out:'Yes'},{in:'49',out:'No'},{in:'999999999989',out:'Yes',big:true}],
   hint:'2 から N−1 まで試す必要はありません。√N まで調べれば十分です。',
   idea:`N が合成数なら、N = a × b（1 < a ≤ b < N）と書けます。
 このとき必ず a ≤ √N です（もし両方 √N より大きければ積が N を超えてしまうため）。
@@ -2103,18 +2076,6 @@ N = 10^12 なら 10^6 回で済み、一瞬で終わります。
   }
   return "Yes";
 }`,
-  codePy:`n = int(input())
-if n < 2:
-    print("No")
-else:
-    i = 2
-    ok = True
-    while i * i <= n:
-        if n % i == 0:
-            ok = False
-            break
-        i += 1
-    print("Yes" if ok else "No")`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -2127,14 +2088,19 @@ public class Main {
         }
         System.out.println("Yes");
     }
-}`
+}`,
+  quiz:[
+    {note:`境界が 1 ずれていて、1 を素数と判定してしまう`, edits:[[`if (n < 2) return "No";`,`if (n < 1) return "No";`]]},
+    {note:`ループ条件が i*i < n なので、平方数を素数と判定してしまう`, edits:[[`for (let i = 2; i * i <= n; i++)`,`for (let i = 2; i * i < n; i++)`]]},
+    {note:`約数が見つかったときの判定が逆になっている`, edits:[[`if (n % i === 0) return "No";`,`if (n % i === 0) return "Yes";`]]}
+  ]
 },{
   kind:'algo', id:'b11', level:2, tags:['文字列','ソート'], title:'アナグラム判定',
   statement:`2 つの文字列 S と T が与えられます。
 S の文字を並べ替えて T にできるなら Yes を、できないなら No を出力してください。`,
   constraints:['1 ≤ |S|, |T| ≤ 10^5','S, T は英小文字のみからなる','|S| と |T| は異なることもある'],
   inputFormat:'S\nT',
-  cases:[{in:'listen\nsilent',out:'Yes'},{in:'abc\nabd',out:'No'},{in:'aab\naba',out:'Yes'},{in:'a\naa',out:'No'},{in:'abc\ncba',out:'Yes'}],
+  cases:[{in:'listen\nsilent',out:'Yes'},{in:'abc\nabd',out:'No'},{in:'aab\naba',out:'Yes'},{in:'a\naa',out:'No'},{in:'abc\ncba',out:'Yes'},{in:'aab\nabb',out:'No'}],
   hint:'並べ替えて一致する ⇔ 各文字の個数が完全に同じ、です。',
   idea:`「並べ替えて一致するか」は「使われている文字の個数が同じか」と言い換えられます。
 
@@ -2160,9 +2126,6 @@ S の文字を並べ替えて T にできるなら Yes を、できないなら 
   const b = t.split("").sort().join("");
   return a === b ? "Yes" : "No";
 }`,
-  codePy:`s = input()
-t = input()
-print("Yes" if sorted(s) == sorted(t) else "No")`,
   codeJava:`import java.util.*;
 
 public class Main {
@@ -2175,7 +2138,12 @@ public class Main {
         Arrays.sort(b);
         System.out.println(Arrays.equals(a, b) ? "Yes" : "No");
     }
-}`
+}`,
+  quiz:[
+    {note:`文字の種類だけを比べていて、個数を見ていない`, edits:[[`const a = s.split("").sort().join("");`,`const a = [...new Set(s)].sort().join("");`],[`const b = t.split("").sort().join("");`,`const b = [...new Set(t)].sort().join("");`]]},
+    {note:`並べ替えずにそのまま比べている`, edits:[[`const a = s.split("").sort().join("");`,`const a = s;`]]},
+    {note:`長さだけを比べていて、中身を見ていない`, edits:[[`return a === b ? "Yes" : "No";`,`return a.length === b.length ? "Yes" : "No";`]]}
+  ]
 },{
   kind:'algo', id:'b12', level:2, tags:['ソート'], title:'いちばん近い 2 つの数',
   statement:`N 個の整数 A_1, ..., A_N が与えられます。
@@ -2205,9 +2173,6 @@ public class Main {
   for (let i = 1; i < a.length; i++) best = Math.min(best, a[i] - a[i - 1]);
   return best;
 }`,
-  codePy:`n = int(input())
-a = sorted(map(int, input().split()))
-print(min(a[i + 1] - a[i] for i in range(n - 1)))`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2223,7 +2188,13 @@ public class Main {
         for (int i = 1; i < n; i++) best = Math.min(best, a[i] - a[i - 1]);
         System.out.println(best);
     }
-}`
+}`,
+  quiz:[
+    {note:`ソートしていないので、となりどうしの差に意味がない`, edits:[[`  a.sort((x, y) => x - y);
+`,``]]},
+    {note:`比べる添字が 1 つ先を向いていて、配列の外を読む`, edits:[[`a[i] - a[i - 1]`,`a[i + 1] - a[i]`]]},
+    {note:`最小値の初期値が 0 なので、常に 0 が返る`, edits:[[`let best = Infinity;`,`let best = 0;`]]}
+  ]
 },{
   kind:'algo', id:'b13', level:2, tags:['全探索','ビット全探索'], title:'2 つのグループに分ける',
   statement:`N 個の正整数 A_1, ..., A_N をすべて、2 つのグループに分けます
@@ -2264,14 +2235,6 @@ N が 30 を超えると 2^N が現実的でなくなるので、
   }
   return best;
 }`,
-  codePy:`n = int(input())
-a = list(map(int, input().split()))
-total = sum(a)
-best = total
-for mask in range(1 << n):
-    s = sum(a[i] for i in range(n) if mask >> i & 1)
-    best = min(best, abs(total - 2 * s))
-print(best)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2293,7 +2256,12 @@ public class Main {
         }
         System.out.println(best);
     }
-}`
+}`,
+  quiz:[
+    {note:`絶対値を取っていないので、負の値が最小になってしまう`, edits:[[`Math.abs(total - 2 * s)`,`(total - 2 * s)`]]},
+    {note:`mask の範囲が狭く、片方が空になる分け方を除いている`, edits:[[`for (let mask = 0; mask < (1 << n); mask++)`,`for (let mask = 1; mask < (1 << n) - 1; mask++)`]]},
+    {note:`合計していないので、選んだ最後の要素だけを見ている`, edits:[[`if ((mask >> i) & 1) s += a[i];`,`if ((mask >> i) & 1) s = a[i];`]]}
+  ]
 },{
   kind:'algo', id:'c11', level:3, tags:['ソート','数え上げ'], title:'転倒数',
   statement:`N 個の整数 A_1, ..., A_N が与えられます。
@@ -2302,7 +2270,7 @@ i < j かつ A_i > A_j を満たす組 (i, j) の個数を求めてください�
 （この値は、バブルソートでこの列を昇順に並べ替えるときの交換回数と一致します）`,
   constraints:['1 ≤ N ≤ 2000','1 ≤ A_i ≤ 10^9','入力はすべて整数'],
   inputFormat:'N\nA_1 A_2 ... A_N',
-  cases:[{in:'4\n3 1 4 2',out:'3'},{in:'3\n1 2 3',out:'0'},{in:'3\n3 2 1',out:'3'},{in:'5\n2 4 1 3 5',out:'3'}],
+  cases:[{in:'4\n3 1 4 2',out:'3'},{in:'3\n1 2 3',out:'0'},{in:'3\n3 2 1',out:'3'},{in:'5\n2 4 1 3 5',out:'3'},{in:'4\n2 2 1 1',out:'4'}],
   hint:'N ≤ 2000 なので、すべての組 (i, j) を調べても 200 万通りです。',
   idea:`この値は「転倒数」と呼ばれ、列がどれだけ整列から遠いかを表す指標です。
 
@@ -2332,14 +2300,6 @@ O(N log N) で求めます。C 問題の一歩先（D 問題以降）でよく�
       if (a[i] > a[j]) cnt++;
   return cnt;
 }`,
-  codePy:`n = int(input())
-a = list(map(int, input().split()))
-cnt = 0
-for i in range(n):
-    for j in range(i + 1, n):
-        if a[i] > a[j]:
-            cnt += 1
-print(cnt)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2356,7 +2316,12 @@ public class Main {
                 if (a[i] > a[j]) cnt++;
         System.out.println(cnt);
     }
-}`
+}`,
+  quiz:[
+    {note:`比較が >= なので、値が等しい組まで数えている`, edits:[[`if (a[i] > a[j]) cnt++;`,`if (a[i] >= a[j]) cnt++;`]]},
+    {note:`i < j の条件がなく、同じ組を両方向から数えている`, edits:[[`for (let j = i + 1; j < n; j++)`,`for (let j = 0; j < n; j++)`]]},
+    {note:`不等号が逆で、順序が正しい組を数えている`, edits:[[`if (a[i] > a[j]) cnt++;`,`if (a[i] < a[j]) cnt++;`]]}
+  ]
 },{
   kind:'algo', id:'c12', level:3, tags:['動的計画法','二分探索'], title:'最長増加部分列',
   statement:`N 個の整数 A_1, ..., A_N が与えられます。
@@ -2364,7 +2329,7 @@ public class Main {
 狭義単調増加（前の値より必ず大きい）になっているものの最大の長さを求めてください。`,
   constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ A_i ≤ 10^9','入力はすべて整数'],
   inputFormat:'N\nA_1 A_2 ... A_N',
-  cases:[{in:'6\n5 1 3 2 4 6',out:'4'},{in:'1\n5',out:'1'},{in:'5\n5 4 3 2 1',out:'1'},{in:'7\n1 3 2 4 5 3 6',out:'5'}],
+  cases:[{in:'6\n5 1 3 2 4 6',out:'4'},{in:'1\n5',out:'1'},{in:'5\n5 4 3 2 1',out:'1'},{in:'7\n1 3 2 4 5 3 6',out:'5'},{in:'5\n1 1 1 1 1',out:'1'}],
   hint:'「長さ k の増加列を作るときの、最後の要素の最小値」を配列で管理します。',
   idea:`最長増加部分列（LIS）は、DP の代表的な問題です。
 
@@ -2402,17 +2367,6 @@ t の中身は「実際の LIS そのもの」ではない点に注意してく�
   }
   return t.length;
 }`,
-  codePy:`import bisect
-n = int(input())
-a = list(map(int, input().split()))
-t = []
-for x in a:
-    i = bisect.bisect_left(t, x)   # 狭義単調増加なので bisect_left
-    if i == len(t):
-        t.append(x)
-    else:
-        t[i] = x
-print(len(t))`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2435,7 +2389,12 @@ public class Main {
         }
         System.out.println(len);
     }
-}`
+}`,
+  quiz:[
+    {note:`二分探索が upper_bound になっていて、同じ値も増加とみなしている`, edits:[[`if (t[mid] >= x) hi = mid; else lo = mid + 1;`,`if (t[mid] > x) hi = mid; else lo = mid + 1;`]]},
+    {note:`末尾の置き換えをしていないので、列がほとんど伸びない`, edits:[[`if (lo === t.length) t.push(x); else t[lo] = x;`,`if (lo === t.length) t.push(x);`]]},
+    {note:`二分探索の比較の向きが逆になっている`, edits:[[`if (t[mid] >= x) hi = mid; else lo = mid + 1;`,`if (t[mid] <= x) hi = mid; else lo = mid + 1;`]]}
+  ]
 },{
   kind:'algo', id:'c13', level:3, tags:['累積和'], title:'区間に加算した後の最大値',
   statement:`長さ N の数列があり、最初はすべて 0 です。
@@ -2484,20 +2443,6 @@ d[R+1] で引いているので、R より右では X の影響が打ち消さ�
   }
   return best;
 }`,
-  codePy:`import sys
-data = sys.stdin.read().split()
-n, q = int(data[0]), int(data[1])
-d = [0] * (n + 2)
-for i in range(q):
-    l = int(data[2 + 3 * i]); r = int(data[3 + 3 * i]); x = int(data[4 + 3 * i])
-    d[l] += x
-    d[r + 1] -= x
-cur = 0
-best = None
-for i in range(1, n + 1):
-    cur += d[i]
-    best = cur if best is None else max(best, cur)
-print(best)`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2522,7 +2467,13 @@ public class Main {
         }
         System.out.println(best);
     }
-}`
+}`,
+  quiz:[
+    {note:`引く位置が R になっていて、右端の要素に加算が届かない`, edits:[[`d[r + 1] -= x;`,`d[r] -= x;`]]},
+    {note:`最大値の初期値が 0 なので、すべて負のときに誤る`, edits:[[`let cur = 0, best = -Infinity;`,`let cur = 0, best = 0;`]]},
+    {note:`累積和を取らず、差分配列そのものの最大値を見ている`, edits:[[`    cur += d[i];
+    if (cur > best) best = cur;`,`    if (d[i] > best) best = d[i];`]]}
+  ]
 },{
   kind:'algo', id:'c14', level:3, tags:['動的計画法'], title:'障害物のあるマス目の経路数',
   statement:`H 行 W 列のマス目があります。各マスは . （通れる）または # （通れない）です。
@@ -2572,24 +2523,6 @@ public class Main {
   }
   return dp[h - 1][w - 1];
 }`,
-  codePy:`import sys
-data = sys.stdin.read().split("\\n")
-h, w = map(int, data[0].split())
-MOD = 998244353
-g = [data[i + 1] for i in range(h)]
-dp = [[0] * w for _ in range(h)]
-dp[0][0] = 1
-for i in range(h):
-    for j in range(w):
-        if g[i][j] == "#":
-            dp[i][j] = 0
-            continue
-        if i:
-            dp[i][j] += dp[i - 1][j]
-        if j:
-            dp[i][j] += dp[i][j - 1]
-        dp[i][j] %= MOD
-print(dp[h - 1][w - 1])`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2612,7 +2545,13 @@ public class Main {
         }
         System.out.println(dp[h - 1][w - 1]);
     }
-}`
+}`,
+  quiz:[
+    {note:`壁のマスを 0 にしていないので、壁をすり抜ける経路まで数える`, edits:[[`      if (g[i][j] === "#") { dp[i][j] = 0; continue; }
+`,``]]},
+    {note:`出発点の初期値が 0 なので、答えが常に 0 になる`, edits:[[`dp[0][0] = 1;`,`dp[0][0] = 0;`]]},
+    {note:`上からの遷移が左からの遷移と同じになっていて、二重に数えている`, edits:[[`if (i > 0) dp[i][j] = (dp[i][j] + dp[i - 1][j]) % MOD;`,`if (i > 0) dp[i][j] = (dp[i][j] + dp[i][j - 1]) % MOD;`]]}
+  ]
 },{
   kind:'algo', id:'c15', level:3, tags:['動的計画法'], title:'ナップサック問題',
   statement:`N 個の品物があり、i 番目の品物の重さは W_i、価値は V_i です。
@@ -2658,15 +2597,6 @@ DP は「何を添字にするか」を制約から選ぶのがコツです。
   }
   return dp[cap];
 }`,
-  codePy:`import sys
-data = sys.stdin.read().split()
-n, cap = int(data[0]), int(data[1])
-dp = [0] * (cap + 1)
-for i in range(n):
-    w = int(data[2 + 2 * i]); v = int(data[3 + 2 * i])
-    for j in range(cap, w - 1, -1):
-        dp[j] = max(dp[j], dp[j - w] + v)
-print(dp[cap])`,
   codeJava:`import java.io.*;
 import java.util.*;
 
@@ -2686,7 +2616,12 @@ public class Main {
         }
         System.out.println(dp[cap]);
     }
-}`
+}`,
+  quiz:[
+    {note:`ループの向きが逆で、同じ品物を何個でも使えてしまう`, edits:[[`for (let j = cap; j >= w; j--)`,`for (let j = w; j <= cap; j++)`]]},
+    {note:`価値ではなく重さを足している`, edits:[[`dp[j - w] + v`,`dp[j - w] + w`]]},
+    {note:`dp の初期値が −1 なので、何も選ばない場合を表せていない`, edits:[[`const dp = new Array(cap + 1).fill(0);`,`const dp = new Array(cap + 1).fill(-1);`]]}
+  ]
 }
 /* ---------------- 論理パズル ---------------- */
 ,{
@@ -3293,18 +3228,28 @@ function pickProblem() {
 
 /* ---------- 出題画面 ---------- */
 let current = null, currentCase = null, selectedChoice = null;
-let startedAt = 0, timerId = null, answered = false, hintUsed = false;
+let codeOptions = [], selectedCode = -1;
+let startedAt = 0, answered = false, hintUsed = false;
 // 答えモードでは、手計算できるケースの中から毎回ランダムに出題する（答えの丸暗記を防ぐ）
 function pickCase(p) {
   const pool = p.cases.filter(c => !c.big);
   const arr = pool.length ? pool : p.cases;
   return arr[Math.floor(Math.random() * arr.length)];
 }
-const codeDraft = {};
 
-function starterCode(p) {
-  const fmt = p.inputFormat.split('\n').map(l => '//   ' + l).join('\n');
-  return `function solve(input) {\n  // 入力形式:\n${fmt}\n  const lines = input.split("\\n");\n\n  return "";\n}`;
+// 正解コードに「よくあるミス」を 1 か所だけ埋め込んだ誤答を作り、並び順をシャッフルする
+function buildCodeOptions(p) {
+  const opts = [{ code: p.codeJs, ok: true, note: '正解。境界の扱いと計算量が、制約どおりになっています。' }];
+  for (const q of p.quiz) {
+    let code = p.codeJs;
+    for (const [find, replace] of q.edits) code = code.replace(find, replace);
+    opts.push({ code, ok: false, note: q.note });
+  }
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+  return opts;
 }
 
 function serve(p) {
@@ -3327,6 +3272,8 @@ function serve(p) {
   $('#secFormat').classList.toggle('hidden', puzzle);
   $('#secSample').classList.toggle('hidden', puzzle);
   const codeMode = !puzzle && settings.format === 'code';
+  selectedCode = -1;
+  codeOptions = [];
   $('#answerMode').classList.toggle('hidden', codeMode);
   $('#codeMode').classList.toggle('hidden', !codeMode);
   $('#choiceBox').classList.toggle('hidden', !(puzzle && p.choices));
@@ -3352,8 +3299,9 @@ function serve(p) {
     $('#pSampleIn').textContent = currentCase.in;
     if (codeMode) {
       $('#pSampleOut').textContent = p.cases[0].out;
-      $('#sampleNote').textContent = `提出すると ${p.cases.length} 個のテストケースで自動採点します。`;
-      $('#codeInput').value = codeDraft[p.id] || starterCode(p);
+      $('#sampleNote').textContent = `4 つのうち、${p.cases.length} 個のテストケースすべてを通るコードは 1 つだけです。`;
+      codeOptions = buildCodeOptions(p);
+      renderCodeOptions();
     } else {
       $('#answerLabel').textContent = 'この入力に対する答えを入力してください';
       $('#sampleNote').textContent = currentCase.out.includes('\n')
@@ -3373,38 +3321,35 @@ function serve(p) {
   $('#giveupBtn').disabled = false;
 
   startedAt = Date.now();
-  clearInterval(timerId);
-  $('#pTimer').textContent = '00:00';
-  timerId = setInterval(() => { $('#pTimer').textContent = fmtMs(Date.now() - startedAt); }, 500);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function runUserCode(p, code) {
-  let fn;
-  try {
-    fn = new Function('"use strict";' + code + '\nreturn typeof solve === "function" ? solve : null;')();
-  } catch (e) {
-    return { compileError: e.message };
-  }
-  if (!fn) return { compileError: 'solve という名前の関数が見つかりません。' };
-  const results = [];
-  for (const c of p.cases) {
-    let verdict, got = '';
-    try {
-      const out = fn(c.in);
-      got = (out === undefined || out === null) ? '' : String(out);
-      verdict = norm(got) === norm(c.out) ? 'AC' : 'WA';
-    } catch (e) {
-      verdict = 'RE'; got = e.message;
-    }
-    results.push({ c, verdict, got });
-  }
-  return { results, allAC: results.every(r => r.verdict === 'AC') };
+function renderCodeOptions() {
+  $('#codeOptions').innerHTML = codeOptions.map((o, i) => `
+    <div class="code-option" data-opt="${i}">
+      <div class="co-head"><span class="co-key">${'ABCD'[i]}</span><span>選択肢 ${'ABCD'[i]}</span></div>
+      <pre class="co-code">${esc(o.code)}</pre>
+    </div>`).join('');
+}
+function selectCode(i) {
+  if (answered || i < 0 || i >= codeOptions.length) return;
+  selectedCode = i;
+  $$('#codeOptions .code-option').forEach(el => el.classList.toggle('on', Number(el.dataset.opt) === i));
+}
+function revealCodeOptions() {
+  $$('#codeOptions .code-option').forEach(el => {
+    const i = Number(el.dataset.opt), o = codeOptions[i];
+    el.classList.remove('on');
+    el.classList.add(o.ok ? 'ok' : 'ng');
+    const note = document.createElement('div');
+    note.className = 'co-note ' + (o.ok ? 'ok' : 'ng');
+    note.textContent = (o.ok ? '◎ ' : '✗ ') + o.note;
+    el.appendChild(note);
+  });
 }
 
 function finish(kind, ms) { // 'ok' | 'ng' | 'sk'
   answered = true;
-  clearInterval(timerId);
   const p = current, r = rec(p.id);
   r.a++;
   r.last = Date.now();
@@ -3447,7 +3392,7 @@ function submit() {
       });
     }
     box.innerHTML = ok
-      ? `<div class="result ok">✓ 正解！ <small>解答時間 ${fmtMs(ms)}${hintUsed ? ' / ヒント使用' : ''}</small></div>`
+      ? `<div class="result ok">✓ 正解！${hintUsed ? ' <small>ヒント使用</small>' : ''}</div>`
       : `<div class="result ng">✗ 不正解 <small>あなたの答え: ${esc(String(val).trim())} ／ 正しい答え: ${esc(p.answer)}</small></div>`;
     finish(ok ? 'ok' : 'ng', ms);
     return;
@@ -3458,30 +3403,18 @@ function submit() {
     if (val.trim() === '') { toast('答えを入力してください'); return; }
     const ok = norm(val) === norm(currentCase.out);
     box.innerHTML = ok
-      ? `<div class="result ok">✓ 正解！ <small>解答時間 ${fmtMs(ms)}${hintUsed ? ' / ヒント使用' : ''}</small></div>`
+      ? `<div class="result ok">✓ 正解！${hintUsed ? ' <small>ヒント使用</small>' : ''}</div>`
       : `<div class="result ng">✗ 不正解 <small>あなたの答え: ${esc(val.trim())} ／ 正しい答え: ${esc(currentCase.out)}</small></div>`;
     finish(ok ? 'ok' : 'ng', ms);
   } else {
-    const code = $('#codeInput').value;
-    codeDraft[p.id] = code;
-    const res = runUserCode(p, code);
-    if (res.compileError) {
-      box.innerHTML = `<div class="result ng">✗ コンパイルエラー <small>${esc(res.compileError)}</small></div>`;
-      return; // 記録せず書き直させる
-    }
-    const list = res.results.map((r, i) => `
-      <div class="case">
-        <span class="verdict ${r.verdict.toLowerCase()}">${r.verdict}</span>
-        <span style="color:var(--dim)"> テスト${i + 1}${i === 0 ? '（入力例）' : ''}</span>
-        <pre>入力: ${esc(r.c.in)}
-期待: ${esc(r.c.out)}
-出力: ${esc(r.got === '' ? '(空)' : r.got)}</pre>
-      </div>`).join('');
-    box.innerHTML = (res.allAC
-      ? `<div class="result ok">✓ 全テストケース AC！ <small>所要時間 ${fmtMs(ms)}${hintUsed ? ' / ヒント使用' : ''}</small></div>`
-      : `<div class="result ng">✗ 不正解（AC ${res.results.filter(r => r.verdict === 'AC').length} / ${res.results.length}）</div>`)
-      + `<div class="case-list">${list}</div>`;
-    finish(res.allAC ? 'ok' : 'ng', ms);
+    if (selectedCode < 0) { toast('コードを 1 つ選んでください'); return; }
+    const ok = codeOptions[selectedCode].ok;
+    const correctKey = 'ABCD'[codeOptions.findIndex(o => o.ok)];
+    revealCodeOptions();
+    box.innerHTML = ok
+      ? `<div class="result ok">✓ 正解！${hintUsed ? ' <small>ヒント使用</small>' : ''}</div>`
+      : `<div class="result ng">✗ 不正解 <small>正しいコードは ${correctKey} です。各選択肢の下に、どこが間違っているかを表示しました。</small></div>`;
+    finish(ok ? 'ok' : 'ng', ms);
   }
 }
 
@@ -3506,14 +3439,13 @@ function renderEditorial(p, el) {
       <ul>${p.pitfalls.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <h3>解答例</h3>
       <div class="code-tabs">
-        <button class="code-tab on" data-lang="py">Python</button>
+        <button class="code-tab on" data-lang="js">JavaScript</button>
         <button class="code-tab" data-lang="java">Java</button>
-        <button class="code-tab" data-lang="js">JavaScript</button>
       </div>
-      <pre class="code" data-code>${esc(p.codePy)}</pre>
+      <pre class="code" data-code>${esc(p.codeJs)}</pre>
     </div>`;
   const pre = el.querySelector('[data-code]');
-  const srcOf = { py: p.codePy, java: p.codeJava, js: p.codeJs };
+  const srcOf = { java: p.codeJava, js: p.codeJs };
   el.querySelectorAll('.code-tab').forEach(btn => {
     btn.onclick = () => {
       el.querySelectorAll('.code-tab').forEach(b => b.classList.toggle('on', b === btn));
@@ -3749,6 +3681,20 @@ function init() {
     $$('#formatChips .chip').forEach(c => c.classList.toggle('on', c === b));
   };
 
+  const goHome = () => {
+    if (current && !answered && !confirm('解答中の問題を閉じて、トップに戻りますか？')) return;
+    current = null;
+    $('#problemPanel').classList.add('hidden');
+    $('#setupPanel').classList.remove('hidden');
+    showTab('drill');
+    updatePoolInfo();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  $('#homeBtn').onclick = goHome;
+  $('#homeBtn').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(); }
+  });
+
   $('#startBtn').onclick = () => {
     const p = pickProblem();
     if (!p) { toast('条件に合う問題がありません'); return; }
@@ -3762,6 +3708,16 @@ function init() {
   };
   $('#giveupBtn').onclick = () => {
     if (!current || answered) return;
+    if (current.kind === 'algo' && settings.format === 'code') {
+      const correctKey = 'ABCD'[codeOptions.findIndex(o => o.ok)];
+      revealCodeOptions();
+      $('#resultBox').innerHTML = `<div class="result skip">解説を確認しましょう <small>正しいコードは ${correctKey} です</small></div>`;
+      const ms0 = Date.now() - startedAt;
+      finish('ng', ms0);
+      state.history[state.history.length - 1].r = 'sk';
+      save(); renderStats();
+      return;
+    }
     const ansText = current.kind === 'puzzle' ? current.answer : currentCase.out;
     if (current.kind === 'puzzle' && current.choices) {
       $$('#choiceBox .choice').forEach(b => {
@@ -3782,7 +3738,6 @@ function init() {
   };
   $('#retryBtn').onclick = () => serve(current);
   $('#endBtn').onclick = () => {
-    clearInterval(timerId);
     current = null;
     $('#problemPanel').classList.add('hidden');
     $('#setupPanel').classList.remove('hidden');
@@ -3800,14 +3755,16 @@ function init() {
   };
 
   $('#answerInput').addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
-  $('#codeInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(); }
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const ta = e.target, s = ta.selectionStart;
-      ta.value = ta.value.slice(0, s) + '  ' + ta.value.slice(ta.selectionEnd);
-      ta.selectionStart = ta.selectionEnd = s + 2;
-    }
+  $('#codeOptions').onclick = e => {
+    const el = e.target.closest('[data-opt]'); if (!el) return;
+    selectCode(Number(el.dataset.opt));
+  };
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (!current || answered || current.kind === 'puzzle' || settings.format !== 'code') return;
+    const i = 'abcd'.indexOf(e.key.toLowerCase());
+    if (i >= 0) { e.preventDefault(); selectCode(i); }
+    else if (e.key === 'Enter') { e.preventDefault(); submit(); }
   });
 
   ['#libKind', '#libLevel', '#libTag', '#libState'].forEach(sel => $(sel).onchange = renderLibrary);
@@ -3842,8 +3799,9 @@ function init() {
 【重要：問題文について】
 AtCoder の問題文は著作物のため、このアプリには一切転載していません。
 収録している ${PROBLEMS.length} 問はすべて書き下ろしたオリジナル問題です。
-アルゴリズム問題の解答例（Python / Java / JavaScript）は全問、実際に実行してテストケースとの
-一致を確認済みです。論理パズルの答えも、総当たりで検証できるものはすべて計算で確認しています。
+アルゴリズム問題の解答例（JavaScript / Java）は全問、実際に実行してテストケースとの一致を
+確認済みです。コード選択モードの誤答も、すべて「必ずどこかのテストケースで落ちる」ことを
+実行して確認しています。論理パズルの答えも、総当たりで検証できるものは計算で確認しています。
 本家の問題に挑戦したくなったら AtCoder（https://atcoder.jp/）へどうぞ。
 
 【4 つの機能】
@@ -3867,17 +3825,21 @@ AtCoder の問題文は著作物のため、このアプリには一切転載し
 
 【2 つの解答形式】（アルゴリズム問題のみ）
 ・答えモード … 入力例に対する答えを暗算・筆算で出す。スキマ時間の脳トレ向き。
-・コードモード … solve(input) を JavaScript で実装して提出。全テストケースで自動採点します。
-  （ブラウザ内で実行するため、無限ループを書くとページが固まります。その場合は再読み込みしてください）
+・コード選択モード … 4 つのコードから、正しく動くものを 1 つ選ぶ。
+  誤答の 3 つには、その問題で実際にやりがちなミス（ループの向き、境界の等号、
+  添字のずれ、初期値など）が 1 か所だけ仕込んであります。
+  提出後は、どの選択肢がなぜ間違いなのかがすべて表示されます。
 
-【提出できる言語について】
-コードモードで提出できるのは JavaScript だけです。ブラウザには JavaScript の実行環境しか
-無いためで、Python や Java を採点するにはサーバー側の実行環境が必要になります。
-Java と Python は「解説の解答例」として全問掲載しているので、読んで学ぶ用途にお使いください。
+【コードの言語について】
+コード選択モードの選択肢は JavaScript です。解説の「解答例」は JavaScript と Java の
+2 つのタブで読めます。
+
+【トップに戻るには】
+画面左上のロゴ（AC アイコンとタイトル）をクリックすると、いつでも出題設定の画面に戻れます。
 
 【キーボード操作】
 ・答えモード： Enter で提出
-・コードモード： Ctrl（⌘）+ Enter で提出 / Tab でインデント
+・コード選択モード： A / B / C / D で選択、Enter で提出
 
 【データの保存について】
 成績はこのブラウザの localStorage にのみ保存されます。サーバーへの送信は一切ありません。
