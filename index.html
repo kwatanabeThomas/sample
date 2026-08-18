@@ -7447,6 +7447,614 @@ public class Main {
     {note:`区切りの空白がない`, edits:[[`return out.join(" ");`,`return out.join("");`]]}
   ]
 }
+,{
+  kind:'algo', id:'b45', level:2, tags:['ソート'], title:'重複を除いて並べる',
+  statement:`N 個の整数が与えられます。
+重複を取り除き、小さい順に並べて空白区切りで出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'5\n3 1 3 2 1',out:'1 2 3'},{in:'1\n7',out:'7'},{in:'4\n5 5 5 5',out:'5'},{in:'3\n-1 0 -1',out:'-1 0'},{in:'2\n5 -1',out:'-1 5'},{in:'3\n-5 0 2',out:'-5 0 2'},{in:'3\n-3 -4 -3',out:'-4 -3'},{in:'3\n-3 -2 5',out:'-3 -2 5'},{in:'2\n2 -3',out:'-3 2'},{in:'4\n-4 2 3 1',out:'-4 1 2 3'}],
+  hint:'集合に入れてからソートするか、ソートしてから隣どうしを比べます。',
+  idea:`2 通りの解き方があります。
+
+【集合を使う】集合に入れて重複を除き、そのあとソートする。O(N log N)。
+【ソートしてから除く】ソートすると同じ値が隣り合うので、
+前の値と違うときだけ出力すればよい。追加のメモリが要りません。
+
+どちらも計算量は O(N log N) です。
+2 重ループで「すでに出たか」を調べる方法は O(N^2) となり、N = 2×10^5 では間に合いません。
+
+JavaScript では数値ソートの比較関数を忘れると辞書順になる点に注意してください。
+また「重複を除く」処理は、集合の性質（同じ要素を持たない）をそのまま使えます。`,
+  complexity:'O(N log N)',
+  pitfalls:['数値ソートの比較関数を忘れる','重複判定を二重ループで行って間に合わない','ソート前に重複を除いて順序が崩れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const uniq = [...new Set(a)];
+  uniq.sort((x, y) => x - y);
+  return uniq.join(" ");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        TreeSet<Long> set = new TreeSet<>();
+        for (int i = 0; i < n; i++) set.add(Long.parseLong(st.nextToken()));
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (long v : set) {
+            if (!first) sb.append(' ');
+            sb.append(v);
+            first = false;
+        }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`数値ソートの比較関数がなく、文字列として並べている`, edits:[[`uniq.sort((x, y) => x - y);`,`uniq.sort();`]]},
+    {note:`重複を除いていない`, edits:[[`const uniq = [...new Set(a)];`,`const uniq = [...a];`]]},
+    {note:`大きい順に並べている`, edits:[[`uniq.sort((x, y) => x - y);`,`uniq.sort((x, y) => y - x);`]]},
+    {note:`区切りの空白がない`, edits:[[`return uniq.join(" ");`,`return uniq.join("");`]]},
+    {note:`種類数だけを出力している`, edits:[[`return uniq.join(" ");`,`return uniq.length;`]]}
+  ]
+},{
+  kind:'algo', id:'b46', level:2, tags:['数え上げ','ハッシュ'], title:'両方にある数はいくつ？',
+  statement:`N 個の整数からなる列 A と、M 個の整数からなる列 B が与えられます。
+A と B の両方に現れる値は、何種類ありますか。`,
+  constraints:['1 ≤ N, M ≤ 2 × 10^5','-10^9 ≤ 各要素 ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N M\nA_1 ... A_N\nB_1 ... B_M',
+  cases:[{in:'3 3\n1 2 3\n2 3 4',out:'2'},{in:'2 2\n1 1\n1 1',out:'1'},{in:'3 2\n1 2 3\n4 5',out:'0'},{in:'1 1\n5\n5',out:'1'},{in:'4 3\n4 5 6 1\n2 6 2',out:'1'},{in:'2 1\n2 2\n5',out:'0'},{in:'5 2\n1 4 6 5 2\n1 3',out:'1'},{in:'5 5\n1 1 6 1 5\n4 1 1 3 1',out:'1'},{in:'1 5\n4\n6 1 6 3 2',out:'0'},{in:'1 2\n4\n4 6',out:'1'}],
+  hint:'A を集合にしてから、B の要素が含まれるかを調べます。種類数なので重複に注意してください。',
+  idea:`A を集合に入れ、B の各要素について「A に含まれるか」を調べます。
+集合の判定は平均 O(1) なので、全体で O(N + M) です。
+
+【種類数であることに注意】
+同じ値が何度現れても 1 種類と数えます。
+そのため、見つかった値も集合に入れて重複を防ぎます。
+テストケース 1 1 / 1 1 の答えが 1 なのは、そのためです。
+
+二重ループで総当たりすると O(NM) = 4×10^10 回となり、まったく間に合いません。
+「含まれるかの判定を高速にしたい」と思ったら、
+集合（ハッシュ）かソート＋二分探索を検討する、というのが定石です。`,
+  complexity:'O(N + M)',
+  pitfalls:['同じ値を重複して数える','二重ループで間に合わない','集合に入れる側と調べる側を混同する'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const b = lines[2].trim().split(/\\s+/).map(Number);
+  const sa = new Set(a);
+  const both = new Set();
+  for (const x of b) if (sa.has(x)) both.add(x);
+  return both.size;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        Set<Long> sa = new HashSet<>();
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) sa.add(Long.parseLong(st.nextToken()));
+        Set<Long> both = new HashSet<>();
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < m; i++) {
+            long x = Long.parseLong(st.nextToken());
+            if (sa.contains(x)) both.add(x);
+        }
+        System.out.println(both.size());
+    }
+}`,
+  quiz:[
+    {note:`重複を除いておらず、同じ値を何度も数えている`, edits:[[`  const both = new Set();\n  for (const x of b) if (sa.has(x)) both.add(x);\n  return both.size;`,`  let cnt = 0;\n  for (const x of b) if (sa.has(x)) cnt++;\n  return cnt;`]]},
+    {note:`含まれないものを数えている`, edits:[[`if (sa.has(x)) both.add(x);`,`if (!sa.has(x)) both.add(x);`]]},
+    {note:`B ではなく A を調べており、常に A の種類数になる`, edits:[[`for (const x of b) if (sa.has(x)) both.add(x);`,`for (const x of a) if (sa.has(x)) both.add(x);`]]},
+    {note:`集合に入れる列を取り違えている`, edits:[[`const sa = new Set(a);`,`const sa = new Set(b);`]]},
+    {note:`個数ではなく B の要素数を返している`, edits:[[`  return both.size;`,`  return b.length;`]]}
+  ]
+},{
+  kind:'algo', id:'b47', level:2, tags:['数え上げ','ハッシュ'], title:'A にだけある数',
+  statement:`N 個の整数からなる列 A と、M 個の整数からなる列 B が与えられます。
+A には現れるが B には現れない値は、何種類ありますか。`,
+  constraints:['1 ≤ N, M ≤ 2 × 10^5','-10^9 ≤ 各要素 ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N M\nA_1 ... A_N\nB_1 ... B_M',
+  cases:[{in:'3 3\n1 2 3\n2 3 4',out:'1'},{in:'2 2\n1 1\n1 1',out:'0'},{in:'3 2\n1 2 3\n4 5',out:'3'},{in:'1 1\n5\n6',out:'1'},{in:'3 1\n1 1 2\n2',out:'1'},{in:'3 3\n6 2 3\n5 6 6',out:'2'},{in:'1 4\n2\n4 3 3 3',out:'1'},{in:'1 3\n3\n2 5 2',out:'1'},{in:'3 5\n6 4 1\n5 5 2 5 6',out:'2'},{in:'5 4\n4 3 1 6 4\n6 5 4 4',out:'2'},{in:'3 1\n5 2 6\n5',out:'2'}],
+  hint:'A を種類ごとにまとめてから、B に含まれないものを数えます。',
+  idea:`差集合の大きさを求める問題です。
+
+  A を集合にする（これで種類ごとにまとまる）
+  B も集合にする
+  A の要素のうち、B に含まれないものを数える
+
+「種類」を数えるので、A を先に集合にしておくのが重要です。
+そうしないと、A に同じ値が複数あったときに何度も数えてしまいます。
+
+集合の演算（和・積・差）は、条件の絞り込みでよく使います。
+・両方にある → 積集合
+・片方にだけある → 差集合
+・どちらかにある → 和集合
+
+言語によっては集合演算の関数が用意されていますが、
+なくてもループと has 判定で書けます。`,
+  complexity:'O(N + M)',
+  pitfalls:['A の重複を除かずに数える','差の向きを逆にする','二重ループで間に合わない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const b = lines[2].trim().split(/\\s+/).map(Number);
+  const sb = new Set(b);
+  let cnt = 0;
+  for (const x of new Set(a)) if (!sb.has(x)) cnt++;
+  return cnt;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        Set<Long> sa = new HashSet<>(), sb = new HashSet<>();
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) sa.add(Long.parseLong(st.nextToken()));
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < m; i++) sb.add(Long.parseLong(st.nextToken()));
+        int cnt = 0;
+        for (long x : sa) if (!sb.contains(x)) cnt++;
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`A の重複を除いておらず、同じ値を何度も数えている`, edits:[[`for (const x of new Set(a)) if (!sb.has(x)) cnt++;`,`for (const x of a) if (!sb.has(x)) cnt++;`]]},
+    {note:`差の向きが逆で、B にだけある値を数えている`, edits:[[`  const sb = new Set(b);\n  let cnt = 0;\n  for (const x of new Set(a)) if (!sb.has(x)) cnt++;`,`  const sa = new Set(a);\n  let cnt = 0;\n  for (const x of new Set(b)) if (!sa.has(x)) cnt++;`]]},
+    {note:`含まれるものを数えており、積集合になっている`, edits:[[`if (!sb.has(x)) cnt++;`,`if (sb.has(x)) cnt++;`]]},
+    {note:`A の種類数をそのまま返している`, edits:[[`  return cnt;`,`  return new Set(a).size;`]]},
+    {note:`数え始めが 1 になっている`, edits:[[`  let cnt = 0;`,`  let cnt = 1;`]]}
+  ]
+},{
+  kind:'algo', id:'b48', level:2, tags:['数学','数え上げ'], title:'組合せの数',
+  statement:`N 個の中から K 個を選ぶ組合せの数 nCk を求めてください。
+答えは 32bit に収まる範囲に収まることが保証されています。`,
+  constraints:['0 ≤ K ≤ N ≤ 30','答えは 2 × 10^9 以下','入力はすべて整数'],
+  inputFormat:'N K',
+  cases:[{in:'5 2',out:'10'},{in:'5 0',out:'1'},{in:'5 5',out:'1'},{in:'30 15',out:'155117520'},{in:'10 3',out:'120'},{in:'12 2',out:'66'},{in:'3 1',out:'3'},{in:'1 1',out:'1'},{in:'4 4',out:'1'},{in:'12 10',out:'66'}],
+  hint:'階乗を全部計算すると桁があふれます。掛けながら割る形にします。',
+  idea:`nCk = n! / (k! × (n−k)!) ですが、30! は約 2.65×10^32 で 64bit にも収まりません。
+最終的な答えは小さいのに、途中で溢れてしまうのが問題です。
+
+そこで、掛けながら割る形にします。
+
+  res = 1
+  for (i = 1; i <= k; i++) res = res × (n − k + i) / i
+
+この順番なら、i 回目の時点で res は必ず整数（(n−k+i)Ci に相当）なので、
+割り算で端数が出ません。値も小さいまま保たれます。
+
+もう 1 つの方法はパスカルの三角形（DP）です。
+  C[i][j] = C[i−1][j−1] + C[i−1][j]
+足し算だけなので溢れにくく、複数の nCk が必要なときに有利です。
+
+なお K と N−K のうち小さいほうを使うと、ループ回数を減らせます。`,
+  complexity:'O(K)',
+  pitfalls:['階乗を先に計算して桁あふれする','割り算を先にして端数が出る','K = 0 のときに 0 を返す'],
+  codeJs:`function solve(input) {
+  const [n, k0] = input.trim().split(/\\s+/).map(Number);
+  const k = Math.min(k0, n - k0);
+  let res = 1;
+  for (let i = 1; i <= k; i++) {
+    res = res * (n - k + i) / i;
+  }
+  return Math.round(res);
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt(), k0 = sc.nextInt();
+        int k = Math.min(k0, n - k0);
+        long res = 1;
+        for (int i = 1; i <= k; i++) {
+            res = res * (n - k + i) / i;   // この順なら常に割り切れる
+        }
+        System.out.println(res);
+    }
+}`,
+  quiz:[
+    {note:`掛ける相手がずれていて、組合せの数になっていない`, edits:[[`res = res * (n - k + i) / i;`,`res = res * (n - i) / i;`]]},
+    {note:`割る数がずれている`, edits:[[`res = res * (n - k + i) / i;`,`res = res * (n - k + i) / (i + 1);`]]},
+    {note:`初期値が 0 なので、答えが常に 0 になる`, edits:[[`  let res = 1;`,`  let res = 0;`]]},
+    {note:`ループが 1 回足りず、掛け合わせが途中で終わっている`, edits:[[`for (let i = 1; i <= k; i++) {`,`for (let i = 1; i < k; i++) {`]]},
+    {note:`組合せではなく順列の数を求めている`, edits:[[`res = res * (n - k + i) / i;`,`res = res * (n - i + 1);`]]}
+  ]
+},{
+  kind:'algo', id:'b49', level:2, tags:['全探索','数え上げ'], title:'サイコロ 2 個の和',
+  statement:`N 面のサイコロ（出る目は 1 から N）を 2 個ふります。
+2 つの目の和が K になる出方は何通りありますか。
+2 個のサイコロは区別します（1 個目が 1、2 個目が 2 と、その逆は別の出方とします）。`,
+  constraints:['1 ≤ N ≤ 10^5','2 ≤ K ≤ 2 × 10^5','入力はすべて整数'],
+  inputFormat:'N K',
+  cases:[{in:'6 7',out:'6'},{in:'6 2',out:'1'},{in:'6 13',out:'0'},{in:'2 3',out:'2'},{in:'100000 100001',out:'100000',big:true},{in:'10 8',out:'7'},{in:'9 2',out:'1'},{in:'11 3',out:'2'},{in:'4 7',out:'2'},{in:'6 4',out:'3'},{in:'10 9',out:'8'}],
+  hint:'1 個目の目を決めれば、2 個目の目は 1 通りに決まります。範囲に入るかだけ確認します。',
+  idea:`1 個目の目を i とすると、2 個目は K − i でなければなりません。
+つまり i を 1 から N まで動かし、K − i が 1 以上 N 以下なら 1 通り、と数えます。O(N)。
+
+二重ループで全部の組を試すと O(N^2) = 10^10 通りとなり間に合いません。
+「片方を決めればもう片方が決まる」という構造に気づくのがポイントです。
+
+さらに進めると、条件 1 ≤ K − i ≤ N を i について解いて
+  max(1, K − N) ≤ i ≤ min(N, K − 1)
+となり、その個数（区間の長さ）を直接求めれば O(1) で計算できます。
+「数え上げは、条件を添字の範囲に直すと式になる」という典型例です。`,
+  complexity:'O(N)（式にすれば O(1)）',
+  pitfalls:['二重ループで間に合わない','範囲外の目を数えてしまう','区別する／しないの条件を読み違える'],
+  codeJs:`function solve(input) {
+  const [n, k] = input.trim().split(/\\s+/).map(Number);
+  let cnt = 0;
+  for (let i = 1; i <= n; i++) {
+    const j = k - i;
+    if (j >= 1 && j <= n) cnt++;
+  }
+  return cnt;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong(), k = sc.nextLong();
+        long cnt = 0;
+        for (long i = 1; i <= n; i++) {
+            long j = k - i;
+            if (j >= 1 && j <= n) cnt++;
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`2 個目の目の上限を確認しておらず、範囲外を数えている`, edits:[[`if (j >= 1 && j <= n) cnt++;`,`if (j >= 1) cnt++;`]]},
+    {note:`2 個目の目の下限を確認していない`, edits:[[`if (j >= 1 && j <= n) cnt++;`,`if (j <= n) cnt++;`]]},
+    {note:`和ではなく差が K になる場合を数えている`, edits:[[`const j = k - i;`,`const j = k + i;`]]},
+    {note:`区別しない数え方になっており、半分になる`, edits:[[`if (j >= 1 && j <= n) cnt++;`,`if (j >= i && j <= n) cnt++;`]]},
+    {note:`1 個目の目の範囲が 0 から始まっている`, edits:[[`for (let i = 1; i <= n; i++) {`,`for (let i = 0; i <= n; i++) {`]]}
+  ]
+},{
+  kind:'algo', id:'b50', level:2, tags:['実装'], title:'行と列の合計',
+  statement:`H 行 W 列の表が与えられます。
+各行の合計を空白区切りで 1 行目に、各列の合計を空白区切りで 2 行目に出力してください。`,
+  constraints:['1 ≤ H, W ≤ 500','-10^9 ≤ 各要素 ≤ 10^9','入力はすべて整数'],
+  inputFormat:'H W\n(1 行目の W 個)\n...\n(H 行目の W 個)',
+  cases:[{in:'2 3\n1 2 3\n4 5 6',out:'6 15\n5 7 9'},{in:'1 1\n7',out:'7\n7'},{in:'2 2\n1 -1\n-1 1',out:'0 0\n0 0'},{in:'2 3\n9 8 4\n2 0 -2',out:'21 0\n11 8 2'},{in:'2 3\n-8 -8 7\n-1 0 -4',out:'-9 -5\n-9 -8 3'},{in:'3 1\n-3\n2\n4',out:'-3 2 4\n3'},{in:'2 3\n8 0 4\n-6 -6 4',out:'12 -8\n2 -6 8'},{in:'2 4\n-1 -9 1 -6\n-3 0 9 4',out:'-15 10\n-4 -9 10 -2'},{in:'2 2\n7 -2\n2 -3',out:'5 -1\n9 -5'},{in:'1 4\n3 9 -1 -1',out:'10\n3 9 -1 -1'}],
+  hint:'行の合計と列の合計を、別々の配列に貯めながら 1 回の走査で作れます。',
+  idea:`各要素を 1 回見るたびに、その行の合計と列の合計の両方に足します。
+走査は 1 回で済み、計算量は O(HW) です。
+
+  rowSum[i] += A[i][j]
+  colSum[j] += A[i][j]
+
+列の合計を作るとき、配列の長さを W にすることに注意してください。
+H と W を取り違えると、正方形の表だけ通って長方形で壊れます。
+
+出力の行数（2 行）と、それぞれの個数（H 個と W 個）が違う点も、
+形式を間違えやすいところです。
+
+こうした「行方向と列方向の集計」は、表計算やレポート出力でも定番の処理です。`,
+  complexity:'O(HW)',
+  pitfalls:['行と列の配列の長さを取り違える','合計の初期化を忘れる','出力の順番（行→列）を逆にする'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w] = lines[0].trim().split(/\\s+/).map(Number);
+  const rowSum = new Array(h).fill(0);
+  const colSum = new Array(w).fill(0);
+  for (let i = 0; i < h; i++) {
+    const row = lines[i + 1].trim().split(/\\s+/).map(Number);
+    for (let j = 0; j < w; j++) {
+      rowSum[i] += row[j];
+      colSum[j] += row[j];
+    }
+  }
+  return rowSum.join(" ") + "\\n" + colSum.join(" ");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        long[] rowSum = new long[h], colSum = new long[w];
+        for (int i = 0; i < h; i++) {
+            st = new StringTokenizer(br.readLine());
+            for (int j = 0; j < w; j++) {
+                long v = Long.parseLong(st.nextToken());
+                rowSum[i] += v;
+                colSum[j] += v;
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < h; i++) { if (i > 0) sb.append(' '); sb.append(rowSum[i]); }
+        sb.append('\\n');
+        for (int j = 0; j < w; j++) { if (j > 0) sb.append(' '); sb.append(colSum[j]); }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`列の合計の添字が行になっており、集計がずれる`, edits:[[`colSum[j] += row[j];`,`colSum[i] += row[j];`]]},
+    {note:`出力の順番が逆になっている`, edits:[[`return rowSum.join(" ") + "\\n" + colSum.join(" ");`,`return colSum.join(" ") + "\\n" + rowSum.join(" ");`]]},
+    {note:`列の合計の配列の長さが行数になっている`, edits:[[`const colSum = new Array(w).fill(0);`,`const colSum = new Array(h).fill(0);`]]},
+    {note:`行の合計しか出力していない`, edits:[[`return rowSum.join(" ") + "\\n" + colSum.join(" ");`,`return rowSum.join(" ");`]]},
+    {note:`2 つの合計を同じ行に出力している`, edits:[[`rowSum.join(" ") + "\\n" + colSum.join(" ")`,`rowSum.join(" ") + " " + colSum.join(" ")`]]}
+  ]
+},{
+  kind:'algo', id:'b51', level:2, tags:['ソート','数学'], title:'集合場所を決める',
+  statement:`数直線上に N 人がいて、i 人目は座標 X_i にいます。
+ある 1 点に全員が集まるとき、全員の移動距離の合計を最小にしたいです。
+
+その最小値を出力してください（集合場所は整数座標に限ります）。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','-10^9 ≤ X_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nX_1 X_2 ... X_N',
+  cases:[{in:'3\n1 2 6',out:'5'},{in:'1\n5',out:'0'},{in:'4\n1 2 3 4',out:'4'},{in:'2\n-3 3',out:'6'},{in:'2\n8 -2',out:'10'},{in:'3\n14 5 -2',out:'16'},{in:'3\n2 -5 10',out:'15'},{in:'6\n0 -11 -10 5 12 -9',out:'47'},{in:'3\n11 5 0',out:'11'},{in:'3\n0 14 12',out:'14'}],
+  hint:'平均ではありません。ソートしたときのまん中の値が答えを与えます。',
+  idea:`距離の合計を最小にする点は、平均ではなく中央値です。
+
+【なぜ中央値か】
+集合場所を少し右に動かすと、左にいる人は全員 1 ずつ損をし、
+右にいる人は全員 1 ずつ得をします。
+つまり「左の人数 < 右の人数」の間は右に動かすほど合計が減り、
+人数が釣り合う点（＝中央値）で最小になります。
+
+N が偶数のときは、中央の 2 点の間ならどこでも同じ値になります。
+どちらを選んでも合計は変わりません。
+
+【実装】
+ソートして中央値を求め、そこからの距離の合計を出します。O(N log N)。
+合計は最大で 2×10^5 × 2×10^9 = 4×10^14 なので、64bit が必要です。
+
+なお「距離の 2 乗の合計」を最小にする点は平均になります。
+中央値と平均の使い分けは、外れ値の影響を考えるときにも重要です。`,
+  complexity:'O(N log N)',
+  pitfalls:['平均を集合場所にして誤答する','絶対値を取り忘れる','合計が 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const x = lines[1].trim().split(/\\s+/).map(Number);
+  x.sort((p, q) => p - q);
+  const med = x[Math.floor((x.length - 1) / 2)];
+  let sum = 0;
+  for (const v of x) sum += Math.abs(v - med);
+  return sum;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        long[] x = new long[n];
+        for (int i = 0; i < n; i++) x[i] = Long.parseLong(st.nextToken());
+        Arrays.sort(x);
+        long med = x[(n - 1) / 2];
+        long sum = 0;
+        for (long v : x) sum += Math.abs(v - med);
+        System.out.println(sum);
+    }
+}`,
+  quiz:[
+    {note:`中央値ではなく平均を集合場所にしている`, edits:[[`const med = x[Math.floor((x.length - 1) / 2)];`,`const med = Math.round(x.reduce((p, q) => p + q, 0) / x.length);`]]},
+    {note:`絶対値を取っておらず、距離が打ち消し合う`, edits:[[`sum += Math.abs(v - med);`,`sum += v - med;`]]},
+    {note:`並べ替えていないので、中央値が求まっていない`, edits:[[`  x.sort((p, q) => p - q);\n`,``]]},
+    {note:`集合場所を先頭の人の位置にしている`, edits:[[`const med = x[Math.floor((x.length - 1) / 2)];`,`const med = x[0];`]]},
+    {note:`中央値の添字がずれている`, edits:[[`x[Math.floor((x.length - 1) / 2)]`,`x[x.length - 1]`]]}
+  ]
+},{
+  kind:'algo', id:'b52', level:2, tags:['貪欲法','ソート'], title:'待ち時間を最小に',
+  statement:`N 人が窓口に並んでいます。i 番目の人の手続きには T_i 分かかります。
+並ぶ順番は自由に決められます。
+
+「各人が手続きを終えるまでにかかった時間（自分より前の人の合計 + 自分の時間）」を
+全員ぶん足した値を、最小にしたいです。その最小値を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ T_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nT_1 T_2 ... T_N',
+  cases:[{in:'3\n3 1 2',out:'10'},{in:'1\n5',out:'5'},{in:'2\n1 1',out:'3'},{in:'4\n4 3 2 1',out:'20'},{in:'4\n4 12 1 9',out:'46'},{in:'4\n12 12 11 3',out:'81'},{in:'2\n3 8',out:'14'},{in:'3\n10 9 12',out:'59'},{in:'4\n2 5 6 3',out:'33'},{in:'4\n11 8 11 3',out:'69'}],
+  hint:'先に処理した人の時間は、後ろの全員の待ち時間に効いてきます。',
+  idea:`短い順に処理するのが最適です（SJF: Shortest Job First）。
+
+【なぜ短い順か】
+先頭に置いた人の時間は、後ろの N−1 人全員の待ち時間に加算されます。
+つまり早く処理する人ほど「重み」が大きいので、
+重みが大きい位置には短い人を置くべきです。
+
+【計算】
+短い順に並べたとき、i 番目（0 始まり）の人の時間は (N − i) 回数えられます。
+
+  合計 = Σ T[i] × (N − i)
+
+あるいは、累積和を順に足していく形でも同じ値になります。
+
+【交換論法での証明】
+隣り合う 2 人の順序を入れ替えたとき、合計は「長いほうが先」だと必ず大きくなります。
+したがって最適解では常に短いほうが先、つまり全体が昇順に並びます。
+
+合計は最大で 2×10^5 × 2×10^5 × 10^9 相当になり得るので、64bit が必要です。`,
+  complexity:'O(N log N)',
+  pitfalls:['長い順に並べてしまう','重み（残り人数）の数え方が 1 つずれる','合計が 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const t = lines[1].trim().split(/\\s+/).map(Number);
+  t.sort((x, y) => x - y);
+  const n = t.length;
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += t[i] * (n - i);
+  return sum;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        long[] t = new long[n];
+        for (int i = 0; i < n; i++) t[i] = Long.parseLong(st.nextToken());
+        Arrays.sort(t);
+        long sum = 0;
+        for (int i = 0; i < n; i++) sum += t[i] * (n - i);
+        System.out.println(sum);
+    }
+}`,
+  quiz:[
+    {note:`長い順に並べており、待ち時間が最大になる`, edits:[[`t.sort((x, y) => x - y);`,`t.sort((x, y) => y - x);`]]},
+    {note:`重み（残りの人数）が 1 つずれている`, edits:[[`sum += t[i] * (n - i);`,`sum += t[i] * (n - i - 1);`]]},
+    {note:`並べ替えずに計算している`, edits:[[`  t.sort((x, y) => x - y);\n`,``]]},
+    {note:`重みを掛けておらず、単なる合計になっている`, edits:[[`sum += t[i] * (n - i);`,`sum += t[i];`]]},
+    {note:`重みが前からの位置になっている`, edits:[[`sum += t[i] * (n - i);`,`sum += t[i] * (i + 1);`]]}
+  ]
+},{
+  kind:'algo', id:'b53', level:2, tags:['二分探索','ソート'], title:'K 以下はいくつある？',
+  statement:`N 個の整数 A_1, ..., A_N と、Q 個の質問が与えられます。
+i 番目の質問は整数 K_i で、A の中に K_i 以下の値がいくつあるかを答えてください。
+
+各質問の答えを 1 行ずつ出力してください。`,
+  constraints:['1 ≤ N, Q ≤ 2 × 10^5','-10^9 ≤ A_i, K_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N Q\nA_1 ... A_N\nK_1\n...\nK_Q',
+  cases:[{in:'5 3\n1 3 5 7 9\n5\n0\n100',out:'3\n0\n5'},{in:'3 1\n2 2 2\n2',out:'3'},{in:'1 2\n5\n4\n5',out:'0\n1'},{in:'3 1\n3 12 11\n10',out:'1'},{in:'6 3\n4 3 10 10 11 3\n4\n3\n0',out:'3\n2\n0'},{in:'3 1\n1 3 5\n4',out:'2'},{in:'4 3\n11 1 3 4\n7\n13\n12',out:'3\n4\n4'},{in:'3 3\n11 3 12\n6\n5\n0',out:'1\n1\n0'},{in:'4 2\n8 3 6 6\n9\n10',out:'4\n4'},{in:'6 2\n5 1 12 2 12 3\n2\n7',out:'2\n4'}],
+  hint:'ソートしておけば、各質問は二分探索で答えられます。',
+  idea:`質問のたびに全部数えると O(NQ) = 4×10^10 で間に合いません。
+先にソートしておけば、各質問は二分探索で O(log N) になります。
+
+求めたいのは「K より大きい値が最初に現れる位置」（upper_bound）で、
+その位置がそのまま「K 以下の個数」になります。
+
+  lo = 0, hi = N
+  while (lo < hi) { mid = (lo+hi)/2; A[mid] <= K なら lo = mid+1 else hi = mid }
+  答え = lo
+
+【lower_bound と upper_bound】
+・K 以上が最初に現れる位置 → lower_bound（K 未満の個数）
+・K より大きいが最初に現れる位置 → upper_bound（K 以下の個数）
+「以上／より大きい」を取り違えると、同じ値があるケースだけ落ちます。
+テストケース 2 2 2 に対する K = 2 は、その確認用です。`,
+  complexity:'O((N + Q) log N)',
+  pitfalls:['lower_bound と upper_bound を取り違える','ソートを忘れる','二分探索の範囲を N−1 にして末尾を数え落とす'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, q] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  a.sort((x, y) => x - y);
+  const out = [];
+  for (let i = 0; i < q; i++) {
+    const k = Number(lines[2 + i].trim());
+    let lo = 0, hi = n;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (a[mid] <= k) lo = mid + 1; else hi = mid;
+    }
+    out.push(lo);
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), q = Integer.parseInt(st.nextToken());
+        long[] a = new long[n];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) a[i] = Long.parseLong(st.nextToken());
+        Arrays.sort(a);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < q; i++) {
+            long k = Long.parseLong(br.readLine().trim());
+            int lo = 0, hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi) >>> 1;
+                if (a[mid] <= k) lo = mid + 1; else hi = mid;
+            }
+            sb.append(lo).append('\\n');
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`K 未満の個数を求めており、K そのものを数えていない`, edits:[[`if (a[mid] <= k) lo = mid + 1; else hi = mid;`,`if (a[mid] < k) lo = mid + 1; else hi = mid;`]]},
+    {note:`ソートしていないので二分探索が成り立たない`, edits:[[`  a.sort((x, y) => x - y);\n`,``]]},
+    {note:`探索範囲の上限が N−1 で、全部が K 以下のときに 1 少なくなる`, edits:[[`let lo = 0, hi = n;`,`let lo = 0, hi = n - 1;`]]},
+    {note:`大小の判定が逆になっている`, edits:[[`if (a[mid] <= k) lo = mid + 1; else hi = mid;`,`if (a[mid] >= k) lo = mid + 1; else hi = mid;`]]},
+    {note:`個数ではなく値そのものを出力している`, edits:[[`    out.push(lo);`,`    out.push(a[lo] === undefined ? 0 : a[lo]);`]]}
+  ]
+},{
+  kind:'algo', id:'b54', level:2, tags:['数学'], title:'全部の最大公約数',
+  statement:`N 個の正の整数 A_1, ..., A_N が与えられます。
+これらすべての最大公約数を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'3\n12 18 24',out:'6'},{in:'1\n7',out:'7'},{in:'3\n5 7 11',out:'1'},{in:'4\n8 8 8 8',out:'8'},{in:'3\n10 60 30',out:'10'},{in:'3\n25 19 59',out:'1'},{in:'3\n36 30 30',out:'6'},{in:'2\n20 12',out:'4'},{in:'1\n54',out:'54'},{in:'3\n6 15 48',out:'3'}],
+  hint:'3 つ以上の最大公約数は、2 つずつ順番に求めていけば計算できます。',
+  idea:`最大公約数には次の性質があります。
+
+  gcd(a, b, c) = gcd(gcd(a, b), c)
+
+つまり先頭から順に gcd を取っていけば、全体の最大公約数が求まります。
+
+  g = A[0]
+  for (i = 1; i < N; i++) g = gcd(g, A[i])
+
+途中で g が 1 になったら、それ以上小さくならないので打ち切ってよい、
+という高速化もできます（実用上は効くことがあります）。
+
+【最小公倍数との違い】
+最小公倍数も同じように順に計算できますが、値がどんどん大きくなるため
+桁あふれに注意が必要です。最大公約数は減っていく一方なので、その心配はありません。
+
+初期値を 0 にしておく手もあります。gcd(0, x) = x なので、
+空の列から始めても自然に動きます（数学的な単位元の考え方）。`,
+  complexity:'O(N log max A)',
+  pitfalls:['初期値を 1 にして常に 1 になる','2 つずつしか計算しない','互除法の引数の順を誤る'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);
+  let g = a[0];
+  for (let i = 1; i < a.length; i++) g = gcd(g, a[i]);
+  return g;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static long gcd(long x, long y) { return y == 0 ? x : gcd(y, x % y); }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        long g = 0;
+        for (int i = 0; i < n; i++) g = gcd(g, Long.parseLong(st.nextToken()));
+        System.out.println(g);
+    }
+}`,
+  quiz:[
+    {note:`初期値が 1 なので、答えが常に 1 になる`, edits:[[`  let g = a[0];`,`  let g = 1;`]]},
+    {note:`最初の 2 つしか計算していない`, edits:[[`for (let i = 1; i < a.length; i++) g = gcd(g, a[i]);`,`g = gcd(a[0], a[1]);`]]},
+    {note:`最大公約数ではなく最小値を求めている`, edits:[[`for (let i = 1; i < a.length; i++) g = gcd(g, a[i]);`,`for (let i = 1; i < a.length; i++) g = Math.min(g, a[i]);`]]},
+    {note:`最後の要素を計算に入れていない`, edits:[[`for (let i = 1; i < a.length; i++)`,`for (let i = 1; i < a.length - 1; i++)`]]},
+    {note:`互除法の引数の順が違い、正しく縮まない`, edits:[[`const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);`,`const gcd = (x, y) => y === 0 ? x : gcd(x, x % y);`]]}
+  ]
+}
 /* ---------------- 論理パズル ---------------- */
 ,{
   kind:'puzzle', id:'q01', level:1, tags:['論理パズル','数当て'], title:'2 けたの数を当てる',
