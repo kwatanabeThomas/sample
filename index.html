@@ -178,6 +178,55 @@ pre.code{
 .choice.on{background:rgba(77,171,247,.14); border-color:var(--accent); font-weight:700}
 .choice:disabled{cursor:default; opacity:.75}
 .choice.correct{border-color:var(--ok); background:rgba(81,207,102,.12)}
+/* ---- 日めくりカレンダー / 継続 ---- */
+.himekuri{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
+.tearoff{
+  width:104px; flex:none; background:#f7f4ed; color:#1b1b1b; border-radius:9px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45); position:relative; padding-bottom:9px; overflow:hidden;
+}
+.tearoff.stamped{padding-bottom:34px}
+.tearoff .to-m{background:#b93b30; color:#fff; font-size:.68rem; text-align:center; padding:4px 0; letter-spacing:.1em}
+.tearoff .to-holes{display:flex; justify-content:center; gap:26px; margin-top:5px}
+.tearoff .to-holes i{width:8px; height:8px; border-radius:50%; background:#ded8cc; box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.tearoff .to-d{font-family:var(--mono); font-size:2.6rem; font-weight:800; text-align:center; line-height:1.05; margin-top:2px}
+.tearoff .to-w{font-size:.72rem; text-align:center; color:#6b6b6b}
+.tearoff .to-w.sun{color:#c0392b} .tearoff .to-w.sat{color:#2c6fbb}
+.stamp{
+  position:absolute; right:8px; bottom:5px; width:40px; height:40px; border:2.5px solid #b93b30;
+  border-radius:50%; color:#b93b30; display:grid; place-items:center; font-weight:800; font-size:.95rem;
+  transform:rotate(-15deg); opacity:.88; letter-spacing:.02em;
+}
+.today-info{flex:1; min-width:200px}
+.today-line{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+.today-num{font-family:var(--mono); font-size:1.7rem; font-weight:800}
+.goal-track{background:#0b0e13; border:1px solid var(--line); border-radius:6px; height:10px; overflow:hidden; margin:9px 0 4px}
+.goal-fill{height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width .5s}
+.goal-fill.done{background:linear-gradient(90deg,#37a94a,var(--ok))}
+.weekdots{display:flex; gap:7px; margin-top:10px}
+.weekdots div{text-align:center; font-size:.62rem; color:var(--dim); width:26px}
+.weekdots span{display:block; width:26px; height:26px; border-radius:8px; border:1px solid var(--line); margin-bottom:3px; display:grid; place-items:center; font-size:.7rem; color:var(--dim)}
+.weekdots span.done{background:rgba(81,207,102,.22); border-color:rgba(81,207,102,.55); color:var(--ok); font-weight:700}
+.weekdots span.today{box-shadow:0 0 0 2px var(--accent)}
+.streak-badge{display:inline-flex; align-items:center; gap:6px; font-size:.8rem; color:var(--warn); background:rgba(255,212,59,.1); border:1px solid rgba(255,212,59,.3); padding:3px 11px; border-radius:999px}
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; max-width:520px; margin-left:auto; margin-right:auto}
+.cal-title{font-size:.92rem; font-weight:700; font-variant-numeric:tabular-nums}
+.cal{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; max-width:520px; margin:0 auto}
+.cal .cdow{text-align:center; font-size:.66rem; color:var(--dim); padding-bottom:2px}
+.cal .cdow.sun{color:#e08b8b} .cal .cdow.sat{color:#8fb8e8}
+.cell{aspect-ratio:1; border:1px solid var(--line); border-radius:8px; display:grid; place-items:center; font-size:.75rem; color:var(--dim); font-variant-numeric:tabular-nums; position:relative}
+.cell.empty{border:none}
+.cell.l1{background:rgba(81,207,102,.16); border-color:rgba(81,207,102,.3); color:#bfe8c6}
+.cell.l2{background:rgba(81,207,102,.32); border-color:rgba(81,207,102,.5); color:#e6f7e9}
+.cell.l3{background:rgba(81,207,102,.55); border-color:rgba(81,207,102,.75); color:#fff; font-weight:700}
+.cell.today{box-shadow:0 0 0 2px var(--accent)}
+.cell .mk{position:absolute; bottom:2px; font-size:.5rem; color:var(--ok)}
+.badges{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:9px}
+.badge-card{border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--panel2); display:flex; gap:9px; align-items:center}
+.badge-card.got{border-color:rgba(255,212,59,.45); background:rgba(255,212,59,.07)}
+.badge-card .bi{font-size:1.25rem; filter:grayscale(1); opacity:.4}
+.badge-card.got .bi{filter:none; opacity:1}
+.badge-card .bn{font-size:.78rem; font-weight:700}
+.badge-card .bd{font-size:.66rem; color:var(--dim)}
 .hint-box{background:rgba(255,212,59,.07); border:1px solid rgba(255,212,59,.28); border-radius:9px; padding:11px 13px; margin-top:12px; font-size:.87rem; color:#f3e0a0}
 .toast{
   position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(80px);
@@ -200,6 +249,7 @@ pre.code{
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="drill">出題</button>
+      <button class="tab" data-tab="habit">継続</button>
       <button class="tab" data-tab="stats">成績</button>
       <button class="tab" data-tab="review">復習</button>
       <button class="tab" data-tab="library">問題一覧</button>
@@ -210,6 +260,22 @@ pre.code{
 <main>
   <!-- ============ DRILL ============ -->
   <section id="tab-drill">
+    <div class="panel" id="todayPanel">
+      <div class="himekuri">
+        <div class="tearoff" id="tearoff"></div>
+        <div class="today-info">
+          <div class="today-line">
+            <span style="font-size:.78rem; color:var(--muted)">きょうの学習</span>
+            <span class="today-num" id="todayCount">0</span>
+            <span style="font-size:.78rem; color:var(--dim)" id="todayGoal">/ 3 問</span>
+            <span class="streak-badge" id="streakBadge">🔥 連続 0 日</span>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+          <div class="note" id="todayMsg"></div>
+          <div class="weekdots" id="weekDots"></div>
+        </div>
+      </div>
+    </div>
     <div class="panel" id="setupPanel">
       <h2>出題設定</h2>
       <div class="field">
@@ -242,7 +308,7 @@ pre.code{
         <div class="row" id="tagChips"></div>
       </div>
       <div class="field">
-        <div class="field-label">解答形式</div>
+        <div class="field-label">アルゴリズム解答形式</div>
         <div class="row" id="formatChips">
           <button class="chip on" data-format="answer">答えモード（入力例の答えを暗算・筆算）</button>
           <button class="chip" data-format="code">コード選択モード（4つから正しいコードを選ぶ）</button>
@@ -302,6 +368,38 @@ pre.code{
           <button class="btn ghost sm" id="endBtn">終了する</button>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ HABIT ============ -->
+  <section id="tab-habit" class="hidden">
+    <div class="panel">
+      <h2>継続の記録</h2>
+      <div class="stat-grid" id="habitStats"></div>
+      <div class="row" style="margin-top:14px">
+        <span class="note">1 日の目標</span>
+        <select id="goalSelect">
+          <option value="1">1 問</option>
+          <option value="3">3 問</option>
+          <option value="5">5 問</option>
+          <option value="10">10 問</option>
+        </select>
+        <span class="note">目標を達成した日には、日めくりに「済」の印がつきます。</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>学習カレンダー</h2>
+      <div class="cal-head">
+        <button class="btn ghost sm" id="calPrev">◀ 前の月</button>
+        <div class="cal-title" id="calTitle"></div>
+        <button class="btn ghost sm" id="calNext">次の月 ▶</button>
+      </div>
+      <div class="cal" id="calGrid"></div>
+      <div class="legend" style="max-width:520px; margin:8px auto 0">色が濃い日ほど、その日に多く解いています。枠が光っている日が今日です。</div>
+    </div>
+    <div class="panel">
+      <h2>バッジ</h2>
+      <div class="badges" id="badgeList"></div>
     </div>
   </section>
 
@@ -2623,6 +2721,1890 @@ public class Main {
     {note:`dp の初期値が −1 なので、何も選ばない場合を表せていない`, edits:[[`const dp = new Array(cap + 1).fill(0);`,`const dp = new Array(cap + 1).fill(-1);`]]}
   ]
 }
+,{
+  kind:'algo', id:'a13', level:1, tags:['数学','実装'], title:'うるう年かどうか',
+  statement:`西暦 Y 年がうるう年かどうかを判定してください。
+うるう年なら Yes、そうでなければ No を出力してください。
+
+うるう年は次のように定めます。
+・4 で割り切れる年はうるう年
+・ただし 100 で割り切れる年はうるう年ではない
+・ただし 400 で割り切れる年はうるう年`,
+  constraints:['1 ≤ Y ≤ 9999','Y は整数'],
+  inputFormat:'Y',
+  cases:[{in:'2024',out:'Yes'},{in:'1900',out:'No'},{in:'2000',out:'Yes'},{in:'2023',out:'No'},{in:'1600',out:'Yes'}],
+  hint:'例外が 2 段階あります。1900 年と 2000 年で結果が変わることを確認しましょう。',
+  idea:`条件をそのまま式にすると (Y % 4 === 0 かつ Y % 100 !== 0) または Y % 400 === 0 です。
+
+例外が入れ子になっている条件は、書く順番を間違えやすいところです。
+「4 の倍数 → 原則うるう年」「100 の倍数 → 例外的にうるう年でない」「400 の倍数 → さらに例外でうるう年」
+という 3 段階を、内側の例外から順に確認するイメージで書くと整理しやすくなります。
+
+if 文で書くなら次のようになり、こちらのほうが条件の階層が見えやすいこともあります。
+  if (Y % 400 === 0) Yes
+  else if (Y % 100 === 0) No
+  else if (Y % 4 === 0) Yes
+  else No
+
+テストは 1900（No）と 2000（Yes）を必ず通してください。この 2 つで例外の扱いが確認できます。`,
+  complexity:'O(1)',
+  pitfalls:['100 年・400 年の例外を書き忘れる','条件を並べる順番を間違えて、400 の倍数が No になる'],
+  codeJs:`function solve(input) {
+  const y = Number(input.trim());
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  return leap ? "Yes" : "No";
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int y = sc.nextInt();
+        boolean leap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
+        System.out.println(leap ? "Yes" : "No");
+    }
+}`,
+  quiz:[
+    {note:`4 の倍数かどうかしか見ておらず、100 年・400 年の例外がない`, edits:[[`(y % 4 === 0 && y % 100 !== 0) || y % 400 === 0`,`y % 4 === 0`]]},
+    {note:`100 と 400 の役割が入れ替わっている`, edits:[[`(y % 4 === 0 && y % 100 !== 0) || y % 400 === 0`,`(y % 4 === 0 && y % 400 !== 0) || y % 100 === 0`]]},
+    {note:`Yes と No が逆になっている`, edits:[[`return leap ? "Yes" : "No";`,`return leap ? "No" : "Yes";`]]}
+  ]
+},{
+  kind:'algo', id:'a14', level:1, tags:['数学'], title:'3 または 5 の倍数',
+  statement:`1 以上 N 以下の整数のうち、3 の倍数または 5 の倍数であるものはいくつありますか。`,
+  constraints:['1 ≤ N ≤ 10^9','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'15',out:'7'},{in:'1',out:'0'},{in:'10',out:'5'},{in:'1000000000',out:'466666667',big:true}],
+  hint:'3 の倍数の個数と 5 の倍数の個数を足すと、15 の倍数を 2 回数えてしまいます。',
+  idea:`N ≤ 10^9 なのでループでは間に合いません。個数の式を立てます。
+
+3 の倍数は floor(N/3) 個、5 の倍数は floor(N/5) 個ですが、
+単純に足すと 15（3 と 5 の公倍数）の倍数を 2 回数えてしまいます。
+そこで 15 の倍数の個数 floor(N/15) を引きます。
+
+  答え = floor(N/3) + floor(N/5) − floor(N/15)
+
+これは包除原理（足しすぎた分を引く）の最も基本的な形です。
+引くのは「3 と 5 の最小公倍数」の倍数であって、単純な積 3×5 とは限らない点に注意してください。
+たとえば「4 の倍数または 6 の倍数」なら、引くのは 24 の倍数ではなく 12（最小公倍数）の倍数です。`,
+  complexity:'O(1)',
+  pitfalls:['15 の倍数を引き忘れて二重に数える','引く数を最小公倍数ではなく単純な積にしてしまう'],
+  codeJs:`function solve(input) {
+  const n = Number(input.trim());
+  return Math.floor(n / 3) + Math.floor(n / 5) - Math.floor(n / 15);
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        System.out.println(n / 3 + n / 5 - n / 15);
+    }
+}`,
+  quiz:[
+    {note:`15 の倍数を引いておらず、二重に数えている`, edits:[[` - Math.floor(n / 15)`,``]]},
+    {note:`引く数が最小公倍数（15）ではなく 8 になっている`, edits:[[`Math.floor(n / 15)`,`Math.floor(n / 8)`]]},
+    {note:`5 の倍数を数えていない`, edits:[[`Math.floor(n / 3) + Math.floor(n / 5) - Math.floor(n / 15)`,`Math.floor(n / 3)`]]}
+  ]
+},{
+  kind:'algo', id:'a15', level:1, tags:['文字列'], title:'指定した文字の個数',
+  statement:`英小文字からなる文字列 S と、英小文字 1 文字 C が与えられます。
+S の中に C は何個含まれていますか。`,
+  constraints:['1 ≤ |S| ≤ 10^5','C は英小文字 1 文字'],
+  inputFormat:'S\nC',
+  cases:[{in:'abracadabra\na',out:'5'},{in:'hello\nz',out:'0'},{in:'aaaa\na',out:'4'},{in:'mississippi\ns',out:'4'}],
+  hint:'先頭から 1 文字ずつ見て、C と等しければ数を増やします。',
+  idea:`文字列を 1 回走査して、C と一致した回数を数えるだけです。
+
+多くの言語には「文字列を区切って個数を得る」「正規表現でマッチ数を数える」といった
+短い書き方もありますが、まずは素直なループで書けることが大切です。
+ループなら計算量が O(|S|) だと一目でわかり、他の問題にも応用できます。
+
+なお、複数の文字それぞれの個数が必要になる問題（最頻文字を求めるなど）では、
+1 文字ずつ全体を走査し直すのではなく、長さ 26 の配列で一度に数え上げるほうが効率的です。`,
+  complexity:'O(|S|)',
+  pitfalls:['1 文字だけの入力行を読み飛ばす','見つかった位置を返してしまい、個数を返していない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim(), c = lines[1].trim();
+  let cnt = 0;
+  for (const ch of s) if (ch === c) cnt++;
+  return cnt;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        char c = sc.next().charAt(0);
+        int cnt = 0;
+        for (char ch : s.toCharArray()) {
+            if (ch == c) cnt++;
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`一致ではなく不一致の個数を数えている`, edits:[[`if (ch === c) cnt++;`,`if (ch !== c) cnt++;`]]},
+    {note:`個数ではなく文字列の長さを返している`, edits:[[`  for (const ch of s) if (ch === c) cnt++;\n  return cnt;`,`  return s.length;`]]},
+    {note:`数える対象の行が逆で、1 文字のほうを走査している`, edits:[[`for (const ch of s) if (ch === c) cnt++;`,`for (const ch of c) if (ch === s) cnt++;`]]}
+  ]
+},{
+  kind:'algo', id:'a16', level:1, tags:['数学','ビット演算'], title:'2 進法で 1 はいくつ？',
+  statement:`0 以上の整数 N を 2 進法で表したとき、1 は何個現れますか。
+
+例えば N = 5 は 2 進法で 101 なので、答えは 2 です。`,
+  constraints:['0 ≤ N ≤ 10^9','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'5',out:'2'},{in:'0',out:'0'},{in:'255',out:'8'},{in:'1024',out:'1'},{in:'7',out:'3'}],
+  hint:'2 で割ったあまりが一の位（最下位ビット）です。2 で割ることを繰り返します。',
+  idea:`N を 2 で割ったあまりが、2 進法での最下位のけたです。
+あまりを足してから N を 2 で割る、を N が 0 になるまで繰り返せば、すべてのけたを調べられます。
+
+  while (n > 0) { cnt += n % 2; n = floor(n / 2); }
+
+ループ回数は 2 進法のけた数、つまり O(log N) 回。N = 10^9 でも 30 回程度です。
+
+ビット演算で書くなら n & 1 で最下位ビット、n >>= 1 で 1 けた右シフトです。
+意味は同じですが、ビット演算のほうが速く、競技プログラミングでは一般的です。
+
+この「1 の個数」はポップカウントと呼ばれ、
+ビット全探索で「何個選んだか」を数えるときなどによく使います。`,
+  complexity:'O(log N)',
+  pitfalls:['10 で割ってしまい、10 進法のけたを数えている','ループの終了条件を n > 1 にして最上位ビットを数え落とす','N = 0 のケースを考えていない'],
+  codeJs:`function solve(input) {
+  let n = Number(input.trim());
+  let cnt = 0;
+  while (n > 0) {
+    cnt += n % 2;
+    n = Math.floor(n / 2);
+  }
+  return cnt;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        int cnt = 0;
+        while (n > 0) {
+            cnt += n % 2;
+            n /= 2;
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`10 で割っており、2 進法ではなく 10 進法のけたを見ている`, edits:[[`    cnt += n % 2;\n    n = Math.floor(n / 2);`,`    cnt += n % 10;\n    n = Math.floor(n / 10);`]]},
+    {note:`ループ条件が n > 1 なので、最上位の 1 を数え落とす`, edits:[[`while (n > 0) {`,`while (n > 1) {`]]},
+    {note:`あまりに関係なく 1 を足しており、2 進法のけた数を数えている`, edits:[[`cnt += n % 2;`,`cnt += 1;`]]}
+  ]
+},{
+  kind:'algo', id:'a17', level:1, tags:['実装'], title:'入場料',
+  statement:`ある施設の入場料は、年齢 A によって次のように決まります。
+
+・0 歳以上 5 歳以下 … 0 円
+・6 歳以上 12 歳以下 … 500 円
+・13 歳以上 64 歳以下 … 1000 円
+・65 歳以上 … 700 円
+
+年齢 A が与えられるので、入場料を出力してください。`,
+  constraints:['0 ≤ A ≤ 120','A は整数'],
+  inputFormat:'A',
+  cases:[{in:'3',out:'0'},{in:'10',out:'500'},{in:'30',out:'1000'},{in:'70',out:'700'},{in:'12',out:'500'},{in:'65',out:'700'},{in:'5',out:'0'},{in:'13',out:'1000'}],
+  hint:'境界の年齢（5, 6, 12, 13, 64, 65）で結果が変わります。等号の有無に注意してください。',
+  idea:`条件分岐を上から順に書くだけの問題ですが、境界の扱いがすべてです。
+
+小さいほうから順に if / else if で書くと、
+「前の条件に当てはまらなかった」という情報が使えるので、条件を短く書けます。
+
+  if (A <= 5) 0
+  else if (A <= 12) 500
+  else if (A <= 64) 1000
+  else 700
+
+else if を使わずに独立した if を並べると、
+それぞれに下限と上限の両方を書く必要があり、書き間違いが増えます。
+
+テストは境界の値（5, 6, 12, 13, 64, 65）を必ず確認してください。
+実務でも料金表や区分の実装は、境界のオフバイワンが最も多いバグです。`,
+  complexity:'O(1)',
+  pitfalls:['<= と < を取り違えて、境界の年齢が 1 つ隣の区分に入る','65 歳以上のほうが安い、という条件を読み飛ばす'],
+  codeJs:`function solve(input) {
+  const a = Number(input.trim());
+  if (a <= 5) return 0;
+  if (a <= 12) return 500;
+  if (a <= 64) return 1000;
+  return 700;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int a = sc.nextInt();
+        int fee;
+        if (a <= 5) fee = 0;
+        else if (a <= 12) fee = 500;
+        else if (a <= 64) fee = 1000;
+        else fee = 700;
+        System.out.println(fee);
+    }
+}`,
+  quiz:[
+    {note:`境界が 1 つずれていて、5 歳や 12 歳が 1 つ上の区分になる`, edits:[[`  if (a <= 5) return 0;\n  if (a <= 12) return 500;`,`  if (a < 5) return 0;\n  if (a < 12) return 500;`]]},
+    {note:`65 歳以上の区分がなく、全員 1000 円になる`, edits:[[`  if (a <= 64) return 1000;\n  return 700;`,`  return 1000;`]]},
+    {note:`判定の順番が逆で、若い人まで 700 円になる`, edits:[[`  if (a <= 5) return 0;\n  if (a <= 12) return 500;\n  if (a <= 64) return 1000;\n  return 700;`,`  if (a >= 65) return 700;\n  if (a >= 13) return 700;\n  if (a >= 6) return 500;\n  return 0;`]]}
+  ]
+},{
+  kind:'algo', id:'a18', level:1, tags:['数学'], title:'毎日ふえる貯金',
+  statement:`1 日目に A 円貯金し、次の日からは前の日より B 円ずつ多く貯金します。
+（2 日目は A + B 円、3 日目は A + 2B 円、…）
+
+N 日目までに貯金した金額の合計を求めてください。`,
+  constraints:['1 ≤ N ≤ 10^5','1 ≤ A ≤ 10^4','1 ≤ B ≤ 10^4','入力はすべて整数'],
+  inputFormat:'N A B',
+  cases:[{in:'3 100 50',out:'450'},{in:'1 5 3',out:'5'},{in:'10 1 1',out:'55'},{in:'100000 1 1',out:'5000050000',big:true}],
+  hint:'k 日目の貯金額は A + (k−1)B 円です。1 日目から N 日目まで足します。',
+  idea:`k 日目の貯金額は A + (k−1)B なので、合計は
+
+  N×A + B×(0 + 1 + 2 + ... + (N−1)) = N×A + B×N(N−1)/2
+
+です。これは等差数列の和の公式そのものです。
+
+N ≤ 10^5 なのでループで 1 日ずつ足しても間に合いますが、
+公式を使えば N がどれだけ大きくても一瞬で求まります。
+
+注意点は答えの大きさです。N = 10^5, A = B = 10^4 のとき合計はおよそ 5×10^13 で、
+32bit 整数（およそ 2.1×10^9 まで）には収まりません。
+C++ や Java なら long（64bit）を使う必要があります。
+「N^2 に比例する値を足す問題では、まず桁あふれを疑う」のは競プロの習慣です。`,
+  complexity:'O(1)（ループでも O(N)）',
+  pitfalls:['等差数列の和で (N−1) と N を取り違える','32bit 整数で計算して桁あふれする','1 日目の分を足し忘れる'],
+  codeJs:`function solve(input) {
+  const [n, a, b] = input.trim().split(/\\s+/).map(Number);
+  return n * a + b * n * (n - 1) / 2;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong(), a = sc.nextLong(), b = sc.nextLong();
+        System.out.println(n * a + b * n * (n - 1) / 2);  // int だと桁あふれする
+    }
+}`,
+  quiz:[
+    {note:`等差数列の和が n(n+1)/2 になっていて、1 日分多く増やしている`, edits:[[`b * n * (n - 1) / 2`,`b * n * (n + 1) / 2`]]},
+    {note:`増える分（B）を計算に入れておらず、毎日 A 円のままになっている`, edits:[[`return n * a + b * n * (n - 1) / 2;`,`return n * a;`]]},
+    {note:`2 で割っておらず、合計が約 2 倍になる`, edits:[[`b * n * (n - 1) / 2`,`b * n * (n - 1)`]]}
+  ]
+},{
+  kind:'algo', id:'a19', level:1, tags:['文字列','数学'], title:'くりかえす文字列',
+  statement:`文字列 S を、無限に繰り返してつなげた文字列を考えます。
+（S = abc なら abcabcabcabc... となります）
+
+この文字列の L 文字目（先頭を 1 文字目とする）を出力してください。`,
+  constraints:['1 ≤ |S| ≤ 100','1 ≤ L ≤ 10^9','S は英小文字のみからなる'],
+  inputFormat:'S\nL',
+  cases:[{in:'abc\n1',out:'a'},{in:'abc\n5',out:'b'},{in:'xyz\n3',out:'z'},{in:'ab\n1000000000',out:'b',big:true},{in:'abcd\n8',out:'d'}],
+  hint:'実際に長い文字列を作る必要はありません。|S| で割ったあまりだけを考えます。',
+  idea:`L が最大 10^9 なので、実際に文字列を作るとメモリが足りません。周期性を使います。
+
+繰り返しの周期は |S| です。L 文字目は S の何文字目にあたるかを考えると、
+1 始まりのまま計算するとずれやすいので、いったん 0 始まりに直すのが定石です。
+
+  0 始まりの位置 = (L − 1) % |S|
+
+これで S のその位置の文字が答えです。L = |S| のときに 0 番目ではなく
+最後の文字になることを、手を動かして確認してみてください。
+
+「1 始まりの添字は、まず 1 を引いて 0 始まりにしてから剰余を取る」というのは、
+周期の問題（曜日、時計、円環の席替え）で共通して使える手順です。`,
+  complexity:'O(1)',
+  pitfalls:['1 を引かずに L % |S| として、1 文字ずれる','実際に繰り返した文字列を作ってメモリ超過する'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim();
+  const l = Number(lines[1].trim());
+  return s[(l - 1) % s.length];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        long l = sc.nextLong();
+        System.out.println(s.charAt((int) ((l - 1) % s.length())));
+    }
+}`,
+  quiz:[
+    {note:`1 を引いていないので、答えが 1 文字ずれる`, edits:[[`s[(l - 1) % s.length]`,`s[l % s.length]`]]},
+    {note:`あまりではなく商を使っており、位置の意味が違う`, edits:[[`s[(l - 1) % s.length]`,`s[Math.floor((l - 1) / s.length)]`]]},
+    {note:`繰り返しを考えず、そのまま L 文字目を取ろうとしている`, edits:[[`s[(l - 1) % s.length]`,`s[l - 1]`]]}
+  ]
+},{
+  kind:'algo', id:'a20', level:1, tags:['実装','数学'], title:'絶対値の和',
+  statement:`数直線上に N 個の点があり、i 番目の点の座標は A_i です。
+すべての点について、原点からの距離を足し合わせた値を求めてください。
+（座標 A_i の点の、原点からの距離は |A_i| です）`,
+  constraints:['1 ≤ N ≤ 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'3\n-1 2 -3',out:'6'},{in:'1\n0',out:'0'},{in:'4\n-5 -5 5 5',out:'20'},{in:'2\n1000000000 -1000000000',out:'2000000000'}],
+  hint:'負の座標は符号を反転してから足します。',
+  idea:`絶対値を取ってから足すだけです。絶対値は「負なら符号を反転、そうでなければそのまま」です。
+
+この問題の要点は 2 つあります。
+
+1. 絶対値を取り忘れると、正と負が打ち消し合って 0 に近い値になってしまいます。
+   テストケース -5 -5 5 5 は、まさにその間違いを検出するために置いています
+   （絶対値なしだと 0 になります）。
+
+2. 合計の大きさです。10^5 個 × 10^9 なので最大 10^14 になり、32bit には収まりません。
+   C++ や Java では long を使ってください。
+
+「符号」と「桁あふれ」は、簡単そうな問題でこそ落としやすい 2 大要因です。`,
+  complexity:'O(N)',
+  pitfalls:['絶対値を取り忘れて、正負が打ち消し合う','32bit 整数で計算して桁あふれする'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  let sum = 0;
+  for (const x of a) sum += Math.abs(x);
+  return sum;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        long sum = 0;
+        for (int i = 0; i < n; i++) sum += Math.abs(Long.parseLong(st.nextToken()));
+        System.out.println(sum);
+    }
+}`,
+  quiz:[
+    {note:`絶対値を取っておらず、正と負が打ち消し合う`, edits:[[`sum += Math.abs(x);`,`sum += x;`]]},
+    {note:`絶対値ではなく四捨五入をしている`, edits:[[`Math.abs(x)`,`Math.round(x)`]]},
+    {note:`合計ではなく最大値を求めている`, edits:[[`  for (const x of a) sum += Math.abs(x);`,`  for (const x of a) sum = Math.max(sum, Math.abs(x));`]]}
+  ]
+}
+,{
+  kind:'algo', id:'b14', level:2, tags:['実装'], title:'いちばん合計が大きい行',
+  statement:`H 行 W 列の整数の表が与えられます。
+各行の合計を計算したとき、その最大値を求めてください。`,
+  constraints:['1 ≤ H, W ≤ 500','-10^9 ≤ 各要素 ≤ 10^9','入力はすべて整数'],
+  inputFormat:'H W\n(1 行目の W 個の整数)\n...\n(H 行目の W 個の整数)',
+  cases:[{in:'2 3\n1 2 3\n4 5 6',out:'15'},{in:'1 1\n-5',out:'-5'},{in:'3 2\n1 1\n-5 -5\n2 2',out:'4'},{in:'2 2\n-1 -1\n-2 -2',out:'-2'}],
+  hint:'1 行ずつ合計を出して、その最大値を更新します。答えの初期値に注意してください。',
+  idea:`2 次元の入力を読むところがこの問題の主眼です。
+1 行ずつ読んで合計し、その合計の最大値を更新していきます。
+
+つまずきやすいのは、最大値の初期値です。
+0 で初期化すると、すべての行の合計が負のときに 0 を返してしまいます。
+・1 行目の合計で初期化する
+・−∞ に相当する値で初期化する
+のどちらかにしてください。
+
+もう 1 つは合計の大きさです。500 × 10^9 = 5×10^11 なので 32bit には収まりません。
+
+なお、2 次元の入力は「全部読んでから処理する」より
+「1 行読むたびに処理して捨てる」ほうがメモリに優しいことがあります。`,
+  complexity:'O(HW)',
+  pitfalls:['最大値の初期値を 0 にして、全部負のときに誤る','行と列を取り違えて、列の合計を求めてしまう','合計が 32bit に収まらない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w] = lines[0].trim().split(/\\s+/).map(Number);
+  let best = -Infinity;
+  for (let i = 1; i <= h; i++) {
+    const row = lines[i].trim().split(/\\s+/).map(Number);
+    let sum = 0;
+    for (const x of row) sum += x;
+    if (sum > best) best = sum;
+  }
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        long best = Long.MIN_VALUE;
+        for (int i = 0; i < h; i++) {
+            st = new StringTokenizer(br.readLine());
+            long sum = 0;
+            for (int j = 0; j < w; j++) sum += Long.parseLong(st.nextToken());
+            best = Math.max(best, sum);
+        }
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`最大値の初期値が 0 なので、すべての行の合計が負のときに 0 を返す`, edits:[[`let best = -Infinity;`,`let best = 0;`]]},
+    {note:`行の合計をリセットしておらず、前の行の合計が持ち越される`, edits:[[`    const row = lines[i].trim().split(/\\s+/).map(Number);\n    let sum = 0;`,`    const row = lines[i].trim().split(/\\s+/).map(Number);`],[`function solve(input) {`,`function solve(input) {\n  let sum = 0;`]]},
+    {note:`最大ではなく最小の合計を求めている`, edits:[[`if (sum > best) best = sum;`,`if (sum < best) best = sum;`]]}
+  ]
+},{
+  kind:'algo', id:'b15', level:2, tags:['文字列'], title:'しりとりは成立している？',
+  statement:`N 個の単語 S_1, S_2, ..., S_N がこの順に並んでいます。
+すべての隣り合う 2 つについて「前の単語の最後の文字」と「次の単語の最初の文字」が
+一致しているとき、しりとりが成立しているといいます。
+
+しりとりが成立しているなら Yes、そうでなければ No を出力してください。`,
+  constraints:['1 ≤ N ≤ 100','各 S_i は英小文字からなり、長さは 1 以上 20 以下'],
+  inputFormat:'N\nS_1\nS_2\n...\nS_N',
+  cases:[{in:'3\napple\nelephant\ntiger',out:'Yes'},{in:'2\ncat\ndog',out:'No'},{in:'1\nx',out:'Yes'},{in:'3\nab\nbc\ncd',out:'Yes'},{in:'3\nab\nbc\ndd',out:'No'}],
+  hint:'隣り合う組は N−1 個あります。1 つでも一致しなければ No です。',
+  idea:`隣り合う組を順に調べ、1 つでも条件を満たさなければ No、最後まで満たしていれば Yes です。
+
+・調べる組の数は N ではなく N−1 個です（N = 1 のときは 0 個なので Yes）
+・「最後の文字」は s[s.length − 1]、「最初の文字」は t[0]
+
+このような「すべての要素が条件を満たすか」という判定では、
+条件を満たさないものを見つけた時点で打ち切って返すのが定石です（早期リターン）。
+最後まで見てからフラグを判定する書き方より短く、読みやすくなります。
+
+N = 1 のとき（比較する組がない）を Yes とするかどうかは問題文で決まります。
+このように「要素が 0 個・1 個のとき」を最初に確認する習慣をつけると、事故が減ります。`,
+  complexity:'O(N)',
+  pitfalls:['ループの範囲を N にして、存在しない次の単語を読む','最後の文字と最初の文字を取り違える','N = 1 のケースを考えていない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  for (let i = 1; i < n; i++) {
+    const prev = lines[i].trim(), cur = lines[i + 1].trim();
+    if (prev[prev.length - 1] !== cur[0]) return "No";
+  }
+  return "Yes";
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        String[] s = new String[n];
+        for (int i = 0; i < n; i++) s[i] = sc.next();
+        for (int i = 0; i + 1 < n; i++) {
+            if (s[i].charAt(s[i].length() - 1) != s[i + 1].charAt(0)) {
+                System.out.println("No");
+                return;
+            }
+        }
+        System.out.println("Yes");
+    }
+}`,
+  quiz:[
+    {note:`最後の文字と最初の文字を取り違えて比べている`, edits:[[`if (prev[prev.length - 1] !== cur[0]) return "No";`,`if (prev[0] !== cur[cur.length - 1]) return "No";`]]},
+    {note:`比べる組が 1 つ足りず、最後のつながりを見ていない`, edits:[[`for (let i = 1; i < n; i++) {`,`for (let i = 1; i < n - 1; i++) {`]]},
+    {note:`1 つでも一致していれば Yes にしてしまっている`, edits:[[`    if (prev[prev.length - 1] !== cur[0]) return "No";\n  }\n  return "Yes";`,`    if (prev[prev.length - 1] === cur[0]) return "Yes";\n  }\n  return "No";`]]}
+  ]
+},{
+  kind:'algo', id:'b16', level:2, tags:['数学','ふるい'], title:'N 以下の素数の個数',
+  statement:`2 以上 N 以下の素数は何個ありますか。`,
+  constraints:['1 ≤ N ≤ 10^6','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'10',out:'4'},{in:'1',out:'0'},{in:'2',out:'1'},{in:'100',out:'25'},{in:'1000000',out:'78498',big:true}],
+  hint:'1 つずつ素数判定すると遅すぎます。倍数を消していく方法（ふるい）を使います。',
+  idea:`1 つずつ √N で素数判定すると全体で O(N√N) となり、N = 10^6 では間に合いません。
+エラトステネスの篩を使うと O(N log log N)（ほぼ O(N)）で全部まとめて判定できます。
+
+【手順】
+長さ N+1 の真偽値配列 isPrime を用意し、すべて true にします。
+0 と 1 を false にしてから、i = 2, 3, 4, ... と進み、
+isPrime[i] が true なら「i の倍数（i×i, i×i+i, ...）」をすべて false にします。
+
+【2 つの高速化のポイント】
+・外側のループは i×i ≤ N まででよい。それより大きい i の倍数は、
+  すでに小さい素因数によって消されているからです。
+・内側は i×2 からではなく i×i から始めてよい。同じ理由です。
+
+「たくさんの数について同時に答えを知りたいときは、1 つずつではなくまとめて前計算する」
+というのは競技プログラミングの重要な発想で、約数の個数、素因数分解などにも同じ形で応用できます。`,
+  complexity:'O(N log log N)',
+  pitfalls:['0 と 1 を素数として数えてしまう','ふるう開始位置を i にしてしまい、素数自身を消してしまう','N 自身を数え忘れる'],
+  codeJs:`function solve(input) {
+  const n = Number(input.trim());
+  if (n < 2) return 0;
+  const isPrime = new Array(n + 1).fill(true);
+  isPrime[0] = isPrime[1] = false;
+  for (let i = 2; i * i <= n; i++) {
+    if (!isPrime[i]) continue;
+    for (let j = i * i; j <= n; j += i) isPrime[j] = false;
+  }
+  let cnt = 0;
+  for (let i = 2; i <= n; i++) if (isPrime[i]) cnt++;
+  return cnt;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        if (n < 2) { System.out.println(0); return; }
+        boolean[] isPrime = new boolean[n + 1];
+        Arrays.fill(isPrime, true);
+        isPrime[0] = isPrime[1] = false;
+        for (int i = 2; (long) i * i <= n; i++) {
+            if (!isPrime[i]) continue;
+            for (int j = i * i; j <= n; j += i) isPrime[j] = false;
+        }
+        int cnt = 0;
+        for (int i = 2; i <= n; i++) if (isPrime[i]) cnt++;
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`0 と 1 を除外しておらず、素数として数えてしまう`, edits:[[`  isPrime[0] = isPrime[1] = false;\n`,``],[`for (let i = 2; i <= n; i++) if (isPrime[i]) cnt++;`,`for (let i = 0; i <= n; i++) if (isPrime[i]) cnt++;`]]},
+    {note:`ふるいを i から始めているので、素数自身を消してしまう`, edits:[[`for (let j = i * i; j <= n; j += i)`,`for (let j = i; j <= n; j += i)`]]},
+    {note:`数え上げの範囲が N 未満なので、N 自身が素数のときに数え落とす`, edits:[[`for (let i = 2; i <= n; i++) if (isPrime[i]) cnt++;`,`for (let i = 2; i < n; i++) if (isPrime[i]) cnt++;`]]}
+  ]
+},{
+  kind:'algo', id:'b17', level:2, tags:['数学'], title:'最大公約数と最小公倍数',
+  statement:`2 つの正の整数 A, B の最大公約数と最小公倍数を、この順に空白区切りで出力してください。`,
+  constraints:['1 ≤ A, B ≤ 10^6','入力はすべて整数'],
+  inputFormat:'A B',
+  cases:[{in:'12 18',out:'6 36'},{in:'7 5',out:'1 35'},{in:'10 10',out:'10 10'},{in:'1000000 999999',out:'1 999999000000',big:true}],
+  hint:'最大公約数はユークリッドの互除法で求まります。最小公倍数は A × B ÷ 最大公約数です。',
+  idea:`最大公約数（gcd）はユークリッドの互除法で求めます。
+
+  gcd(a, b) = gcd(b, a % b)、ただし b = 0 なら gcd = a
+
+「大きいほうを、あまりで置き換える」を繰り返すだけで、計算量は O(log min(A,B)) と非常に高速です。
+1 から順に約数を試す方法（O(min(A,B))）とは比べものになりません。
+
+最小公倍数（lcm）は gcd から求まります。
+
+  lcm(a, b) = a × b ÷ gcd(a, b)
+
+ここで注意したいのが桁あふれです。a × b を先に計算すると値が大きくなりすぎることがあるため、
+a ÷ gcd × b の順で計算するのが安全な書き方です（gcd で必ず割り切れるので誤差は出ません）。
+
+3 つ以上の数の lcm は lcm(lcm(a,b),c) のように順に求められます。`,
+  complexity:'O(log min(A, B))',
+  pitfalls:['最小公倍数を A × B としてしまう','a × b を先に計算して桁あふれする','互除法の引数の順序を取り違える'],
+  codeJs:`function solve(input) {
+  const [a, b] = input.trim().split(/\\s+/).map(Number);
+  const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);
+  const g = gcd(a, b);
+  return g + " " + (a / g * b);
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    static long gcd(long x, long y) {
+        return y == 0 ? x : gcd(y, x % y);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long a = sc.nextLong(), b = sc.nextLong();
+        long g = gcd(a, b);
+        System.out.println(g + " " + (a / g * b));  // a * b を先に計算しない
+    }
+}`,
+  quiz:[
+    {note:`最小公倍数を最大公約数で割っておらず、単なる積になっている`, edits:[[`(a / g * b)`,`(a * b)`]]},
+    {note:`互除法の引数の順序が違い、正しく縮んでいかない`, edits:[[`const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);`,`const gcd = (x, y) => y === 0 ? x : gcd(x % y, y === 0 ? 1 : y - y);`]]},
+    {note:`出力の順番が逆になっている`, edits:[[`return g + " " + (a / g * b);`,`return (a / g * b) + " " + g;`]]}
+  ]
+},{
+  kind:'algo', id:'b18', level:2, tags:['文字列','全探索'], title:'部分文字列は何回現れる？',
+  statement:`文字列 S と文字列 T が与えられます。
+S の中に T が何回現れるかを求めてください。
+現れる位置が重なっていても、それぞれ 1 回と数えます。
+
+例えば S = aaaa, T = aa のとき、1〜2 文字目、2〜3 文字目、3〜4 文字目の 3 回です。`,
+  constraints:['1 ≤ |T| ≤ |S| ≤ 2000','S, T は英小文字のみからなる'],
+  inputFormat:'S\nT',
+  cases:[{in:'aaaa\naa',out:'3'},{in:'abcabc\nabc',out:'2'},{in:'hello\nz',out:'0'},{in:'aaa\na',out:'3'},{in:'ababab\nabab',out:'2'}],
+  hint:'開始位置を 1 つずつずらして、そこから |T| 文字が T と一致するかを調べます。',
+  idea:`開始位置 i を 0 から |S| − |T| まで動かし、S の i 文字目から |T| 文字を切り出して T と比べます。
+
+ポイントは i の範囲です。i ≤ |S| − |T| までであり、
+ここを間違えると最後の一致を見落とすか、範囲外を読みます。
+（|S| = 4, |T| = 2 なら i = 0, 1, 2 の 3 通り）
+
+もう 1 つは「重なりを許すかどうか」です。
+一致したときに i を 1 だけ進めれば重なりを許し、|T| だけ進めれば重ならない数え方になります。
+問題文の例（aaaa と aa で 3 回）から、この問題は重なりを許すとわかります。
+テストケースの意味を読み取って仕様を確定させるのは、競技プログラミングでも実務でも同じです。
+
+計算量は O(|S| × |T|) で、この制約なら十分です。
+|S| が 10^5 を超えるなら KMP 法やローリングハッシュで O(|S| + |T|) にします。`,
+  complexity:'O(|S| × |T|)',
+  pitfalls:['ループの上限を間違えて最後の一致を見落とす','一致したとき |T| 進めてしまい、重なる分を数えない','切り出す長さを間違える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim(), t = lines[1].trim();
+  let cnt = 0;
+  for (let i = 0; i + t.length <= s.length; i++) {
+    if (s.slice(i, i + t.length) === t) cnt++;
+  }
+  return cnt;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next(), t = sc.next();
+        int cnt = 0;
+        for (int i = 0; i + t.length() <= s.length(); i++) {
+            if (s.startsWith(t, i)) cnt++;
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`ループの上限が 1 つ足りず、最後に現れる分を数え落とす`, edits:[[`for (let i = 0; i + t.length <= s.length; i++) {`,`for (let i = 0; i + t.length < s.length; i++) {`]]},
+    {note:`切り出す長さが 1 つ足りない`, edits:[[`s.slice(i, i + t.length)`,`s.slice(i, i + t.length - 1)`]]},
+    {note:`一致したら |T| 文字ぶん飛ばしており、重なった分を数えていない`, edits:[[`    if (s.slice(i, i + t.length) === t) cnt++;`,`    if (s.slice(i, i + t.length) === t) { cnt++; i += t.length - 1; }`]]}
+  ]
+},{
+  kind:'algo', id:'b19', level:2, tags:['数え上げ','ハッシュ'], title:'和が K になるペアの個数',
+  statement:`N 個の整数 A_1, ..., A_N が与えられます。
+i < j かつ A_i + A_j = K を満たす組 (i, j) の個数を求めてください。`,
+  constraints:['2 ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','-10^9 ≤ K ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N K\nA_1 A_2 ... A_N',
+  cases:[{in:'5 6\n1 2 3 4 5',out:'2'},{in:'4 4\n2 2 2 2',out:'6'},{in:'3 100\n1 2 3',out:'0'},{in:'2 0\n-5 5',out:'1'}],
+  hint:'A_i を見たとき、相方は K − A_i と決まります。それが今までに何個あったかを数えます。',
+  idea:`全ペアを試すと O(N^2) = 4×10^10 回で間に合いません。
+
+左から順に見ていき、「A_i より前に、K − A_i がいくつあったか」を足していけば、
+i < j の組をちょうど 1 回ずつ数えられます。
+「今までに出た値の個数」は連想配列（ハッシュマップ）で O(1) に引けるので、全体 O(N) です。
+
+  for each a in A:
+    答え += 出現回数[K − a]
+    出現回数[a] += 1
+
+この順番が重要です。先に自分を登録してしまうと、
+K が A_i の 2 倍のときに自分自身とペアを組んでしまい、答えがずれます。
+
+同じ値が複数あるケース（2 2 2 2 で K = 4 なら 6 組）も、
+個数を掛け合わせる必要はなく、この方法なら自然に正しく数えられます。
+まずこのケースで手を動かして確認するのがおすすめです。`,
+  complexity:'O(N)',
+  pitfalls:['自分自身とペアを作ってしまう（登録と加算の順番）','同じ値が複数あるケースを数え落とす','答えが 32bit を超える（最大でおよそ 2×10^10 組）'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const seen = new Map();
+  let cnt = 0;
+  for (const x of a) {
+    cnt += seen.get(k - x) || 0;
+    seen.set(x, (seen.get(x) || 0) + 1);
+  }
+  return cnt;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long k = Long.parseLong(st.nextToken());
+        st = new StringTokenizer(br.readLine());
+        Map<Long, Integer> seen = new HashMap<>();
+        long cnt = 0;
+        for (int i = 0; i < n; i++) {
+            long x = Long.parseLong(st.nextToken());
+            cnt += seen.getOrDefault(k - x, 0);
+            seen.merge(x, 1, Integer::sum);
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`先に自分を登録しているので、自分自身とのペアまで数えてしまう`, edits:[[`    cnt += seen.get(k - x) || 0;\n    seen.set(x, (seen.get(x) || 0) + 1);`,`    seen.set(x, (seen.get(x) || 0) + 1);\n    cnt += seen.get(k - x) || 0;`]]},
+    {note:`相方の値が K − x ではなく x − K になっている`, edits:[[`cnt += seen.get(k - x) || 0;`,`cnt += seen.get(x - k) || 0;`]]},
+    {note:`個数ではなく「その値が出たかどうか」しか見ておらず、重複を数えられない`, edits:[[`    seen.set(x, (seen.get(x) || 0) + 1);`,`    seen.set(x, 1);`]]}
+  ]
+},{
+  kind:'algo', id:'b20', level:2, tags:['数学'], title:'N 進法に直す',
+  statement:`10 進法で表された整数 X を、B 進法で表した文字列を出力してください。
+B は 2 以上 9 以下なので、答えは数字だけで表せます。
+X = 0 のときは 0 と出力してください。`,
+  constraints:['0 ≤ X ≤ 10^9','2 ≤ B ≤ 9','入力はすべて整数'],
+  inputFormat:'X B',
+  cases:[{in:'13 2',out:'1101'},{in:'0 2',out:'0'},{in:'255 8',out:'377'},{in:'100 7',out:'202'},{in:'9 9',out:'10'}],
+  hint:'B で割ったあまりを並べると、下のけたから順に出てきます。',
+  idea:`X を B で割ったあまりが、B 進法での一の位です。
+X を B で割って同じことを繰り返すと、下のけたから順に取り出せます。
+
+  while (x > 0) { けた.push(x % B); x = floor(x / B); }
+
+取り出した順は下のけたからなので、最後に反転して並べれば答えです。
+この「反転を忘れる」のがいちばん多いミスです。
+
+もう 1 つの落とし穴が X = 0 です。
+while ループが 1 度も回らないため、何も出力されません。
+「0 のときは 0 を出力」と場合分けするか、do-while で 1 回は必ず回す必要があります。
+このように「入力が 0 や空のとき、ループが 0 回になる」パターンは頻出の境界条件です。`,
+  complexity:'O(log X)',
+  pitfalls:['あまりを反転せず、けたが逆順になる','X = 0 のときに空文字を出力してしまう','商の更新を忘れる'],
+  codeJs:`function solve(input) {
+  let [x, b] = input.trim().split(/\\s+/).map(Number);
+  if (x === 0) return "0";
+  const digits = [];
+  while (x > 0) {
+    digits.push(x % b);
+    x = Math.floor(x / b);
+  }
+  return digits.reverse().join("");
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long x = sc.nextLong();
+        int b = sc.nextInt();
+        if (x == 0) { System.out.println(0); return; }
+        StringBuilder sb = new StringBuilder();
+        while (x > 0) {
+            sb.append(x % b);
+            x /= b;
+        }
+        System.out.println(sb.reverse());
+    }
+}`,
+  quiz:[
+    {note:`あまりを反転していないので、けたの並びが逆になる`, edits:[[`return digits.reverse().join("");`,`return digits.join("");`]]},
+    {note:`X = 0 のときの場合分けがなく、何も出力されない`, edits:[[`  if (x === 0) return "0";\n`,``]]},
+    {note:`10 で割っており、B 進法になっていない`, edits:[[`    digits.push(x % b);\n    x = Math.floor(x / b);`,`    digits.push(x % 10);\n    x = Math.floor(x / 10);`]]}
+  ]
+},{
+  kind:'algo', id:'b21', level:2, tags:['ソート'], title:'K 番目に大きい数',
+  statement:`N 個の整数 A_1, ..., A_N が与えられます。
+これらを大きい順に並べたとき、K 番目に来る値を出力してください。
+同じ値が複数ある場合も、それぞれ 1 つとして数えます。`,
+  constraints:['1 ≤ K ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N K\nA_1 A_2 ... A_N',
+  cases:[{in:'5 2\n3 1 4 1 5',out:'4'},{in:'3 3\n1 2 3',out:'1'},{in:'1 1\n7',out:'7'},{in:'5 1\n10 9 100 2 30',out:'100'},{in:'4 2\n5 5 5 5',out:'5'}],
+  hint:'降順に並べたときの K 番目は、0 始まりの添字では K−1 番目です。',
+  idea:`降順にソートして K−1 番目（0 始まり）を取り出すだけです。
+
+つまずくのは 2 点です。
+
+1. JavaScript の sort は引数なしだと文字列比較になります。
+   降順の数値ソートは sort((x, y) => y − x) と書きます。
+   テストケース 10 9 100 2 30 は、この間違いを検出するために置いています
+   （文字列比較だと 9 が最大になってしまいます）。
+
+2. 「K 番目」と 0 始まりの添字の対応です。1 番目は添字 0 なので、K−1 が正解です。
+
+なお、K が小さい場合や N が非常に大きい場合は、全部ソートせず
+サイズ K の優先度付きキューを使うと O(N log K) にできます。`,
+  complexity:'O(N log N)',
+  pitfalls:['昇順に並べて小さいほうから数えてしまう','K と K−1 を取り違える','数値ソートの比較関数を忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  a.sort((x, y) => y - x);
+  return a[k - 1];
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), k = Integer.parseInt(st.nextToken());
+        int[] a = new int[n];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) a[i] = Integer.parseInt(st.nextToken());
+        Arrays.sort(a);              // 昇順に並ぶので、後ろから K 番目を取る
+        System.out.println(a[n - k]);
+    }
+}`,
+  quiz:[
+    {note:`昇順に並べており、小さいほうから K 番目を返している`, edits:[[`a.sort((x, y) => y - x);`,`a.sort((x, y) => x - y);`]]},
+    {note:`添字が 1 つずれていて、K+1 番目を返している`, edits:[[`return a[k - 1];`,`return a[k];`]]},
+    {note:`比較関数がないので、数値ではなく文字列として並べ替えている`, edits:[[`a.sort((x, y) => y - x);`,`a.sort().reverse();`]]}
+  ]
+},{
+  kind:'algo', id:'b22', level:2, tags:['実装','全探索'], title:'まわりの爆弾の数',
+  statement:`H 行 W 列のマス目があります。各マスは # （爆弾がある）または . （爆弾がない）です。
+
+爆弾のないマスを、そのマスの上下左右と斜めの 8 マスに含まれる爆弾の個数（0〜8）に置き換え、
+爆弾のあるマスは # のままにして、マス目全体を出力してください。`,
+  constraints:['1 ≤ H, W ≤ 500','各マスは # または .'],
+  inputFormat:'H W\n(1 行目のマス目)\n...\n(H 行目のマス目)',
+  cases:[{in:'2 3\n#..\n...',out:'#10\n110'},{in:'1 1\n.',out:'0'},{in:'3 3\n###\n#.#\n###',out:'###\n#8#\n###'},{in:'1 3\n#.#',out:'#2#'}],
+  hint:'各マスについて、まわりの 8 方向を調べます。マス目の外に出ないよう注意してください。',
+  idea:`各マスについて周囲 8 マスを調べ、爆弾の個数を数えます。計算量は O(HW × 8) です。
+
+【実装のコツ】
+8 方向を if 文で 8 個並べると必ずどこかを書き間違えます。
+二重ループで −1〜+1 の組み合わせを回し、(0, 0)（自分自身）だけを除くのが安全です。
+
+  for (dy = -1; dy <= 1; dy++)
+    for (dx = -1; dx <= 1; dx++) {
+      if (dy === 0 && dx === 0) continue;
+      ...
+    }
+
+【必ず必要なチェック】
+マス目の外に出ていないか（0 ≤ ny < H かつ 0 ≤ nx < W）を、参照する前に必ず確認します。
+言語によっては範囲外アクセスがエラーにならず、静かに壊れた値を返すため、
+原因のわかりにくいバグになります。
+
+自分自身を除外し忘れると、爆弾の隣のマスがすべて 1 多くなります。`,
+  complexity:'O(HW)',
+  pitfalls:['自分自身のマスを数えてしまう','マス目の外を参照する','爆弾のマスまで数字に置き換えてしまう'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = [];
+  for (let i = 1; i <= h; i++) g.push(lines[i]);
+  const out = [];
+  for (let y = 0; y < h; y++) {
+    let row = "";
+    for (let x = 0; x < w; x++) {
+      if (g[y][x] === "#") { row += "#"; continue; }
+      let cnt = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dy === 0 && dx === 0) continue;
+          const ny = y + dy, nx = x + dx;
+          if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;
+          if (g[ny][nx] === "#") cnt++;
+        }
+      }
+      row += cnt;
+    }
+    out.push(row);
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        char[][] g = new char[h][];
+        for (int i = 0; i < h; i++) g[i] = br.readLine().toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (g[y][x] == '#') { sb.append('#'); continue; }
+                int cnt = 0;
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (dy == 0 && dx == 0) continue;
+                        int ny = y + dy, nx = x + dx;
+                        if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;
+                        if (g[ny][nx] == '#') cnt++;
+                    }
+                }
+                sb.append(cnt);
+            }
+            sb.append('\\n');
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`爆弾のマスまで数字に置き換えてしまっている`, edits:[[`      if (g[y][x] === "#") { row += "#"; continue; }\n`,``]]},
+    {note:`マス目の外に出たかのチェックがなく、外側を参照して壊れる`, edits:[[`          if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;\n`,``]]},
+    {note:`斜めを見ておらず、上下左右の 4 方向しか数えていない`, edits:[[`          if (dy === 0 && dx === 0) continue;`,`          if (dy === 0 && dx === 0) continue;\n          if (dy !== 0 && dx !== 0) continue;`]]}
+  ]
+},{
+  kind:'algo', id:'b23', level:2, tags:['文字列'], title:'回文にする最小の変更回数',
+  statement:`英小文字からなる文字列 S が与えられます。
+S の好きな位置の文字を、好きな文字に書き換えることができます。
+S を回文にするために必要な、書き換え回数の最小値を求めてください。`,
+  constraints:['1 ≤ |S| ≤ 10^5','S は英小文字のみからなる'],
+  inputFormat:'S',
+  cases:[{in:'abca',out:'1'},{in:'abc',out:'1'},{in:'level',out:'0'},{in:'abcd',out:'2'},{in:'aa',out:'0'}],
+  hint:'i 文字目と、後ろから i 文字目のペアを比べます。違っていれば 1 回の書き換えでそろえられます。',
+  idea:`回文とは「前から i 番目と、後ろから i 番目が等しい」ことです。
+そこで、対応するペアを前から順に比べていきます。
+
+ペアの 2 文字が違っていれば、どちらか一方を書き換えれば必ずそろうので、
+必要な回数は「文字が違うペアの個数」そのものです。
+
+ループの範囲は |S| / 2 未満までです。
+そこを超えると同じペアを 2 回数えることになり、答えが 2 倍になります。
+長さが奇数のときの中央の文字は、ペアの相手がいない（自分自身と対応する）ので、
+書き換える必要はありません。
+
+比較する相手の添字は s.length − 1 − i です。−1 を忘れると 1 つずれます。
+「先頭が 0 番目なら、末尾は length − 1 番目」を毎回確認する癖をつけると事故が減ります。`,
+  complexity:'O(|S|)',
+  pitfalls:['ループを最後まで回して、同じペアを 2 回数える','対応する添字を length − i にして 1 つずれる','中央の文字を書き換え対象に入れてしまう'],
+  codeJs:`function solve(input) {
+  const s = input.trim();
+  let cnt = 0;
+  for (let i = 0; i < Math.floor(s.length / 2); i++) {
+    if (s[i] !== s[s.length - 1 - i]) cnt++;
+  }
+  return cnt;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        int cnt = 0;
+        for (int i = 0; i < s.length() / 2; i++) {
+            if (s.charAt(i) != s.charAt(s.length() - 1 - i)) cnt++;
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`最後まで回しており、同じペアを 2 回数えている`, edits:[[`for (let i = 0; i < Math.floor(s.length / 2); i++) {`,`for (let i = 0; i < s.length; i++) {`]]},
+    {note:`対応する添字が 1 つずれていて、範囲外の文字と比べている`, edits:[[`s[s.length - 1 - i]`,`s[s.length - i]`]]},
+    {note:`一致しているペアの数を数えている`, edits:[[`if (s[i] !== s[s.length - 1 - i]) cnt++;`,`if (s[i] === s[s.length - 1 - i]) cnt++;`]]}
+  ]
+},{
+  kind:'algo', id:'b24', level:2, tags:['実装','数学'], title:'席を K 個ずらす',
+  statement:`N 個の席が円形に並んでおり、i 番目の席には整数 A_i が置かれています。
+すべての整数を、時計回りに K 個ぶんだけずらします。
+（1 番目にあったものが K+1 番目へ、N 番目にあったものは 1 番目へ戻るように続きます）
+
+ずらした後の並びを、1 番目から順に空白区切りで出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ K ≤ 10^9','1 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N K\nA_1 A_2 ... A_N',
+  cases:[{in:'5 2\n1 2 3 4 5',out:'4 5 1 2 3'},{in:'3 3\n1 2 3',out:'1 2 3'},{in:'4 1\n10 20 30 40',out:'40 10 20 30'},{in:'3 100\n1 2 3',out:'3 1 2',big:true}],
+  hint:'K が N より大きいことがあります。K を N で割ったあまりだけずらせば十分です。',
+  idea:`1 回ずつ K 回ずらすと O(NK) となり、K が 10^9 では絶対に間に合いません。
+
+N 個ずらすと元に戻るので、実際にずらす量は K % N だけです。
+ずらした後の i 番目には、元の (i − K) 番目（0 始まり）が来ます。
+負の添字にならないよう、N を足してから剰余を取るのが安全です。
+
+  新しい配列[i] = 元の配列[(i - K % N + N) % N]
+
+【剰余の落とし穴】
+多くの言語では、負の数に対する % の結果が負になります
+（JavaScript でも Java でも -1 % 5 は -1 です）。
+そのため「N を足してから % N」という書き方が定石になっています。
+Python の % は常に非負を返すので、この点は言語差があります。
+
+出力は 1 個ずつ print せず、まとめて join してから 1 回で出すのが定石です。`,
+  complexity:'O(N)',
+  pitfalls:['K を N で割ったあまりにせず、そのままずらして遅くなる','ずらす向きが逆になる','負の添字になって範囲外を参照する'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const shift = k % n;
+  const res = new Array(n);
+  for (let i = 0; i < n; i++) res[i] = a[(i - shift + n) % n];
+  return res.join(" ");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long k = Long.parseLong(st.nextToken());
+        int[] a = new int[n];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) a[i] = Integer.parseInt(st.nextToken());
+        int shift = (int) (k % n);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            if (i > 0) sb.append(' ');
+            sb.append(a[(i - shift + n) % n]);
+        }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`ずらす向きが逆になっている`, edits:[[`res[i] = a[(i - shift + n) % n];`,`res[i] = a[(i + shift) % n];`]]},
+    {note:`K をあまりにしておらず、負の添字や範囲外になる`, edits:[[`const shift = k % n;`,`const shift = k;`]]},
+    {note:`N を足していないため、負の数の剰余で範囲外を参照する`, edits:[[`a[(i - shift + n) % n]`,`a[(i - shift) % n]`]]}
+  ]
+}
+,{
+  kind:'algo', id:'c16', level:3, tags:['グラフ','ダイクストラ法'], title:'重み付きグラフの最短経路',
+  statement:`N 個の都市と M 本の道路があります。i 本目の道路は都市 U_i と V_i を双方向に結び、
+通るのに W_i 分かかります。
+
+都市 1 から都市 N まで移動するのにかかる最短の時間を求めてください。
+たどり着けない場合は -1 を出力してください。`,
+  constraints:['2 ≤ N ≤ 1000','0 ≤ M ≤ 5000','1 ≤ U_i, V_i ≤ N','1 ≤ W_i ≤ 10^9'],
+  inputFormat:'N M\nU_1 V_1 W_1\n...\nU_M V_M W_M',
+  cases:[{in:'4 4\n1 2 1\n2 4 5\n1 3 2\n3 4 1',out:'3'},{in:'2 0',out:'-1'},{in:'3 2\n1 2 10\n2 3 10',out:'20'},{in:'2 1\n1 2 7',out:'7'},{in:'3 2\n2 1 5\n3 2 5',out:'10'}],
+  hint:'辺の重みが 1 でないので BFS は使えません。「まだ確定していない中で最も近い頂点」を順に確定させます。',
+  idea:`重みがすべて 1 なら BFS で最短経路が求まりますが、重みが違うと BFS では正しくなりません。
+そこで使うのがダイクストラ法です。
+
+【考え方】
+・各頂点への暫定の最短距離 dist を持つ（最初は始点だけ 0、他は無限大）
+・まだ確定していない頂点のうち、dist が最小のものを 1 つ選んで「確定」させる
+・その頂点から出る辺で、隣の頂点の dist を更新する（緩和）
+・これを N 回繰り返す
+
+「未確定の中で最小のもの」は、それ以上短くなりようがないので確定してよい、というのが要点です。
+これは重みが非負であることが前提で、負の辺があるとダイクストラ法は使えません
+（その場合はベルマン・フォード法を使います）。
+
+【計算量】
+毎回すべての頂点を調べて最小を探すと O(N^2)。N ≤ 1000 なら 10^6 で十分間に合います。
+N が大きい場合は優先度付きキューを使って O((N + M) log N) にします。
+
+【落とし穴】
+距離は最大で 5000 × 10^9 = 5×10^12 になるため、32bit には収まりません。
+無限大の初期値も、足し算で桁あふれしない程度に大きく、かつ十分大きい値にします。`,
+  complexity:'O(N^2 + M)',
+  pitfalls:['重みがあるのに BFS で解こうとする','距離の型が 32bit で桁あふれする','到達できない頂点の扱い（-1）を忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = Array.from({ length: n + 1 }, () => []);
+  for (let i = 1; i <= m; i++) {
+    const [u, v, w] = lines[i].trim().split(/\\s+/).map(Number);
+    g[u].push([v, w]);
+    g[v].push([u, w]);
+  }
+  const INF = Infinity;
+  const dist = new Array(n + 1).fill(INF);
+  const used = new Array(n + 1).fill(false);
+  dist[1] = 0;
+  for (let iter = 0; iter < n; iter++) {
+    let v = -1;
+    for (let i = 1; i <= n; i++) {
+      if (!used[i] && (v === -1 || dist[i] < dist[v])) v = i;
+    }
+    if (dist[v] === INF) break;
+    used[v] = true;
+    for (const [to, w] of g[v]) {
+      if (dist[v] + w < dist[to]) dist[to] = dist[v] + w;
+    }
+  }
+  return dist[n] === INF ? -1 : dist[n];
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        List<List<long[]>> g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int u = Integer.parseInt(st.nextToken()), v = Integer.parseInt(st.nextToken());
+            long w = Long.parseLong(st.nextToken());
+            g.get(u).add(new long[]{v, w});
+            g.get(v).add(new long[]{u, w});
+        }
+        final long INF = Long.MAX_VALUE / 4;
+        long[] dist = new long[n + 1];
+        Arrays.fill(dist, INF);
+        boolean[] used = new boolean[n + 1];
+        dist[1] = 0;
+        for (int iter = 0; iter < n; iter++) {
+            int v = -1;
+            for (int i = 1; i <= n; i++) {
+                if (!used[i] && (v == -1 || dist[i] < dist[v])) v = i;
+            }
+            if (dist[v] == INF) break;
+            used[v] = true;
+            for (long[] e : g.get(v)) {
+                int to = (int) e[0];
+                if (dist[v] + e[1] < dist[to]) dist[to] = dist[v] + e[1];
+            }
+        }
+        System.out.println(dist[n] == INF ? -1 : dist[n]);
+    }
+}`,
+  quiz:[
+    {note:`未確定の中で最大の距離の頂点を選んでおり、確定の順番が逆になっている`, edits:[[`if (!used[i] && (v === -1 || dist[i] < dist[v])) v = i;`,`if (!used[i] && (v === -1 || dist[i] > dist[v])) v = i;`]]},
+    {note:`緩和のときに辺の重みを足しておらず、辺の数を数えているだけになっている`, edits:[[`      if (dist[v] + w < dist[to]) dist[to] = dist[v] + w;`,`      if (dist[v] + 1 < dist[to]) dist[to] = dist[v] + 1;`]]},
+    {note:`無向グラフなのに片方向しか辺を張っていない`, edits:[[`    g[u].push([v, w]);\n    g[v].push([u, w]);`,`    g[u].push([v, w]);`]]}
+  ]
+},{
+  kind:'algo', id:'c17', level:3, tags:['グラフ','データ構造'], title:'同じグループか判定する',
+  statement:`1 から N までの番号が付いた N 人がいます。最初、全員がそれぞれ別のグループにいます。
+Q 個のクエリが与えられるので、順に処理してください。
+
+・「1 a b」… a のいるグループと b のいるグループを合体させる
+・「2 a b」… a と b が同じグループにいるなら Yes、いないなら No を出力する
+
+種類 2 のクエリの答えを、1 行ずつ出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ Q ≤ 2 × 10^5','1 ≤ a, b ≤ N'],
+  inputFormat:'N Q\n(クエリ 1)\n...\n(クエリ Q)',
+  cases:[{in:'4 5\n1 1 2\n2 1 2\n2 1 3\n1 3 4\n2 1 4',out:'Yes\nNo\nNo'},{in:'2 1\n2 1 2',out:'No'},{in:'3 3\n1 1 2\n1 2 3\n2 1 3',out:'Yes'},{in:'2 2\n1 1 1\n2 1 2',out:'No'},{in:'3 3\n1 1 2\n1 1 3\n2 2 3',out:'Yes'}],
+  hint:'グループごとに「代表者」を 1 人決めておき、代表者が同じかどうかで判定します。',
+  idea:`グループの合体と所属判定を高速に行うデータ構造が Union-Find（素集合データ構造）です。
+
+各要素に「親」を持たせ、親をたどった先の根をグループの代表とします。
+・find(x)：x の根を返す
+・union(a, b)：a の根と b の根をつなぐ
+判定は find(a) === find(b) で行います。
+
+【2 つの高速化】
+1. 経路圧縮：find の途中で通ったノードの親を、直接根につけ替える
+2. サイズ（またはランク）による併合：小さいほうの木を大きいほうにぶら下げる
+
+両方を入れると、1 回の操作はならして O(α(N))（実質定数）になります。
+片方だけでも実用上は十分速くなります。
+
+【なぜグラフ探索ではダメか】
+クエリのたびに BFS/DFS で連結判定すると 1 回 O(N + M) かかり、
+クエリが 2×10^5 個あると間に合いません。
+「辺が増えていく状況での連結判定」は Union-Find の独壇場です
+（逆に、辺が減っていく場合は苦手で、クエリを逆順に処理するなどの工夫が必要になります）。`,
+  complexity:'O((N + Q) α(N))',
+  pitfalls:['find で根まで到達せず、親を 1 つ見ただけで判定する','経路圧縮を入れず、木が一本道になって遅くなる','同じ要素どうしの union で自己ループを作る'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, q] = lines[0].trim().split(/\\s+/).map(Number);
+  const par = new Array(n + 1);
+  for (let i = 0; i <= n; i++) par[i] = i;
+  const find = (x) => {
+    while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; }   // 経路圧縮
+    return x;
+  };
+  const out = [];
+  for (let i = 1; i <= q; i++) {
+    const [t, a, b] = lines[i].trim().split(/\\s+/).map(Number);
+    const ra = find(a), rb = find(b);
+    if (t === 1) { if (ra !== rb) par[ra] = rb; }
+    else out.push(ra === rb ? "Yes" : "No");
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static int[] par;
+
+    static int find(int x) {
+        while (par[x] != x) { par[x] = par[par[x]]; x = par[x]; }
+        return x;
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), q = Integer.parseInt(st.nextToken());
+        par = new int[n + 1];
+        for (int i = 0; i <= n; i++) par[i] = i;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < q; i++) {
+            st = new StringTokenizer(br.readLine());
+            int t = Integer.parseInt(st.nextToken());
+            int a = Integer.parseInt(st.nextToken()), b = Integer.parseInt(st.nextToken());
+            int ra = find(a), rb = find(b);
+            if (t == 1) { if (ra != rb) par[ra] = rb; }
+            else sb.append(ra == rb ? "Yes" : "No").append('\\n');
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`親を 1 つ見ただけで判定しており、根までたどっていない`, edits:[[`    while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; }   // 経路圧縮\n    return x;`,`    return par[x];`]]},
+    {note:`合体のときに根どうしではなく、要素そのものをつないでいる`, edits:[[`if (t === 1) { if (ra !== rb) par[ra] = rb; }`,`if (t === 1) { par[a] = b; }`]]},
+    {note:`判定が逆になっている`, edits:[[`else out.push(ra === rb ? "Yes" : "No");`,`else out.push(ra !== rb ? "Yes" : "No");`]]}
+  ]
+},{
+  kind:'algo', id:'c18', level:3, tags:['累積和'], title:'長方形の中の合計',
+  statement:`H 行 W 列の表があり、y 行 x 列目の値は A[y][x] です。
+Q 個の質問が与えられます。i 番目の質問は 4 つの整数 y1, x1, y2, x2 で、
+左上が (y1, x1)、右下が (y2, x2) である長方形の中の値の合計を答えてください（端も含みます）。
+
+各質問の答えを 1 行ずつ出力してください。`,
+  constraints:['1 ≤ H, W ≤ 1000','1 ≤ Q ≤ 2 × 10^5','1 ≤ y1 ≤ y2 ≤ H','1 ≤ x1 ≤ x2 ≤ W','-10^9 ≤ A[y][x] ≤ 10^9'],
+  inputFormat:'H W Q\n(1 行目の W 個)\n...\n(H 行目の W 個)\ny1 x1 y2 x2\n...（Q 行）',
+  cases:[{in:'2 2 1\n1 2\n3 4\n1 1 2 2',out:'10'},{in:'3 3 2\n1 1 1\n1 1 1\n1 1 1\n1 1 2 2\n2 2 3 3',out:'4\n4'},{in:'2 3 2\n1 2 3\n4 5 6\n1 2 2 3\n2 1 2 1',out:'16\n4'}],
+  hint:'1 次元の累積和を 2 次元に広げます。足しすぎた部分を引くのがポイントです。',
+  idea:`1 次元の累積和と同じ発想を 2 次元に広げます。
+
+S[y][x] =「左上 (1,1) から (y,x) までの長方形の合計」を前計算します。
+
+  S[y][x] = A[y][x] + S[y−1][x] + S[y][x−1] − S[y−1][x−1]
+
+上と左を足すと、左上の部分が 2 回足されるので 1 回分引きます（包除原理）。
+
+質問への答えは、大きい長方形から余分な帯を 2 つ引き、引きすぎた角を足し戻します。
+
+  答え = S[y2][x2] − S[y1−1][x2] − S[y2][x1−1] + S[y1−1][x1−1]
+
+前計算 O(HW)、各質問 O(1) で、全体 O(HW + Q)。
+毎回まじめに足すと最悪 O(Q × HW) = 2×10^11 で到底間に合いません。
+
+添字を 1 始まりにして S の 0 行目・0 列目を 0 にしておくと、
+境界の場合分けが要らなくなります。この「番兵」の置き方が実装のコツです。`,
+  complexity:'O(HW + Q)',
+  pitfalls:['重なった部分を足し戻し／引き忘れる','0 行目・0 列目を用意せず、境界で範囲外になる','合計が 32bit を超える（10^6 × 10^9）'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w, q] = lines[0].trim().split(/\\s+/).map(Number);
+  const s = Array.from({ length: h + 1 }, () => new Array(w + 1).fill(0));
+  for (let y = 1; y <= h; y++) {
+    const row = lines[y].trim().split(/\\s+/).map(Number);
+    for (let x = 1; x <= w; x++) {
+      s[y][x] = row[x - 1] + s[y - 1][x] + s[y][x - 1] - s[y - 1][x - 1];
+    }
+  }
+  const out = [];
+  for (let i = 0; i < q; i++) {
+    const [y1, x1, y2, x2] = lines[h + 1 + i].trim().split(/\\s+/).map(Number);
+    out.push(s[y2][x2] - s[y1 - 1][x2] - s[y2][x1 - 1] + s[y1 - 1][x1 - 1]);
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        int q = Integer.parseInt(st.nextToken());
+        long[][] s = new long[h + 1][w + 1];
+        for (int y = 1; y <= h; y++) {
+            st = new StringTokenizer(br.readLine());
+            for (int x = 1; x <= w; x++) {
+                long a = Long.parseLong(st.nextToken());
+                s[y][x] = a + s[y - 1][x] + s[y][x - 1] - s[y - 1][x - 1];
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < q; i++) {
+            st = new StringTokenizer(br.readLine());
+            int y1 = Integer.parseInt(st.nextToken()), x1 = Integer.parseInt(st.nextToken());
+            int y2 = Integer.parseInt(st.nextToken()), x2 = Integer.parseInt(st.nextToken());
+            sb.append(s[y2][x2] - s[y1 - 1][x2] - s[y2][x1 - 1] + s[y1 - 1][x1 - 1]).append('\\n');
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`累積和を作るときに、重なった左上を引いていない`, edits:[[`s[y][x] = row[x - 1] + s[y - 1][x] + s[y][x - 1] - s[y - 1][x - 1];`,`s[y][x] = row[x - 1] + s[y - 1][x] + s[y][x - 1];`]]},
+    {note:`質問に答えるとき、引きすぎた角を足し戻していない`, edits:[[`out.push(s[y2][x2] - s[y1 - 1][x2] - s[y2][x1 - 1] + s[y1 - 1][x1 - 1]);`,`out.push(s[y2][x2] - s[y1 - 1][x2] - s[y2][x1 - 1]);`]]},
+    {note:`引く範囲の添字がずれていて、左端・上端の行が含まれない`, edits:[[`s[y2][x2] - s[y1 - 1][x2] - s[y2][x1 - 1] + s[y1 - 1][x1 - 1]`,`s[y2][x2] - s[y1][x2] - s[y2][x1] + s[y1][x1]`]]}
+  ]
+},{
+  kind:'algo', id:'c19', level:3, tags:['動的計画法'], title:'ぴったり支払う最小枚数',
+  statement:`N 種類の硬貨があり、i 番目の硬貨の額面は C_i 円です。同じ硬貨は何枚でも使えます。
+ちょうど X 円を支払うとき、必要な硬貨の枚数の最小値を求めてください。
+ちょうど支払えない場合は -1 を出力してください。`,
+  constraints:['1 ≤ N ≤ 50','1 ≤ X ≤ 10^4','1 ≤ C_i ≤ 10^4','入力はすべて整数'],
+  inputFormat:'N X\nC_1 C_2 ... C_N',
+  cases:[{in:'3 8\n1 4 5',out:'2'},{in:'1 3\n2',out:'-1'},{in:'2 12\n5 7',out:'2'},{in:'2 15\n1 5',out:'3'}],
+  hint:'額面が日本の硬貨とは限らないので、大きいほうから使う貪欲法では最小になりません。',
+  idea:`日本の硬貨なら「大きい額面から使う」貪欲法で最小になりますが、
+額面が任意だと成り立ちません。
+
+例：額面が {1, 4, 5} で 8 円を払う場合
+・貪欲法：5 + 1 + 1 + 1 = 4 枚
+・最適：4 + 4 = 2 枚
+これがこの問題の 1 つ目のテストケースです。
+
+【DP で解く】
+dp[j] =「ちょうど j 円を作るのに必要な最小枚数」と定義します。
+dp[0] = 0、他は「作れない」を表す大きな値で初期化します。
+
+  dp[j] = min(dp[j], dp[j − C_i] + 1)
+
+各硬貨は何枚でも使えるので、j は小さいほうから回します
+（同じ硬貨を複数回使えるようにするため。0-1 ナップサックとはループの向きが逆です）。
+
+最後に dp[X] が初期値のままなら -1 です。
+
+【計算量】
+O(NX) = 50 × 10^4 = 5×10^5。余裕で間に合います。`,
+  complexity:'O(NX)',
+  pitfalls:['貪欲法で解いて誤答する','ループの向きを逆にして、各硬貨を 1 回しか使えなくする','作れない場合の -1 を忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, x] = lines[0].trim().split(/\\s+/).map(Number);
+  const c = lines[1].trim().split(/\\s+/).map(Number);
+  const INF = Infinity;
+  const dp = new Array(x + 1).fill(INF);
+  dp[0] = 0;
+  for (let j = 1; j <= x; j++) {
+    for (const v of c) {
+      if (j >= v && dp[j - v] + 1 < dp[j]) dp[j] = dp[j - v] + 1;
+    }
+  }
+  return dp[x] === INF ? -1 : dp[x];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt(), x = sc.nextInt();
+        int[] c = new int[n];
+        for (int i = 0; i < n; i++) c[i] = sc.nextInt();
+        final int INF = Integer.MAX_VALUE / 2;
+        int[] dp = new int[x + 1];
+        Arrays.fill(dp, INF);
+        dp[0] = 0;
+        for (int j = 1; j <= x; j++) {
+            for (int v : c) {
+                if (j >= v) dp[j] = Math.min(dp[j], dp[j - v] + 1);
+            }
+        }
+        System.out.println(dp[x] == INF ? -1 : dp[x]);
+    }
+}`,
+  quiz:[
+    {note:`貪欲法で大きい額面から使っており、額面によっては最小にならない`, edits:[[`  const INF = Infinity;\n  const dp = new Array(x + 1).fill(INF);\n  dp[0] = 0;\n  for (let j = 1; j <= x; j++) {\n    for (const v of c) {\n      if (j >= v && dp[j - v] + 1 < dp[j]) dp[j] = dp[j - v] + 1;\n    }\n  }\n  return dp[x] === INF ? -1 : dp[x];`,`  c.sort((p, q) => q - p);\n  let rest = x, cnt = 0;\n  for (const v of c) {\n    cnt += Math.floor(rest / v);\n    rest %= v;\n  }\n  return rest === 0 ? cnt : -1;`]]},
+    {note:`作れない場合の判定がなく、無限大がそのまま出てしまう`, edits:[[`return dp[x] === INF ? -1 : dp[x];`,`return dp[x];`]]},
+    {note:`dp[0] を初期化しておらず、どの金額も作れないことになる`, edits:[[`  dp[0] = 0;\n`,``]]}
+  ]
+},{
+  kind:'algo', id:'c20', level:3, tags:['動的計画法','文字列'], title:'最長共通部分列',
+  statement:`2 つの文字列 S と T が与えられます。
+どちらからも、いくつかの文字を取り除いて（順序は変えずに）作れる文字列のうち、
+最も長いものの長さを求めてください。`,
+  constraints:['1 ≤ |S|, |T| ≤ 2000','S, T は英小文字のみからなる'],
+  inputFormat:'S\nT',
+  cases:[{in:'abcde\nace',out:'3'},{in:'abc\nabc',out:'3'},{in:'abc\ndef',out:'0'},{in:'aggtab\ngxtxayb',out:'4'}],
+  hint:'S の i 文字目までと T の j 文字目までを見たときの答え、という表を作ります。',
+  idea:`最長共通部分列（LCS）は、2 次元 DP の代表例です。
+
+dp[i][j] =「S の先頭 i 文字と T の先頭 j 文字だけを見たときの答え」と定義します。
+
+  S[i−1] === T[j−1] のとき： dp[i][j] = dp[i−1][j−1] + 1
+  そうでないとき：           dp[i][j] = max(dp[i−1][j], dp[i][j−1])
+
+最後の文字に注目して「使うか、S 側を捨てるか、T 側を捨てるか」で場合分けするのがポイントです。
+これも「最後の 1 手で場合分けする」という DP の基本形です。
+
+【計算量】
+O(|S| × |T|) = 4×10^6。制約どおりなら問題ありません。
+
+【落とし穴】
+・添字を 1 始まりにして dp を (|S|+1) × (|T|+1) で確保すると、境界の場合分けが消えます
+・文字を比べるときは dp の添字より 1 小さい位置（S[i−1]）を見ます。ここが最頻出のバグです
+
+部分列（連続でなくてよい）と部分文字列（連続）は別物です。問題文をよく読んでください。`,
+  complexity:'O(|S| × |T|)',
+  pitfalls:['dp の添字と文字列の添字を取り違える','部分文字列（連続）と混同する','max を取る 2 方向のどちらかを書き忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim(), t = lines[1].trim();
+  const dp = Array.from({ length: s.length + 1 }, () => new Array(t.length + 1).fill(0));
+  for (let i = 1; i <= s.length; i++) {
+    for (let j = 1; j <= t.length; j++) {
+      if (s[i - 1] === t[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[s.length][t.length];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next(), t = sc.next();
+        int[][] dp = new int[s.length() + 1][t.length() + 1];
+        for (int i = 1; i <= s.length(); i++) {
+            for (int j = 1; j <= t.length(); j++) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1] + 1;
+                else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+        System.out.println(dp[s.length()][t.length()]);
+    }
+}`,
+  quiz:[
+    {note:`文字を比べる位置がずれていて、1 文字先を見ている`, edits:[[`if (s[i - 1] === t[j - 1])`,`if (s[i] === t[j])`]]},
+    {note:`一致したときに斜めではなく真上から引き継いでおり、同じ文字を重複して使える`, edits:[[`dp[i][j] = dp[i - 1][j - 1] + 1;`,`dp[i][j] = dp[i - 1][j] + 1;`]]},
+    {note:`一致しないときに片方しか見ておらず、最大になっていない`, edits:[[`else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);`,`else dp[i][j] = dp[i - 1][j];`]]}
+  ]
+},{
+  kind:'algo', id:'c21', level:3, tags:['グラフ'], title:'作業の順番は決められる？',
+  statement:`N 個の作業があり、M 個の依存関係が与えられます。
+i 番目の依存関係は「作業 A_i を終えてからでないと作業 B_i を始められない」という意味です。
+
+すべての作業を実行できる順番が存在するなら Yes、存在しない（依存が循環している）なら No を
+出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ A_i, B_i ≤ N'],
+  inputFormat:'N M\nA_1 B_1\n...\nA_M B_M',
+  cases:[{in:'3 2\n1 2\n2 3',out:'Yes'},{in:'3 3\n1 2\n2 3\n3 1',out:'No'},{in:'2 0',out:'Yes'},{in:'4 3\n1 2\n3 4\n4 3',out:'No'},{in:'1 1\n1 1',out:'No'}],
+  hint:'「まだ待っている依存の数」が 0 の作業から順に実行していきます。最後まで実行できれば Yes です。',
+  idea:`これは有向グラフに閉路があるかどうかの判定で、トポロジカルソートで解けます。
+
+【カーンのアルゴリズム】
+1. 各頂点の入次数（自分より先に終える必要がある作業の数）を数える
+2. 入次数 0 の頂点をキューに入れる
+3. キューから 1 つ取り出して「実行済み」にし、そこから出る辺の先の入次数を 1 減らす
+4. 0 になった頂点をキューに入れる
+5. 3〜4 を繰り返す
+
+実行できた作業の数が N に達すれば順番が存在します。
+途中でキューが空になったのに残っている作業があれば、そこに閉路があります。
+
+【直感】
+閉路の中の作業は、互いに相手を待ち続けるため、入次数が決して 0 になりません。
+だから「実行できた数」を数えるだけで閉路の有無が判定できます。
+
+【注意】
+自己ループ（A_i = B_i）も閉路です。テストケースに入れてあります。
+また、依存は一方向なので有向グラフです。無向グラフのつもりで両方向に辺を張ると答えが変わります。`,
+  complexity:'O(N + M)',
+  pitfalls:['無向グラフとして両方向に辺を張ってしまう','入次数を数える向きを逆にする','自己ループを見落とす'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = Array.from({ length: n + 1 }, () => []);
+  const indeg = new Array(n + 1).fill(0);
+  for (let i = 1; i <= m; i++) {
+    const [a, b] = lines[i].trim().split(/\\s+/).map(Number);
+    g[a].push(b);
+    indeg[b]++;
+  }
+  const queue = [];
+  for (let i = 1; i <= n; i++) if (indeg[i] === 0) queue.push(i);
+  let done = 0, head = 0;
+  while (head < queue.length) {
+    const v = queue[head++];
+    done++;
+    for (const to of g[v]) {
+      if (--indeg[to] === 0) queue.push(to);
+    }
+  }
+  return done === n ? "Yes" : "No";
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        List<List<Integer>> g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        int[] indeg = new int[n + 1];
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken()), b = Integer.parseInt(st.nextToken());
+            g.get(a).add(b);
+            indeg[b]++;
+        }
+        Deque<Integer> q = new ArrayDeque<>();
+        for (int i = 1; i <= n; i++) if (indeg[i] == 0) q.add(i);
+        int done = 0;
+        while (!q.isEmpty()) {
+            int v = q.poll();
+            done++;
+            for (int to : g.get(v)) {
+                if (--indeg[to] == 0) q.add(to);
+            }
+        }
+        System.out.println(done == n ? "Yes" : "No");
+    }
+}`,
+  quiz:[
+    {note:`有向グラフなのに両方向へ辺を張っており、依存の向きが失われている`, edits:[[`    g[a].push(b);\n    indeg[b]++;`,`    g[a].push(b);\n    g[b].push(a);\n    indeg[b]++;\n    indeg[a]++;`]]},
+    {note:`入次数を数える向きが逆になっている`, edits:[[`    indeg[b]++;`,`    indeg[a]++;`]]},
+    {note:`実行できた数を確認しておらず、常に Yes を返す`, edits:[[`return done === n ? "Yes" : "No";`,`return "Yes";`]]}
+  ]
+},{
+  kind:'algo', id:'c22', level:3, tags:['貪欲法','データ構造'], title:'まとめるコストを最小に',
+  statement:`N 個の山があり、i 番目の山には A_i 個の石があります。
+2 つの山を選んで 1 つにまとめることができ、そのコストは「2 つの山の石の個数の和」です。
+
+すべての山を 1 つにまとめるまでにかかるコストの合計の最小値を求めてください。`,
+  constraints:['1 ≤ N ≤ 1000','1 ≤ A_i ≤ 10^6','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'3\n1 2 3',out:'9'},{in:'2\n5 5',out:'10'},{in:'4\n1 1 1 1',out:'8'},{in:'1\n7',out:'0'}],
+  hint:'早くまとめた山は、その後も何度もコストに数えられます。小さい山から先にまとめましょう。',
+  idea:`毎回「最も小さい 2 つの山」をまとめるのが最適です（ハフマン符号と同じ考え方）。
+
+【なぜ最小の 2 つなのか】
+ある山の石は、まとめられるたびに毎回コストに数えられます。
+つまり、最終的なコストは「各山の石の個数 × その山がまとめられた回数」の合計です。
+何度も数えられるのは早くまとめた山なので、
+そこに大きい山を置かないほうがよい、というのが直感的な理由です。
+
+【計算量】
+最小の 2 つを取り出して、その和を戻す、を N−1 回繰り返します。
+優先度付きキュー（ヒープ）を使えば O(N log N) です。
+N ≤ 1000 なら、毎回ソートし直す O(N^2 log N) でも間に合います。
+
+【落とし穴】
+・N = 1 のときはまとめる必要がないのでコスト 0 です（ループが 0 回）
+・合計は最大でおよそ 10^6 × 1000 × log N 程度になり得るので、32bit では危険です
+
+なお「最も大きい 2 つ」からまとめると最大コストになります。逆にすると答えが変わるので注意してください。`,
+  complexity:'O(N^2 log N)（ヒープを使えば O(N log N)）',
+  pitfalls:['大きいほうからまとめてしまう','まとめた結果を戻し忘れる','N = 1 のときに 0 を返せていない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  let total = 0;
+  while (a.length > 1) {
+    a.sort((x, y) => x - y);
+    const s = a.shift() + a.shift();   // 小さい 2 つを取り出す
+    total += s;
+    a.push(s);
+  }
+  return total;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        PriorityQueue<Long> pq = new PriorityQueue<>();
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) pq.add(Long.parseLong(st.nextToken()));
+        long total = 0;
+        while (pq.size() > 1) {
+            long s = pq.poll() + pq.poll();
+            total += s;
+            pq.add(s);
+        }
+        System.out.println(total);
+    }
+}`,
+  quiz:[
+    {note:`大きい 2 つからまとめており、コストが最大になってしまう`, edits:[[`a.sort((x, y) => x - y);`,`a.sort((x, y) => y - x);`]]},
+    {note:`まとめた山を戻していないので、石が消えてしまう`, edits:[[`    total += s;\n    a.push(s);`,`    total += s;`]]},
+    {note:`コストの足し方が違い、まとめた回数を数えているだけになっている`, edits:[[`    total += s;`,`    total += 1;`]]}
+  ]
+},{
+  kind:'algo', id:'c23', level:3, tags:['ソート','貪欲法'], title:'同時に重なる区間の最大数',
+  statement:`N 個の予定があり、i 番目の予定は時刻 L_i に始まり時刻 R_i に終わります
+（時刻 R_i にはもう終わっているものとします）。
+
+ある瞬間に同時に進行している予定の数として考えられる最大値を求めてください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ L_i < R_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nL_1 R_1\n...\nL_N R_N',
+  cases:[{in:'3\n1 5\n2 6\n7 8',out:'2'},{in:'1\n1 2',out:'1'},{in:'4\n1 10\n2 3\n2 4\n5 6',out:'3'},{in:'3\n1 2\n2 3\n3 4',out:'1'}],
+  hint:'開始を +1、終了を −1 のイベントとして時刻順に処理します。',
+  idea:`時刻の範囲が 10^9 まであるので、時刻ごとに配列を作ることはできません。
+「変化が起きる瞬間」だけを見ます。
+
+各予定を「時刻 L で +1」「時刻 R で −1」という 2 つのイベントに分解し、
+時刻順に並べて順に足していきます。その途中の最大値が答えです。
+
+【同じ時刻の順序が重要】
+時刻 R に終わる予定と、時刻 R に始まる予定は重なりません。
+そのため、同じ時刻では −1（終了）を +1（開始）より先に処理する必要があります。
+テストケース「1 2 / 2 3 / 3 4」の答えが 1 になるのは、この順序が正しいときだけです。
+
+数値でソートするとき、(時刻, 増減) の組で並べれば
+−1 が +1 より小さいので自然に終了が先になります。
+
+この「イベントに分解して時刻順に処理する」手法は、
+いもす法や平面走査（スイープライン）と同じ考え方で、応用範囲がとても広いです。`,
+  complexity:'O(N log N)',
+  pitfalls:['同じ時刻の開始と終了の順序を逆にして、1 多く数える','時刻を添字にした配列を作ろうとしてメモリ超過する','最大値ではなく最後の値を答えてしまう'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  const ev = [];
+  for (let i = 1; i <= n; i++) {
+    const [l, r] = lines[i].trim().split(/\\s+/).map(Number);
+    ev.push([l, 1]);
+    ev.push([r, -1]);
+  }
+  ev.sort((x, y) => x[0] - y[0] || x[1] - y[1]);   // 同時刻なら終了(-1)が先
+  let cur = 0, best = 0;
+  for (const [, d] of ev) {
+    cur += d;
+    if (cur > best) best = cur;
+  }
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        int[][] ev = new int[2 * n][2];
+        for (int i = 0; i < n; i++) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int l = Integer.parseInt(st.nextToken()), r = Integer.parseInt(st.nextToken());
+            ev[2 * i] = new int[]{l, 1};
+            ev[2 * i + 1] = new int[]{r, -1};
+        }
+        Arrays.sort(ev, (x, y) -> x[0] != y[0] ? Integer.compare(x[0], y[0]) : Integer.compare(x[1], y[1]));
+        int cur = 0, best = 0;
+        for (int[] e : ev) {
+            cur += e[1];
+            best = Math.max(best, cur);
+        }
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`同じ時刻で開始を先に処理しており、接しているだけの予定を重なりと数える`, edits:[[`ev.sort((x, y) => x[0] - y[0] || x[1] - y[1]);   // 同時刻なら終了(-1)が先`,`ev.sort((x, y) => x[0] - y[0] || y[1] - x[1]);`]]},
+    {note:`終了イベントを登録しておらず、予定がいつまでも終わらない`, edits:[[`    ev.push([l, 1]);\n    ev.push([r, -1]);`,`    ev.push([l, 1]);`]]},
+    {note:`最大値ではなく最後の値を返している`, edits:[[`    if (cur > best) best = cur;\n  }\n  return best;`,`  }\n  return cur;`]]}
+  ]
+},{
+  kind:'algo', id:'c24', level:3, tags:['数学'], title:'べき乗のあまり',
+  statement:`A の B 乗を 998244353 で割ったあまりを求めてください。
+なお、B = 0 のときの A の 0 乗は 1 とします。`,
+  constraints:['1 ≤ A ≤ 10^9','0 ≤ B ≤ 10^9','入力はすべて整数'],
+  inputFormat:'A B',
+  cases:[{in:'2 10',out:'1024'},{in:'3 0',out:'1'},{in:'5 3',out:'125'},{in:'2 1000000000',out:'851104391',big:true}],
+  hint:'B 回掛けると間に合いません。A^(2k) = (A^k)^2 を使って、指数を半分ずつにします。',
+  idea:`B 回ループすると 10^9 回で間に合いません。繰り返し二乗法（バイナリ法）を使います。
+
+  B が偶数なら A^B = (A^(B/2))^2
+  B が奇数なら A^B = A × A^(B−1)
+
+これを繰り返すと、B は毎回おおよそ半分になるので、掛け算は O(log B) ≒ 30 回で済みます。
+
+ループで書くなら、B を 2 進法で見て「1 が立っているビットのぶんだけ掛ける」形になります。
+
+  res = 1
+  while (B > 0) {
+    if (B が奇数) res = res * A % MOD
+    A = A * A % MOD
+    B = floor(B / 2)
+  }
+
+【掛け算の桁あふれ】
+mod が 998244353（約 10^9）なので、2 つ掛けると約 10^18 になります。
+これは 64bit には収まりますが 32bit には収まらないので、C++ や Java では long が必須です。
+JavaScript の通常の数値は 2^53 までしか正確に扱えないため、この問題では BigInt を使っています。
+「mod を取る掛け算では、掛ける前の値の大きさを必ず確認する」のは重要な習慣です。
+
+この手法は、逆元の計算（フェルマーの小定理）や行列累乗にもそのまま応用できます。`,
+  complexity:'O(log B)',
+  pitfalls:['B 回ループして TLE する','B = 0 のときに 1 を返せていない','掛け算で桁あふれする'],
+  codeJs:`function solve(input) {
+  const [a0, b0] = input.trim().split(/\\s+/).map(Number);
+  const MOD = 998244353n;
+  let a = BigInt(a0) % MOD, b = BigInt(b0), res = 1n;
+  while (b > 0n) {
+    if (b % 2n === 1n) res = res * a % MOD;
+    a = a * a % MOD;
+    b /= 2n;
+  }
+  return res.toString();
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long a = sc.nextLong(), b = sc.nextLong();
+        final long MOD = 998244353L;
+        long res = 1;
+        a %= MOD;
+        while (b > 0) {
+            if ((b & 1) == 1) res = res * a % MOD;   // long でないと桁あふれする
+            a = a * a % MOD;
+            b >>= 1;
+        }
+        System.out.println(res);
+    }
+}`,
+  quiz:[
+    {note:`結果の初期値が 0 なので、答えが常に 0 になる`, edits:[[`let a = BigInt(a0) % MOD, b = BigInt(b0), res = 1n;`,`let a = BigInt(a0) % MOD, b = BigInt(b0), res = 0n;`]]},
+    {note:`奇数のときだけでなく毎回掛けており、指数が合わない`, edits:[[`    if (b % 2n === 1n) res = res * a % MOD;`,`    res = res * a % MOD;`]]},
+    {note:`底を 2 乗していないので、指数を半分にした意味がない`, edits:[[`    a = a * a % MOD;`,`    a = a % MOD;`]]}
+  ]
+},{
+  kind:'algo', id:'c25', level:3, tags:['グラフ','幅優先探索'], title:'島はいくつ？',
+  statement:`H 行 W 列のマス目があり、各マスは # （陸）または . （海）です。
+上下左右に隣り合う陸どうしは、同じ島に属します（斜めはつながっていません）。
+
+島は全部でいくつありますか。`,
+  constraints:['1 ≤ H, W ≤ 1000','各マスは # または .'],
+  inputFormat:'H W\n(1 行目のマス目)\n...\n(H 行目のマス目)',
+  cases:[{in:'3 3\n#.#\n.#.\n#.#',out:'5'},{in:'1 1\n.',out:'0'},{in:'2 2\n##\n##',out:'1'},{in:'3 4\n##..\n#..#\n..##',out:'2'}],
+  hint:'まだ訪れていない陸を見つけたら、そこから探索してつながっている陸をすべて訪問済みにします。',
+  idea:`グリッドを 1 つのグラフとみなした、連結成分の数え上げです。
+
+すべてのマスを順に見て、「陸」かつ「未訪問」のマスを見つけたら島を 1 つ数え、
+そこから BFS または DFS でつながっている陸をすべて訪問済みにします。
+探索を開始した回数が、そのまま島の数になります。
+
+各マスは高々 1 回しか探索されないので、計算量は O(HW) です。
+
+【実装の注意】
+・斜めはつながっていないので、見るのは 4 方向だけです（8 方向にすると答えが変わります）
+・H, W が 1000 のとき最大 10^6 マスあるため、再帰の DFS ではスタックがあふれる可能性があります。
+  キューや明示的なスタックを使うループ形式が安全です
+・訪問済みの印は「キューに入れるとき」に付けます。取り出すときに付けると、
+  同じマスが何度もキューに入って遅くなります
+
+この形は「連結成分の個数」「塗りつぶし（フラッドフィル）」として、非常によく出題されます。`,
+  complexity:'O(HW)',
+  pitfalls:['斜めもつながっていると勘違いする','再帰の深さでスタックオーバーフローする','訪問済みの印を取り出すときに付けて計算量が増える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = [];
+  for (let i = 1; i <= h; i++) g.push(lines[i]);
+  const seen = Array.from({ length: h }, () => new Array(w).fill(false));
+  const dy = [1, -1, 0, 0], dx = [0, 0, 1, -1];
+  let cnt = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (g[y][x] !== "#" || seen[y][x]) continue;
+      cnt++;
+      seen[y][x] = true;
+      const stack = [[y, x]];
+      while (stack.length) {
+        const [cy, cx] = stack.pop();
+        for (let d = 0; d < 4; d++) {
+          const ny = cy + dy[d], nx = cx + dx[d];
+          if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;
+          if (g[ny][nx] !== "#" || seen[ny][nx]) continue;
+          seen[ny][nx] = true;
+          stack.push([ny, nx]);
+        }
+      }
+    }
+  }
+  return cnt;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        char[][] g = new char[h][];
+        for (int i = 0; i < h; i++) g[i] = br.readLine().toCharArray();
+        boolean[][] seen = new boolean[h][w];
+        int[] dy = {1, -1, 0, 0}, dx = {0, 0, 1, -1};
+        int cnt = 0;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (g[y][x] != '#' || seen[y][x]) continue;
+                cnt++;
+                seen[y][x] = true;
+                Deque<int[]> stack = new ArrayDeque<>();
+                stack.push(new int[]{y, x});
+                while (!stack.isEmpty()) {
+                    int[] c = stack.pop();
+                    for (int d = 0; d < 4; d++) {
+                        int ny = c[0] + dy[d], nx = c[1] + dx[d];
+                        if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;
+                        if (g[ny][nx] != '#' || seen[ny][nx]) continue;
+                        seen[ny][nx] = true;
+                        stack.push(new int[]{ny, nx});
+                    }
+                }
+            }
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`探索を行っていないので、陸のマスの数を数えているだけになる`, edits:[[`      const stack = [[y, x]];`,`      const stack = [];`]]},
+    {note:`斜め方向もつながっているとみなしており、島の数が少なくなる`, edits:[[`  const dy = [1, -1, 0, 0], dx = [0, 0, 1, -1];`,`  const dy = [1, -1, 0, 0, 1, 1, -1, -1], dx = [0, 0, 1, -1, 1, -1, 1, -1];`],[`for (let d = 0; d < 4; d++) {`,`for (let d = 0; d < 8; d++) {`]]},
+    {note:`海のマスからも探索を始めており、島でないものまで数えている`, edits:[[`if (g[y][x] !== "#" || seen[y][x]) continue;`,`if (seen[y][x]) continue;`]]}
+  ]
+},{
+  kind:'algo', id:'c26', level:3, tags:['動的計画法'], title:'カエルのジャンプ',
+  statement:`N 個の足場が一列に並んでおり、i 番目の足場の高さは H_i です。
+カエルは足場 1 から出発し、足場 N を目指します。
+足場 i にいるとき、足場 i+1 または足場 i+2 へジャンプできます。
+足場 i から足場 j へジャンプするときのコストは |H_i − H_j| です。
+
+足場 N にたどり着くまでのコストの合計の最小値を求めてください。`,
+  constraints:['2 ≤ N ≤ 2 × 10^5','1 ≤ H_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nH_1 H_2 ... H_N',
+  cases:[{in:'4\n10 30 40 20',out:'30'},{in:'2\n10 10',out:'0'},{in:'6\n30 10 60 10 60 50',out:'40'},{in:'3\n10 20 10',out:'0'}],
+  hint:'足場 i に来る直前にいたのは、i−1 か i−2 のどちらかです。',
+  idea:`DP の入門としてとても有名な問題です。
+
+dp[i] =「足場 i にたどり着くまでの最小コスト」と定義します。
+足場 i に来る直前にいたのは i−1 か i−2 のどちらかなので、
+
+  dp[i] = min(dp[i−1] + |H_i − H_(i−1)|, dp[i−2] + |H_i − H_(i−2)|)
+
+dp[0] = 0 から順に埋めていけば、dp[N−1] が答えです。
+
+【貪欲では解けない】
+「毎回、高さの差が小さいほうへ飛ぶ」という貪欲法は最適になりません。
+目先のコストが小さくても、その先で大きなコストを払う羽目になることがあるからです。
+テストケース 30 10 60 10 60 50 がその例で、貪欲では 40 になりません。
+
+【実装の注意】
+・i = 1 のときは i−2 が存在しないので、場合分けが必要です
+・答えは最大で 2×10^5 × 10^9 = 2×10^14 になり得るので、32bit では足りません
+
+この形の DP は「最後の 1 手で場合分け」の基本形で、
+ジャンプできる幅が K になった場合（O(NK)）などに素直に拡張できます。`,
+  complexity:'O(N)',
+  pitfalls:['i−2 が存在しない最初の 1 歩を場合分けし忘れる','貪欲法で解こうとして誤答する','コストの合計が 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  const h = lines[1].trim().split(/\\s+/).map(Number);
+  const dp = new Array(n).fill(Infinity);
+  dp[0] = 0;
+  for (let i = 1; i < n; i++) {
+    dp[i] = dp[i - 1] + Math.abs(h[i] - h[i - 1]);
+    if (i > 1) dp[i] = Math.min(dp[i], dp[i - 2] + Math.abs(h[i] - h[i - 2]));
+  }
+  return dp[n - 1];
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        long[] h = new long[n];
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) h[i] = Long.parseLong(st.nextToken());
+        long[] dp = new long[n];
+        dp[0] = 0;
+        for (int i = 1; i < n; i++) {
+            dp[i] = dp[i - 1] + Math.abs(h[i] - h[i - 1]);
+            if (i > 1) dp[i] = Math.min(dp[i], dp[i - 2] + Math.abs(h[i] - h[i - 2]));
+        }
+        System.out.println(dp[n - 1]);
+    }
+}`,
+  quiz:[
+    {note:`2 つ先からのジャンプを考えておらず、1 つずつしか進めない`, edits:[[`    if (i > 1) dp[i] = Math.min(dp[i], dp[i - 2] + Math.abs(h[i] - h[i - 2]));\n`,``]]},
+    {note:`最小ではなく最大を選んでいる`, edits:[[`dp[i] = Math.min(dp[i], dp[i - 2] + Math.abs(h[i] - h[i - 2]));`,`dp[i] = Math.max(dp[i], dp[i - 2] + Math.abs(h[i] - h[i - 2]));`]]},
+    {note:`コストに絶対値を使っておらず、下りのときに負のコストになる`, edits:[[`    dp[i] = dp[i - 1] + Math.abs(h[i] - h[i - 1]);`,`    dp[i] = dp[i - 1] + (h[i] - h[i - 1]);`]]}
+  ]
+}
 /* ---------------- 論理パズル ---------------- */
 ,{
   kind:'puzzle', id:'q01', level:1, tags:['論理パズル','数当て'], title:'2 けたの数を当てる',
@@ -3092,6 +5074,441 @@ A が持っている果物は何でしょうか。`,
 候補は 3! × 3! = 36 通りしかないので、プログラムなら全探索で一瞬です
 （この解答も 36 通りを全探索し、条件を満たす組み合わせがこの 1 通りだけであることを確認しています）。`
 }
+,{
+  kind:'puzzle', id:'q17', level:1, tags:['論理パズル','数当て'], title:'兄と弟の年齢',
+  statement:`兄と弟がいます。
+2 人の年齢を足すと 30 歳、兄の年齢から弟の年齢を引くと 4 歳になります。
+
+兄は何歳でしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'17',
+  accept:['17歳'],
+  hint:'和と差が両方わかっているとき、足すと大きいほうの 2 倍になります。',
+  idea:`兄を a、弟を b とすると
+  a + b = 30
+  a − b = 4
+
+2 つの式を足すと 2a = 34 なので a = 17。弟は 13 歳です。
+
+これは和差算と呼ばれる形で、
+  大きいほう = (和 + 差) ÷ 2
+  小さいほう = (和 − 差) ÷ 2
+と覚えておくと一瞬で解けます。
+
+線分図で考えると、和から差を取り除けば「小さいほう 2 つ分」になる、という関係が見えます。
+式を立てるか、図で考えるか、自分に合うほうを選べるようにしておくと、
+少し複雑な問題でも崩れにくくなります。`
+},{
+  kind:'puzzle', id:'q18', level:1, tags:['論理パズル','数え上げ'], title:'1 から 100 までの合計',
+  statement:`1 + 2 + 3 + ... + 99 + 100 を計算してください。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'5050',
+  hint:'両端から順にペアを作ると、どのペアも同じ値になります。',
+  idea:`1 と 100、2 と 99、3 と 98、… というように両端からペアを作ると、
+どのペアの和も 101 になります。ペアは 50 組できるので
+
+  101 × 50 = 5050
+
+これは数学者ガウスが少年時代に一瞬で解いたという逸話で有名な計算です。
+
+一般に 1 から n までの和は n(n+1)/2 です。
+n = 100 なら 100 × 101 ÷ 2 = 5050 と、同じ答えになります。
+
+この公式は競技プログラミングでも頻出で、
+「1 から n まで足すループ」を「式 1 本」に置き換えることで、
+n が 10^18 のような巨大な値でも一瞬で計算できるようになります。`
+},{
+  kind:'puzzle', id:'q19', level:1, tags:['論理パズル','図形'], title:'3 時 30 分の時計',
+  statement:`アナログ時計の針は、なめらかに動きます。
+
+3 時 30 分ちょうどのとき、長針（分針）と短針（時針）が作る角のうち、
+小さいほうの角度は何度でしょうか。`,
+  answerFormat:'半角数字で答えてください（単位は不要です）',
+  answer:'75',
+  accept:['75度','75°'],
+  hint:'短針は 3 のちょうど位置ではなく、3 と 4 の間まで進んでいます。',
+  idea:`ポイントは、短針も少しずつ動いているということです。
+
+【長針】
+1 時間（60 分）で 1 周 360 度なので、1 分で 6 度。
+30 分では 6 × 30 = 180 度（真下＝6 の位置）。
+
+【短針】
+12 時間で 1 周なので、1 時間で 30 度、1 分で 0.5 度。
+3 時 30 分では 3 × 30 + 30 × 0.5 = 90 + 15 = 105 度。
+
+【差】
+|180 − 105| = 75 度。
+
+短針が動くことを忘れて「3 の位置（90 度）と 6 の位置（180 度）で 90 度」としてしまうのが、
+この問題でいちばん多い間違いです。
+
+一般に h 時 m 分の角度は |30h + 0.5m − 6m| = |30h − 5.5m| で求まり、
+180 度を超えたら 360 度から引きます。`
+},{
+  kind:'puzzle', id:'q20', level:1, tags:['論理パズル','数え上げ'], title:'100 日後は何曜日',
+  statement:`今日は月曜日です。
+今日から数えて 100 日後は何曜日でしょうか。`,
+  choices:['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'],
+  answer:'水曜日',
+  hint:'7 日でちょうど 1 周します。100 を 7 で割ったあまりだけを考えます。',
+  idea:`曜日は 7 日周期なので、100 日のうち「7 の倍数の分」はすべて無視できます。
+
+  100 = 7 × 14 + 2
+
+つまり 100 日後は、曜日が 2 つだけ進んだ状態です。
+月曜日の 2 つ後は水曜日です。
+
+「周期があるものは、割ったあまりだけを見る」というのは剰余演算そのもので、
+プログラミングでは % 演算子として日常的に使います。
+100 万日後を聞かれても、1000000 % 7 = 1 なので火曜日、と即答できます。
+
+なお、うるう年や実際のカレンダーが絡む問題では
+「何日あるか」を正しく数えるほうが本番になります。周期の計算自体はいつも同じです。`
+},{
+  kind:'puzzle', id:'q21', level:1, tags:['論理パズル','数当て'], title:'アメを配る',
+  statement:`何人かの子どもにアメを配ります。
+
+・1 人に 5 個ずつ配ると、12 個あまります。
+・1 人に 7 個ずつ配ると、8 個たりません。
+
+子どもは何人いるでしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'10',
+  accept:['10人'],
+  hint:'アメの総数は、どちらの配り方でも同じです。2 通りに表して等号でつなぎましょう。',
+  idea:`子どもの人数を x 人とすると、アメの総数は 2 通りに書けます。
+
+  5x + 12 （5 個ずつ配って 12 個あまる）
+  7x − 8  （7 個ずつ配ると 8 個たりない）
+
+同じものなので
+
+  5x + 12 = 7x − 8
+  20 = 2x
+  x = 10
+
+子どもは 10 人、アメは 62 個です。
+
+これは過不足算と呼ばれる形です。
+「1 人あたり 2 個増やすと、必要量が 20 個（あまり 12 + 不足 8）増える」
+と考えても、20 ÷ 2 = 10 人とすぐ求まります。
+
+「同じ量を 2 通りの式で表して等号でつなぐ」という発想は、
+方程式を立てる場面すべてに通じる基本です。`
+},{
+  kind:'puzzle', id:'q22', level:2, tags:['論理パズル','最適化'], title:'ひもで 45 分を計る',
+  statement:`まったく同じひもが 2 本あります。
+どちらも、片方の端に火をつけると、燃え尽きるまでちょうど 60 分かかります。
+
+ただし燃える速さは一定ではありません
+（前半が速く後半が遅い、といったことが起こります。ひもの半分が 30 分で燃えるとは限りません）。
+
+この 2 本のひもとライターだけを使って、ちょうど 45 分を計りたいです。
+正しい手順はどれでしょうか。`,
+  choices:[
+    '1 本目は両端から、2 本目は片端から同時に点火する。1 本目が燃え尽きた時点で 2 本目のもう一方の端にも点火し、2 本目が燃え尽きるまでを計る',
+    '1 本目を片端から点火し、燃え尽きたら 2 本目を両端から点火して、燃え尽きるまでを計る',
+    '2 本とも両端から同時に点火し、両方が燃え尽きるまでを計る',
+    'ひもを目測で 4 分の 3 の位置で切り、その部分を片端から燃やす'
+  ],
+  answer:'1 本目は両端から、2 本目は片端から同時に点火する。1 本目が燃え尽きた時点で 2 本目のもう一方の端にも点火し、2 本目が燃え尽きるまでを計る',
+  hint:'両端から燃やすと、燃える速さがバラバラでも必ず半分の時間で燃え尽きます。',
+  idea:`鍵は「両端から火をつけると、必ず 30 分で燃え尽きる」ことです。
+
+燃える速さが不均一でも、両端から燃やせば 2 か所で同時に減っていき、
+出会った時点で燃え尽きます。燃えた長さの合計はひも 1 本ぶんなので、
+かかる時間は必ず 60 ÷ 2 = 30 分です。長さではなく「燃える時間」で考えるのがポイントです。
+
+【正解の手順】
+1. 1 本目を両端から、2 本目を片端から、同時に点火する
+2. 1 本目が燃え尽きる → ここで 30 分経過。2 本目は残り 30 分ぶん
+3. すぐに 2 本目のもう一方の端にも点火する → 残り 30 分ぶんが両端から燃えるので 15 分で燃え尽きる
+4. 30 + 15 = 45 分
+
+【他の選択肢がだめな理由】
+・片端 60 分 → 両端 30 分：合計 90 分になります
+・2 本とも両端：30 分にしかなりません
+・目測で切る：燃える速さが不均一なので、長さと時間が比例しません。これがこの問題の核心です
+
+「長さは測れないが、時間なら操作できる」という制約の読み替えが、この問題の面白さです。`
+},{
+  kind:'puzzle', id:'q23', level:2, tags:['論理パズル','最適化'], title:'ニセ金貨の袋',
+  statement:`金貨の入った袋が 10 個あり、それぞれに金貨がたくさん入っています。
+本物の金貨は 1 枚 10 g ですが、10 個のうちちょうど 1 袋だけ、
+すべてがニセ金貨（1 枚 9 g）です。
+
+digital な「はかり」（重さの数値が表示されるもの）が 1 台ありますが、使えるのは 1 回だけです。
+どの袋がニセモノかを必ず特定するには、10 個の袋から合計何枚の金貨を取り出して
+はかりに載せればよいでしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'55',
+  accept:['55枚'],
+  hint:'袋ごとに取り出す枚数を変えると、足りない重さから袋を特定できます。',
+  idea:`1 番の袋から 1 枚、2 番の袋から 2 枚、…、10 番の袋から 10 枚を取り出します。
+合計は 1 + 2 + ... + 10 = 55 枚です。
+
+すべて本物なら重さは 550 g です。
+実際にはニセ金貨 1 枚につき 1 g 軽いので、
+・550 g より 1 g 軽ければ 1 番の袋
+・2 g 軽ければ 2 番の袋
+・… というように、足りない重さがそのまま袋の番号になります。
+
+【なぜこれで特定できるのか】
+袋ごとに取り出す枚数を変えたことで、
+「どの袋がニセモノか」という情報が「不足した重さ」という 1 つの数値に埋め込まれています。
+1 回の測定で得られる情報は 1 つの数値ですが、
+その数値が 10 通りをすべて区別できるように設計したのがポイントです。
+
+これは「情報を 1 つの値にエンコードする」という考え方で、
+ハッシュやチェックサム、ビットマスクによる状態圧縮と同じ発想です。`
+},{
+  kind:'puzzle', id:'q24', level:2, tags:['論理パズル','数当て'], title:'鶴と亀',
+  statement:`鶴と亀が合わせて 20 匹います。
+足の数を全部数えると 56 本でした。
+
+亀は何匹いるでしょうか。（鶴の足は 2 本、亀の足は 4 本です）`,
+  answerFormat:'半角数字で答えてください',
+  answer:'8',
+  accept:['8匹'],
+  hint:'全部が鶴だったら足は何本になるでしょうか。実際との差を考えます。',
+  idea:`【差で考える（つるかめ算）】
+20 匹が全部鶴だとすると、足は 2 × 20 = 40 本です。
+実際は 56 本なので 16 本多い。
+鶴 1 匹を亀 1 匹に置き換えるごとに足は 2 本増えるので、
+16 ÷ 2 = 8 匹が亀です。
+
+【方程式で考える】
+鶴を x 匹、亀を y 匹として
+  x + y = 20
+  2x + 4y = 56
+1 本目を 2 倍して引くと 2y = 16、y = 8。
+
+どちらの方法でも同じ答えになります。
+「全部が一方だと仮定して、実際とのズレから個数を割り出す」という考え方は、
+仮定を置いて差分を見るという、デバッグにも通じる汎用的な発想です。
+
+答えは亀が 8 匹、鶴が 12 匹です。`
+},{
+  kind:'puzzle', id:'q25', level:2, tags:['論理パズル','推理'], title:'徒競走の順位',
+  statement:`A・B・C・D の 4 人が徒競走をしました。同着はありません。
+次のことがわかっています。
+
+  ① A は B より速かった
+  ② C は D より遅かった
+  ③ B は C より速かった
+  ④ D は B より遅かった
+
+3 位だったのは誰でしょうか。`,
+  choices:['A','B','C','D'],
+  answer:'D',
+  hint:'不等号を 1 本の線にまとめてみましょう。',
+  idea:`速い順を不等号で表します（左が速い）。
+
+  ① A > B
+  ③ B > C
+  ④ B > D
+  ② D > C
+
+③ と ④ から、B は C と D の両方より速い。
+② から D は C より速い。よって B の次は D、その次が C です。
+
+  A > B > D > C
+
+順位は A が 1 位、B が 2 位、D が 3 位、C が 4 位。答えは D です。
+
+【解き方のコツ】
+条件を全部「不等号」に翻訳してから、つながる部分を一本の鎖にまとめます。
+1 本につながれば順序が確定し、つながらない部分が残れば「決まらない」ということです。
+
+実際、条件 ④ がないと A > B > C と D > C しかわからず、
+D が 1 位の可能性も残るため 3 位は決まりません。
+どの条件がどの曖昧さを消しているかを意識すると、推理問題が一気に見通しよくなります。
+
+（4 人の並び方は 4! = 24 通りしかないので、すべて書き出して条件に合うものを探しても解けます。
+この解答も 24 通りを全探索して、条件を満たす並びが 1 つだけであることを確認しています）`
+},{
+  kind:'puzzle', id:'q26', level:2, tags:['論理パズル','推理'], title:'3 つのスイッチ',
+  statement:`部屋の外に、3 つのスイッチがあります。
+部屋の中には 3 つの白熱電球があり、それぞれがどのスイッチに対応しているかはわかりません。
+（電球は点灯するとだんだん熱くなります）
+
+外からは中の様子がまったく見えません。
+部屋に入れるのは 1 回だけで、入った後にスイッチを操作することはできません。
+
+3 つの対応をすべて確実に特定するには、どうすればよいでしょうか。`,
+  choices:[
+    '1 番を 10 分間 ON にしてから OFF にし、2 番を ON にして部屋に入る。点いている電球が 2 番、消えていて熱い電球が 1 番、消えていて冷たい電球が 3 番',
+    '3 つとも ON にしてから部屋に入り、明るさの違いで見分ける',
+    '1 番だけ ON にして部屋に入り、点いている電球を 1 番とする',
+    '1 番と 2 番を ON にして部屋に入り、点いている 2 つのうち左側を 1 番とする'
+  ],
+  answer:'1 番を 10 分間 ON にしてから OFF にし、2 番を ON にして部屋に入る。点いている電球が 2 番、消えていて熱い電球が 1 番、消えていて冷たい電球が 3 番',
+  hint:'見た目（点いている・消えている）だけでは 2 通りしか区別できません。もう 1 つ、電球から得られる情報はありませんか。',
+  idea:`「1 回しか入れない」ので、部屋に入った瞬間に 3 通りを区別できなければいけません。
+
+見た目だけでは「点いている／消えている」の 2 通りしか区別できず、3 つは特定できません。
+そこで白熱電球の性質「点灯していると熱くなる」を第 3 の情報として使います。
+
+【手順】
+1. スイッチ 1 を ON にして 10 分ほど待つ（電球が十分に熱くなる）
+2. スイッチ 1 を OFF にし、スイッチ 2 を ON にする
+3. すぐに部屋へ入る
+
+・点いている電球 → スイッチ 2
+・消えていて熱い電球 → スイッチ 1
+・消えていて冷たい電球 → スイッチ 3
+
+【この問題の本質】
+1 回の観測で区別できる状態の数を、どうやって増やすかという問題です。
+「明／暗」の 2 状態を「明／暗かつ熱い／暗くて冷たい」の 3 状態に増やしたことで、
+3 通りをちょうど区別できるようになりました。
+
+前提を疑い、使える情報を増やす。天秤の問題や、限られた回数の測定で対象を絞り込む問題と、
+まったく同じ構造をしています（なお LED 電球ではほとんど熱くならないので、この解法は使えません）。`
+},{
+  kind:'puzzle', id:'q27', level:3, tags:['論理パズル','最適化'], title:'2 つの砂時計',
+  statement:`7 分の砂時計と 11 分の砂時計が 1 つずつあります。
+砂時計はいつでもひっくり返すことができますが、途中で止めることはできません。
+ほかに時間を計る手段はありません。
+
+この 2 つだけで、ちょうど 15 分を計りたいです。
+計り始めてから計り終わるまで、最短で何分かかるでしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'15',
+  accept:['15分'],
+  hint:'待ち時間を作らず、最初の瞬間から 15 分の計測を始められれば最短です。',
+  idea:`答えは 15 分です。手順は次の通りです。
+
+  0 分：7 分と 11 分の砂時計を同時にスタート（ここが 15 分の計測開始）
+  7 分：7 分の砂時計が落ちきる → すぐひっくり返す（11 分の砂時計は残り 4 分）
+ 11 分：11 分の砂時計が落ちきる。7 分の砂時計は 4 分ぶん落ちているので、
+        ここでひっくり返すと 4 分ぶんの砂が戻る
+ 15 分：7 分の砂時計が落ちきる → ちょうど 15 分
+
+【なぜこれが最短といえるか】
+15 分という長さを計る以上、計測の開始から終了までに必ず 15 分かかります。
+つまり 15 分を下回ることは原理的にありえません。
+上の手順は時刻 0 から計測を開始できているので、下限の 15 分をそのまま達成しており、最短です。
+
+【考え方のコツ】
+砂時計の問題では「落ちきった瞬間」だけが情報を得られるタイミングです。
+7 と 11 の落ちきる時刻（7, 11, 14, 18, 22, ...）を並べ、
+その差（11 − 7 = 4 など）を組み合わせて目的の時間を作る、と考えると見通しがよくなります。
+
+「必要な下限を示し、それを達成する手順を作る」という 2 段構えは、
+天秤の最小回数の問題や、アルゴリズムの計算量の下界を示す議論とまったく同じ形です。`
+},{
+  kind:'puzzle', id:'q28', level:3, tags:['論理パズル','再帰'], title:'ハノイの塔',
+  statement:`3 本の柱があり、1 本目に大きさの異なる 5 枚の円盤が、下から大きい順に積まれています。
+
+次のルールで、5 枚すべてを 3 本目の柱へ移したいです。
+・円盤は 1 回に 1 枚だけ動かせる
+・小さい円盤の上に、大きい円盤を置いてはいけない
+
+最小で何回の移動が必要でしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'31',
+  accept:['31回'],
+  hint:'まず「4 枚を別の柱に移し、いちばん大きい 1 枚を動かし、また 4 枚を戻す」と考えます。',
+  idea:`n 枚を移すのに必要な最小回数を f(n) とします。
+
+いちばん大きい円盤を目的の柱へ動かすには、その上の n−1 枚を
+別の柱にすべて移しておく必要があります。したがって
+
+  f(n) = f(n−1) + 1 + f(n−1) = 2 × f(n−1) + 1
+
+f(1) = 1 から順に計算すると
+  f(1)=1, f(2)=3, f(3)=7, f(4)=15, f(5)=31
+
+一般には f(n) = 2^n − 1 です。5 枚なら 2^5 − 1 = 31 回。
+
+【この問題が教えてくれること】
+「大きい問題を、一回り小さい同じ形の問題に帰着させる」という再帰の考え方そのものです。
+プログラムでも数行で書けます。
+
+  hanoi(n, from, to, via):
+    if n == 0: return
+    hanoi(n-1, from, via, to)
+    move(from → to)
+    hanoi(n-1, via, to, from)
+
+また 2^n − 1 という式は、n が 64 なら約 1844 京回になります。
+「再帰で書けること」と「現実的な時間で終わること」は別物だ、という良い例でもあります。`
+},{
+  kind:'puzzle', id:'q29', level:3, tags:['論理パズル','確率'], title:'誕生日のパラドックス',
+  statement:`ある部屋に何人かが集まっています。
+1 年は 365 日とし、それぞれの誕生日は 365 日のどれかに等しい確率で決まるものとします
+（うるう年は考えません）。
+
+「同じ誕生日の人が少なくとも 2 人いる」確率が 50 % を超えるのは、
+何人以上集まったときでしょうか。`,
+  choices:['23 人','57 人','100 人','183 人'],
+  answer:'23 人',
+  hint:'「少なくとも 2 人が同じ」の確率は、「全員バラバラ」の確率を 1 から引くと求まります。',
+  idea:`答えは 23 人です。直感より、はるかに少ない人数で 50 % を超えます。
+
+【計算】
+「少なくとも 2 人が同じ」を直接数えるのは大変なので、余事象（全員がバラバラ）を考えます。
+
+  全員バラバラの確率 = (365/365) × (364/365) × (363/365) × ... × ((365−n+1)/365)
+
+n = 22 のときこれは約 0.524、n = 23 のとき約 0.493。
+したがって「少なくとも 2 人同じ」の確率は
+  n = 22 で約 47.6 %、n = 23 で約 50.7 %
+となり、23 人で 50 % を超えます。
+
+【なぜ直感とずれるのか】
+「自分と同じ誕生日の人がいるか」を考えてしまうからです。
+実際に比べているのは「すべての 2 人組」で、23 人なら 23 × 22 ÷ 2 = 253 組もあります。
+人数に対して、比較の組数は 2 乗で増えるのです。
+
+【プログラミングとの関係】
+これはハッシュの衝突確率とまったく同じ計算で、「誕生日攻撃」の名前の由来にもなっています。
+「N 通りの値をランダムに割り当てるとき、およそ √N 個で衝突し始める」という目安は、
+ID やハッシュ値の設計で必ず意識すべき性質です（365 の平方根はおよそ 19 で、23 に近い値です）。`
+},{
+  kind:'puzzle', id:'q30', level:3, tags:['論理パズル','探索'], title:'川を渡る 6 人',
+  statement:`宣教師 3 人と人食い族 3 人が、川を渡ろうとしています。
+ボートは 1 そうだけで、一度に乗れるのは最大 2 人です。ボートは誰かが乗らないと動きません。
+
+どちらの岸でも、その岸にいる人食い族の人数が宣教師の人数より多くなると、
+宣教師が食べられてしまいます（宣教師が 0 人の岸は問題ありません）。
+
+全員が無事に向こう岸へ渡るには、最少で何回ボートで川を渡る必要があるでしょうか。
+（片道 1 回と数えます）`,
+  answerFormat:'半角数字で答えてください',
+  answer:'11',
+  accept:['11回'],
+  hint:'ボートを戻すための渡河も 1 回に数えます。往復すると 2 回です。',
+  idea:`答えは 11 回です。手順の一例（左岸 → 右岸を「往」、戻りを「復」と書きます）。
+
+   1. 往：人食い 2 人が渡る
+   2. 復：人食い 1 人が戻る
+   3. 往：人食い 2 人が渡る
+   4. 復：人食い 1 人が戻る
+   5. 往：宣教師 2 人が渡る
+   6. 復：宣教師 1 人と人食い 1 人が戻る
+   7. 往：宣教師 2 人が渡る
+   8. 復：人食い 1 人が戻る
+   9. 往：人食い 2 人が渡る
+  10. 復：人食い 1 人が戻る
+  11. 往：人食い 2 人が渡る
+
+6 手目の「宣教師と人食いが 1 人ずつ戻る」が、この問題のいちばんの山場です。
+せっかく渡った宣教師を戻すのは損に見えますが、これをしないと必ず行き詰まります。
+
+【解き方の考え方】
+状態を「左岸の宣教師の人数、左岸の人食いの人数、ボートの位置」の 3 つ組で表すと、
+状態は高々 4 × 4 × 2 = 32 通りしかありません。
+各状態から 1 回の渡河でどの状態へ行けるかを辺とみなせば、これはグラフの最短経路問題であり、
+幅優先探索（BFS）で最小回数が求まります。
+（この解答も、その方法で 11 回が最小であることを確認しています）
+
+一見ひらめきが必要に見えるパズルでも、
+「状態」と「状態の間の移動」に分解できれば、機械的に最短手順を求められます。
+これはパズルを解くときの最も強力な武器の 1 つです。`
+}
 ];
 /* PROBLEMS_END */
 </script>
@@ -3109,7 +5526,7 @@ const DAY = 86400000;
 const INTERVALS = [1, 3, 7, 16, 35]; // 正解時の復習間隔（日）
 
 /* ---------- state ---------- */
-const defaultState = () => ({ v:1, records:{}, history:[] });
+const defaultState = () => ({ v:1, records:{}, history:[], goal:3 });
 let state = load();
 
 function load() {
@@ -3119,6 +5536,7 @@ function load() {
     const s = JSON.parse(raw);
     if (!s || typeof s !== 'object' || !s.records) return defaultState();
     s.history = s.history || [];
+    if (!s.goal) s.goal = 3;
     return s;
   } catch (e) { return defaultState(); }
 }
@@ -3156,6 +5574,135 @@ function toast(msg) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ---------- 継続（日めくり・ストリーク） ---------- */
+const DOW = ['日', '月', '火', '水', '木', '金', '土'];
+const dayKey = ts => {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const keyOfDate = d => dayKey(d.getTime());
+function dayCounts() {
+  const m = {};
+  for (const h of state.history) {
+    const k = dayKey(h.t);
+    m[k] = (m[k] || 0) + 1;
+  }
+  return m;
+}
+// 連続日数。今日まだ解いていない場合は、昨日までの連続を「継続中」として数える
+function habitSummary() {
+  const counts = dayCounts();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayCount = counts[keyOfDate(today)] || 0;
+  let current = 0;
+  const cur = new Date(today);
+  if (!counts[keyOfDate(cur)]) cur.setDate(cur.getDate() - 1);
+  while (counts[keyOfDate(cur)]) { current++; cur.setDate(cur.getDate() - 1); }
+  // 最長連続
+  const keys = Object.keys(counts).sort();
+  let longest = 0, run = 0, prev = null;
+  for (const k of keys) {
+    const d = new Date(k + 'T00:00:00');
+    if (prev && Math.round((d - prev) / DAY) === 1) run++; else run = 1;
+    longest = Math.max(longest, run);
+    prev = d;
+  }
+  return { counts, todayCount, current, longest, days: keys.length, total: state.history.length };
+}
+
+const BADGES = [
+  { id:'first', icon:'🌱', name:'はじめの一歩', desc:'1 問はじめて解く', has:h => h.total >= 1 },
+  { id:'d3',    icon:'🔥', name:'三日坊主を超えた', desc:'3 日連続で学習', has:h => h.longest >= 3 },
+  { id:'d7',    icon:'📅', name:'一週間継続', desc:'7 日連続で学習', has:h => h.longest >= 7 },
+  { id:'d30',   icon:'🏔', name:'一ヶ月継続', desc:'30 日連続で学習', has:h => h.longest >= 30 },
+  { id:'days30',icon:'🗓', name:'のべ 30 日', desc:'合計 30 日学習した', has:h => h.days >= 30 },
+  { id:'c10',   icon:'✅', name:'10 問正解', desc:'のべ 10 問正解する', has:(h, c) => c.corrects >= 10 },
+  { id:'c50',   icon:'💪', name:'50 問正解', desc:'のべ 50 問正解する', has:(h, c) => c.corrects >= 50 },
+  { id:'c200',  icon:'🚀', name:'200 問正解', desc:'のべ 200 問正解する', has:(h, c) => c.corrects >= 200 },
+  { id:'algo',  icon:'⚙️', name:'アルゴ職人', desc:'アルゴリズム問題を 30 種類クリア', has:(h, c) => c.algoSolved >= 30 },
+  { id:'puz',   icon:'🧩', name:'パズル好き', desc:'論理パズルを 15 種類クリア', has:(h, c) => c.puzzleSolved >= 15 },
+  { id:'half',  icon:'🎯', name:'半分制覇', desc:'全問題の半分をクリア', has:(h, c) => c.solved >= Math.ceil(PROBLEMS.length / 2) },
+  { id:'all',   icon:'👑', name:'全問制覇', desc:'すべての問題をクリア', has:(h, c) => c.solved >= PROBLEMS.length },
+];
+
+function renderToday() {
+  const h = habitSummary();
+  const now = new Date();
+  const w = now.getDay();
+  $('#tearoff').className = 'tearoff' + (h.todayCount >= state.goal ? ' stamped' : '');
+  $('#tearoff').innerHTML = `
+    <div class="to-m">${now.getFullYear()} 年 ${now.getMonth() + 1} 月</div>
+    <div class="to-holes"><i></i><i></i></div>
+    <div class="to-d">${now.getDate()}</div>
+    <div class="to-w ${w === 0 ? 'sun' : (w === 6 ? 'sat' : '')}">${DOW[w]}曜日</div>
+    ${h.todayCount >= state.goal ? '<div class="stamp">済</div>' : ''}`;
+  $('#todayCount').textContent = h.todayCount;
+  $('#todayGoal').textContent = `/ ${state.goal} 問`;
+  $('#streakBadge').textContent = `🔥 連続 ${h.current} 日`;
+  const pct = Math.min(100, Math.round(h.todayCount / state.goal * 100));
+  const fill = $('#goalFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('done', h.todayCount >= state.goal);
+  $('#todayMsg').textContent =
+    h.todayCount >= state.goal ? 'きょうの目標を達成しました。連続記録が伸びています。'
+    : h.todayCount > 0 ? `あと ${state.goal - h.todayCount} 問で、きょうの目標を達成します。`
+    : (h.current > 0 ? `${h.current} 日つづいています。きょうも 1 問から始めましょう。`
+                     : 'まずは 1 問だけ解いてみましょう。');
+  // 今週（日曜はじまり）
+  const sunday = new Date(now); sunday.setHours(0, 0, 0, 0);
+  sunday.setDate(sunday.getDate() - w);
+  $('#weekDots').innerHTML = [...Array(7)].map((_, i) => {
+    const d = new Date(sunday); d.setDate(sunday.getDate() + i);
+    const c = h.counts[keyOfDate(d)] || 0;
+    const isToday = i === w;
+    const future = d > now && !isToday;
+    return `<div><span class="${c ? 'done' : ''} ${isToday ? 'today' : ''}">${c ? '✓' : (future ? '' : '·')}</span>${DOW[i]}</div>`;
+  }).join('');
+}
+
+let calCursor = null;
+function renderHabit() {
+  const h = habitSummary();
+  const solvedIds = Object.entries(state.records).filter(([, r]) => r.c > 0).map(([id]) => id);
+  const c = {
+    corrects: Object.values(state.records).reduce((s, r) => s + r.c, 0),
+    solved: solvedIds.length,
+    algoSolved: solvedIds.filter(id => (byId(id) || {}).kind === 'algo').length,
+    puzzleSolved: solvedIds.filter(id => (byId(id) || {}).kind === 'puzzle').length,
+  };
+  $('#habitStats').innerHTML = [
+    ['現在の連続日数', h.current, '日'],
+    ['最長の連続日数', h.longest, '日'],
+    ['学習した日数', h.days, '日'],
+    ['きょうの解答数', h.todayCount, '問'],
+    ['クリアした問題', `${c.solved}<span class="u"> / ${PROBLEMS.length}</span>`, ''],
+    ['獲得バッジ', `${BADGES.filter(b => b.has(h, c)).length}<span class="u"> / ${BADGES.length}</span>`, ''],
+  ].map(([k, v, u]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}<span class="u">${u}</span></div></div>`).join('');
+  $('#goalSelect').value = String(state.goal);
+
+  if (!calCursor) { const n = new Date(); calCursor = new Date(n.getFullYear(), n.getMonth(), 1); }
+  const y = calCursor.getFullYear(), mo = calCursor.getMonth();
+  $('#calTitle').textContent = `${y} 年 ${mo + 1} 月`;
+  const first = new Date(y, mo, 1), lastDay = new Date(y, mo + 1, 0).getDate();
+  const todayK = keyOfDate(new Date());
+  let cells = DOW.map((d, i) => `<div class="cdow ${i === 0 ? 'sun' : (i === 6 ? 'sat' : '')}">${d}</div>`).join('');
+  for (let i = 0; i < first.getDay(); i++) cells += '<div class="cell empty"></div>';
+  for (let d = 1; d <= lastDay; d++) {
+    const k = keyOfDate(new Date(y, mo, d));
+    const n = h.counts[k] || 0;
+    const lv = n === 0 ? '' : (n >= state.goal * 2 ? 'l3' : (n >= state.goal ? 'l2' : 'l1'));
+    cells += `<div class="cell ${lv} ${k === todayK ? 'today' : ''}" title="${k}: ${n} 問">${d}${n ? '<span class="mk">●</span>' : ''}</div>`;
+  }
+  $('#calGrid').innerHTML = cells;
+
+  $('#badgeList').innerHTML = BADGES.map(b => {
+    const got = b.has(h, c);
+    return `<div class="badge-card ${got ? 'got' : ''}">
+      <span class="bi">${b.icon}</span>
+      <span><span class="bn">${esc(b.name)}</span><br><span class="bd">${esc(b.desc)}</span></span></div>`;
+  }).join('');
 }
 
 /* ---------- 集計 ---------- */
@@ -3260,6 +5807,7 @@ function serve(p) {
   lastServedId = p.id;
   const puzzle = p.kind === 'puzzle';
   $('#setupPanel').classList.add('hidden');
+  $('#todayPanel').classList.add('hidden');
   $('#problemPanel').classList.remove('hidden');
   $('#pLevel').className = 'badge ' + (puzzle ? 'pz' : 'lv' + p.level);
   $('#pLevel').textContent = levelLabel(p);
@@ -3370,7 +5918,7 @@ function finish(kind, ms) { // 'ok' | 'ng' | 'sk'
   $('#giveupBtn').disabled = true;
   $('#nextRow').classList.remove('hidden');
   renderEditorial(p, $('#editorialBox'));
-  renderStats(); renderReview(); renderLibrary();
+  renderStats(); renderReview(); renderLibrary(); renderToday(); renderHabit();
 }
 
 function submit() {
@@ -3611,8 +6159,10 @@ function openDetail(p) {
 /* ---------- タブ ---------- */
 function showTab(name) {
   $$('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  ['drill', 'stats', 'review', 'library', 'about'].forEach(n =>
+  ['drill', 'habit', 'stats', 'review', 'library', 'about'].forEach(n =>
     $('#tab-' + n).classList.toggle('hidden', n !== name));
+  if (name === 'drill') renderToday();
+  if (name === 'habit') renderHabit();
   if (name === 'stats') renderStats();
   if (name === 'review') renderReview();
   if (name === 'library') renderLibrary();
@@ -3686,6 +6236,7 @@ function init() {
     current = null;
     $('#problemPanel').classList.add('hidden');
     $('#setupPanel').classList.remove('hidden');
+    $('#todayPanel').classList.remove('hidden');
     showTab('drill');
     updatePoolInfo();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3741,7 +6292,9 @@ function init() {
     current = null;
     $('#problemPanel').classList.add('hidden');
     $('#setupPanel').classList.remove('hidden');
+    $('#todayPanel').classList.remove('hidden');
     updatePoolInfo();
+    renderToday();
   };
   $('#reviewStartBtn').onclick = () => {
     settings.mode = 'review';
@@ -3783,7 +6336,7 @@ function init() {
   $('#resetBtn').onclick = () => {
     if (!confirm('すべての成績データを削除します。よろしいですか？')) return;
     state = defaultState(); save();
-    renderStats(); renderReview(); renderLibrary();
+    renderStats(); renderReview(); renderLibrary(); renderToday(); renderHabit();
     toast('成績をリセットしました');
   };
 
@@ -3804,7 +6357,7 @@ AtCoder の問題文は著作物のため、このアプリには一切転載し
 実行して確認しています。論理パズルの答えも、総当たりで検証できるものは計算で確認しています。
 本家の問題に挑戦したくなったら AtCoder（https://atcoder.jp/）へどうぞ。
 
-【4 つの機能】
+【5 つの機能】
 1. 年度・コンテスト回を選ぶ必要はありません
    「出題する」を押すだけで、その時のあなたに合った 1 問が出ます。
 
@@ -3823,7 +6376,12 @@ AtCoder の問題文は著作物のため、このアプリには一切転載し
    論理パズルには「答え」と「なぜそうなるか」の解説が付いています。
    考え方は答えだけでなく、なぜその解法にたどり着くのか（制約からの逆算など）を重視しています。
 
-【2 つの解答形式】（アルゴリズム問題のみ）
+5. 続けやすくする仕組み
+   出題タブの上に日めくりカレンダーがあり、きょうの目標（初期値は 3 問）を達成すると
+   「済」の印が押されます。「継続」タブでは、連続日数・学習カレンダー・バッジを確認できます。
+   目標は 1 日 1 問からでも構いません。連続を切らさないことのほうが大切です。
+
+【2 つのアルゴリズム解答形式】（論理パズルには関係しません）
 ・答えモード … 入力例に対する答えを暗算・筆算で出す。スキマ時間の脳トレ向き。
 ・コード選択モード … 4 つのコードから、正しく動くものを 1 つ選ぶ。
   誤答の 3 つには、その問題で実際にやりがちなミス（ループの向き、境界の等号、
@@ -3845,7 +6403,16 @@ AtCoder の問題文は著作物のため、このアプリには一切転載し
 成績はこのブラウザの localStorage にのみ保存されます。サーバーへの送信は一切ありません。
 ブラウザのデータを消すと成績も消えます。`;
 
+  $('#goalSelect').onchange = e => {
+    state.goal = Number(e.target.value);
+    save();
+    renderToday(); renderHabit();
+  };
+  $('#calPrev').onclick = () => { calCursor.setMonth(calCursor.getMonth() - 1); renderHabit(); };
+  $('#calNext').onclick = () => { calCursor.setMonth(calCursor.getMonth() + 1); renderHabit(); };
+
   updatePoolInfo();
+  renderToday(); renderHabit();
   renderStats(); renderReview(); renderLibrary();
 }
 init();
