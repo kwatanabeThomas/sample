@@ -8055,6 +8055,826 @@ public class Main {
     {note:`互除法の引数の順が違い、正しく縮まない`, edits:[[`const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);`,`const gcd = (x, y) => y === 0 ? x : gcd(x, x % y);`]]}
   ]
 }
+,{
+  kind:'algo', id:'c27', level:3, tags:['データ構造','しゃくとり法'], title:'窓の中の最小値',
+  statement:`N 個の整数 A_1, ..., A_N と、整数 K が与えられます。
+連続する K 個からなる区間はぜんぶで N − K + 1 個ありますが、
+それぞれの区間の最小値を、左の区間から順に空白区切りで出力してください。`,
+  constraints:['1 ≤ K ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N K\nA_1 A_2 ... A_N',
+  cases:[{in:'5 3\n1 3 2 5 4',out:'1 2 2'},{in:'3 1\n5 2 8',out:'5 2 8'},{in:'4 4\n4 3 2 1',out:'1'},{in:'4 2\n2 2 1 3',out:'2 1 1'},{in:'5 4\n-9 -7 -7 1 3',out:'-9 -7'},{in:'4 3\n-8 -7 -9 -4',out:'-9 -9'},{in:'2 1\n6 -9',out:'6 -9'},{in:'5 4\n-3 7 1 4 0',out:'-3 0'},{in:'5 4\n9 1 -6 9 -7',out:'-6 -7'},{in:'3 1\n-2 0 4',out:'-2 0 4'}],
+  hint:'「自分より後ろにあって、自分以下の値」が現れた時点で、その値はもう最小値になれません。',
+  idea:`区間ごとに K 個を調べると O(NK) で間に合いません。単調キュー（両端から出し入れできるキュー）を使います。
+
+キューには「値」ではなく「添字」を、対応する値が単調増加になるように保ちます。
+
+  1. 新しい要素 A[i] を入れる前に、キューの末尾から
+     「A[i] 以上の値を持つ添字」を捨てる
+     （A[i] より後ろに残る限り、それらが最小値になることはないため）
+  2. A[i] の添字を末尾に追加する
+  3. 先頭の添字が窓から外れていたら捨てる
+  4. 窓が K 個そろったら、先頭の添字が指す値が最小値
+
+各添字は「入る」「出る」を高々 1 回ずつしか経験しないので、全体で O(N) です。
+
+【なぜ捨ててよいのか】
+A[j] ≥ A[i] かつ j < i なら、A[j] が窓に入っているときは必ず A[i] も入っています。
+つまり A[j] が答えになる場面はもうありません。
+「将来ぜったいに使われない候補を捨てる」という発想が、単調キューの本質です。`,
+  complexity:'O(N)',
+  pitfalls:['単調性の向きを逆にして最大値を求めてしまう','窓から外れた添字を捨て忘れる','出力を始める位置が 1 つずれる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const dq = [];   // 値が単調増加になるように添字を保つ
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    while (dq.length && a[dq[dq.length - 1]] >= a[i]) dq.pop();
+    dq.push(i);
+    if (dq[0] <= i - k) dq.shift();
+    if (i >= k - 1) out.push(a[dq[0]]);
+  }
+  return out.join(" ");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), k = Integer.parseInt(st.nextToken());
+        long[] a = new long[n];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) a[i] = Long.parseLong(st.nextToken());
+        Deque<Integer> dq = new ArrayDeque<>();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            while (!dq.isEmpty() && a[dq.peekLast()] >= a[i]) dq.pollLast();
+            dq.addLast(i);
+            if (dq.peekFirst() <= i - k) dq.pollFirst();
+            if (i >= k - 1) {
+                if (i > k - 1) sb.append(' ');
+                sb.append(a[dq.peekFirst()]);
+            }
+        }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`単調性の向きが逆で、最小値ではなく最大値を求めている`, edits:[[`a[dq[dq.length - 1]] >= a[i]`,`a[dq[dq.length - 1]] <= a[i]`]]},
+    {note:`窓から外れた添字を捨てておらず、古い値が残る`, edits:[[`    if (dq[0] <= i - k) dq.shift();\n`,``]]},
+    {note:`出力を始める位置が 1 つ遅く、最初の区間が抜ける`, edits:[[`if (i >= k - 1) out.push(a[dq[0]]);`,`if (i >= k) out.push(a[dq[0]]);`]]},
+    {note:`先頭ではなく末尾を見ており、最小値になっていない`, edits:[[`out.push(a[dq[0]]);`,`out.push(a[dq[dq.length - 1]]);`]]},
+    {note:`添字ではなく値をキューに入れており、窓の判定ができない`, edits:[[`    dq.push(i);`,`    dq.push(a[i]);`]]}
+  ]
+},{
+  kind:'algo', id:'c28', level:3, tags:['ソート','座標圧縮'], title:'順位に置き換える',
+  statement:`N 個の整数 A_1, ..., A_N が与えられます。
+各要素を「小さいほうから数えて何番目の値か」に置き換えて、空白区切りで出力してください。
+同じ値には同じ番号を付け、最小の値を 1 番とします。
+
+例えば 10 30 20 30 5 は、小さい順に 5 < 10 < 20 < 30 なので 2 4 3 4 1 になります。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'5\n10 30 20 30 5',out:'2 4 3 4 1'},{in:'1\n7',out:'1'},{in:'3\n5 5 5',out:'1 1 1'},{in:'4\n-3 0 -3 9',out:'1 2 1 3'},{in:'4\n-2 2 -1 1',out:'1 4 2 3'},{in:'3\n3 1 1',out:'2 1 1'},{in:'2\n5 -1',out:'2 1'},{in:'3\n-5 3 -2',out:'1 3 2'},{in:'5\n2 -3 0 -3 -6',out:'4 2 3 2 1'},{in:'4\n2 -2 -6 -3',out:'4 3 1 2'}],
+  hint:'重複を除いてソートした列を作り、各要素がその何番目かを引きます。',
+  idea:`これは座標圧縮と呼ばれる前処理です。
+
+  1. 重複を除いてソートした列 u を作る
+  2. 各 A_i について、u の中での位置（+1）を答える
+
+位置を引くのに毎回線形探索すると O(N^2) になるので、
+連想配列（値 → 順位）を作るか、二分探索を使って O(N log N) にします。
+
+【なにに使うのか】
+値の範囲が 10^9 と広くても、実際に現れる値は高々 N 種類です。
+順位に置き換えれば「値を配列の添字として使う」ことができるようになり、
+BIT やセグメント木、いもす法といった、添字を使うデータ構造が使えるようになります。
+
+元の並び順は変えずに、値だけを置き換えるのがポイントです。
+ソートした結果をそのまま出力してしまうと、まったく別のものになります。`,
+  complexity:'O(N log N)',
+  pitfalls:['重複を除かずに順位を付ける','0 始まりの順位を出力する','元の並び順ではなくソート後の並びを出力する'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const uniq = [...new Set(a)].sort((x, y) => x - y);
+  const rank = new Map();
+  uniq.forEach((v, i) => rank.set(v, i + 1));
+  return a.map(v => rank.get(v)).join(" ");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        long[] a = new long[n];
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) a[i] = Long.parseLong(st.nextToken());
+        long[] u = a.clone();
+        Arrays.sort(u);
+        TreeMap<Long, Integer> rank = new TreeMap<>();
+        int r = 0;
+        for (long v : u) if (!rank.containsKey(v)) rank.put(v, ++r);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            if (i > 0) sb.append(' ');
+            sb.append(rank.get(a[i]));
+        }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`数値ソートの比較関数がなく、文字列として並べている`, edits:[[`[...new Set(a)].sort((x, y) => x - y)`,`[...new Set(a)].sort()`]]},
+    {note:`順位が 0 始まりになっている`, edits:[[`rank.set(v, i + 1)`,`rank.set(v, i)`]]},
+    {note:`重複を除いておらず、同じ値に違う順位が付く`, edits:[[`const uniq = [...new Set(a)].sort((x, y) => x - y);`,`const uniq = [...a].sort((x, y) => x - y);`]]},
+    {note:`大きい順の順位になっている`, edits:[[`.sort((x, y) => x - y);\n  const rank`,`.sort((x, y) => y - x);\n  const rank`]]},
+    {note:`元の並びではなく、ソート後の並びを出力している`, edits:[[`return a.map(v => rank.get(v)).join(" ");`,`return uniq.map(v => rank.get(v)).join(" ");`]]}
+  ]
+},{
+  kind:'algo', id:'c29', level:3, tags:['グラフ','幅優先探索'], title:'2 色で塗り分けられる？',
+  statement:`N 頂点 M 辺の無向グラフが与えられます。
+各頂点を白か黒で塗り、辺で結ばれた 2 頂点が必ず違う色になるようにできますか。
+
+できるなら Yes、できないなら No を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ U_i, V_i ≤ N','自己ループはない'],
+  inputFormat:'N M\nU_1 V_1\n...\nU_M V_M',
+  cases:[{in:'3 3\n1 2\n2 3\n3 1',out:'No'},{in:'4 4\n1 2\n2 3\n3 4\n4 1',out:'Yes'},{in:'2 0',out:'Yes'},{in:'3 2\n1 2\n2 3',out:'Yes'},{in:'5 5\n5 3\n2 5\n4 2\n1 4\n1 5',out:'Yes'},{in:'4 4\n2 4\n1 3\n2 3\n4 1',out:'Yes'},{in:'4 3\n1 2\n1 2\n3 2',out:'Yes'},{in:'3 1\n3 2',out:'Yes'},{in:'4 3\n4 1\n2 3\n4 2',out:'Yes'},{in:'3 2\n2 1\n2 1',out:'Yes'}],
+  hint:'ある頂点を白と決めたら、隣は黒、その隣は白…と色が芋づる式に決まります。矛盾が出るかを調べます。',
+  idea:`これは二部グラフの判定です。
+
+未訪問の頂点から探索を始め、隣に進むたびに色を反転させながら塗っていきます。
+すでに色が付いている頂点に出会ったとき、
+・自分と違う色 → 問題なし
+・自分と同じ色 → 矛盾なので No
+
+【なぜこれで十分か】
+1 つの頂点の色を決めると、連結成分の中の色はすべて自動的に決まります
+（選択の余地がない）。だから「決めていって矛盾するか」を見るだけでよいのです。
+
+矛盾が起きるのは、長さが奇数の閉路があるときだけです。
+「二部グラフ ⇔ 奇数長の閉路を持たない」という有名な言い換えになります。
+
+非連結の場合もあるので、すべての頂点を始点候補として回す必要があります。
+これは連結成分の数え上げとまったく同じ形です。`,
+  complexity:'O(N + M)',
+  pitfalls:['色を反転させずに塗ってしまう','矛盾の判定条件を逆にする','非連結のグラフで一部を塗り残す'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = Array.from({ length: n + 1 }, () => []);
+  for (let i = 1; i <= m; i++) {
+    const [u, v] = lines[i].trim().split(/\\s+/).map(Number);
+    g[u].push(v);
+    g[v].push(u);
+  }
+  const color = new Array(n + 1).fill(0);
+  for (let s = 1; s <= n; s++) {
+    if (color[s] !== 0) continue;
+    color[s] = 1;
+    const queue = [s];
+    let head = 0;
+    while (head < queue.length) {
+      const v = queue[head++];
+      for (const to of g[v]) {
+        if (color[to] === 0) { color[to] = -color[v]; queue.push(to); }
+        else if (color[to] === color[v]) return "No";
+      }
+    }
+  }
+  return "Yes";
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        List<List<Integer>> g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int u = Integer.parseInt(st.nextToken()), v = Integer.parseInt(st.nextToken());
+            g.get(u).add(v);
+            g.get(v).add(u);
+        }
+        int[] color = new int[n + 1];
+        for (int s = 1; s <= n; s++) {
+            if (color[s] != 0) continue;
+            color[s] = 1;
+            Deque<Integer> q = new ArrayDeque<>();
+            q.add(s);
+            while (!q.isEmpty()) {
+                int v = q.poll();
+                for (int to : g.get(v)) {
+                    if (color[to] == 0) { color[to] = -color[v]; q.add(to); }
+                    else if (color[to] == color[v]) { System.out.println("No"); return; }
+                }
+            }
+        }
+        System.out.println("Yes");
+    }
+}`,
+  quiz:[
+    {note:`隣に同じ色を塗っており、塗り分けになっていない`, edits:[[`color[to] = -color[v];`,`color[to] = color[v];`]]},
+    {note:`矛盾の判定が逆で、違う色のときに No にしている`, edits:[[`else if (color[to] === color[v]) return "No";`,`else if (color[to] !== color[v]) return "No";`]]},
+    {note:`無向グラフなのに片方向しか辺を張っていない`, edits:[[`    g[u].push(v);\n    g[v].push(u);`,`    g[u].push(v);`]]},
+    {note:`矛盾を見つけても無視しており、常に Yes になる`, edits:[[`else if (color[to] === color[v]) return "No";`,`else if (color[to] === color[v]) continue;`]]},
+    {note:`探索を始める条件が逆で、どの頂点も塗らない`, edits:[[`if (color[s] !== 0) continue;`,`if (color[s] === 0) continue;`]]}
+  ]
+},{
+  kind:'algo', id:'c30', level:3, tags:['グラフ','データ構造'], title:'閉路はある？',
+  statement:`N 頂点 M 辺の無向グラフが与えられます（自己ループと多重辺はありません）。
+このグラフに閉路があるなら Yes、ないなら No を出力してください。
+
+閉路とは、ある頂点から出発して、同じ辺を 2 回通らずに元の頂点へ戻れる経路のことです。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ U_i, V_i ≤ N','自己ループ・多重辺はない'],
+  inputFormat:'N M\nU_1 V_1\n...\nU_M V_M',
+  cases:[{in:'3 3\n1 2\n2 3\n3 1',out:'Yes'},{in:'3 2\n1 2\n2 3',out:'No'},{in:'4 2\n1 2\n3 4',out:'No'},{in:'2 0',out:'No'},{in:'5 5\n1 2\n2 3\n3 1\n4 5\n1 4',out:'Yes'},{in:'3 3\n1 2\n1 3\n2 3',out:'Yes'},{in:'3 3\n3 2\n3 2\n1 2',out:'Yes'},{in:'3 0',out:'No'},{in:'5 2\n5 3\n1 4',out:'No'},{in:'3 5\n3 1\n2 1\n2 1\n1 2\n1 3',out:'Yes'},{in:'2 5\n1 2\n2 1\n1 2\n2 1\n2 1',out:'Yes'}],
+  hint:'辺を 1 本ずつ追加していき、すでにつながっている 2 頂点を結ぶ辺が来たら閉路です。',
+  idea:`Union-Find（素集合データ構造）を使うと、辺を順に追加しながら判定できます。
+
+  辺 (u, v) を見るたびに
+  ・u と v がすでに同じグループ → その辺を足すと閉路ができる → Yes
+  ・違うグループ → 2 つを合体させる
+
+すべての辺を追加し終えても同じグループの辺が現れなければ、閉路はありません。
+
+【別の見方】
+森（閉路のない無向グラフ）では、辺の本数は必ず「頂点数 − 連結成分の数」になります。
+つまり M > N − 連結成分数 なら閉路があります。
+Union-Find で連結成分の数を数えても、同じ判定ができます。
+
+【DFS でも解ける】
+探索中に「親以外の訪問済み頂点」に出会ったら閉路、という判定でも可能です。
+ただし「親をたどって戻っただけ」を閉路と誤判定しないよう、親の情報を持つ必要があります。
+Union-Find のほうが実装ミスは少なくなります。`,
+  complexity:'O((N + M) α(N))',
+  pitfalls:['根を求めずに頂点番号のまま比較する','合体と判定の順番を逆にする','非連結のグラフを考慮しない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const par = new Array(n + 1);
+  for (let i = 0; i <= n; i++) par[i] = i;
+  const find = (x) => {
+    while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; }
+    return x;
+  };
+  for (let i = 1; i <= m; i++) {
+    const [u, v] = lines[i].trim().split(/\\s+/).map(Number);
+    const a = find(u), b = find(v);
+    if (a === b) return "Yes";
+    par[a] = b;
+  }
+  return "No";
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static int[] par;
+
+    static int find(int x) {
+        while (par[x] != x) { par[x] = par[par[x]]; x = par[x]; }
+        return x;
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        par = new int[n + 1];
+        for (int i = 0; i <= n; i++) par[i] = i;
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = find(Integer.parseInt(st.nextToken()));
+            int b = find(Integer.parseInt(st.nextToken()));
+            if (a == b) { System.out.println("Yes"); return; }
+            par[a] = b;
+        }
+        System.out.println("No");
+    }
+}`,
+  quiz:[
+    {note:`判定が逆で、つながっていない辺を閉路としている`, edits:[[`if (a === b) return "Yes";`,`if (a !== b) return "Yes";`]]},
+    {note:`根を求めておらず、頂点番号のまま比べている`, edits:[[`const a = find(u), b = find(v);`,`const a = u, b = v;`]]},
+    {note:`根どうしではなく頂点そのものをつないでいる`, edits:[[`    par[a] = b;\n  }`,`    par[u] = v;\n  }`]]},
+    {note:`最後の辺を調べておらず、最後の辺で閉じる閉路を見逃す`, edits:[[`for (let i = 1; i <= m; i++) {\n    const [u, v]`,`for (let i = 1; i < m; i++) {\n    const [u, v]`]]},
+    {note:`根まで辿らず 1 段だけ親を見ている`, edits:[[`    while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; }\n    return x;`,`    if (par[x] !== x) x = par[x];\n    return x;`]]}
+  ]
+},{
+  kind:'algo', id:'c31', level:3, tags:['グラフ','幅優先探索'], title:'木の直径',
+  statement:`N 個の頂点からなる木（閉路のない連結な無向グラフ）が与えられます。
+辺は N − 1 本あり、どの辺も長さ 1 です。
+
+最も離れた 2 頂点の間の距離（木の直径）を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','与えられるグラフは必ず木になっている'],
+  inputFormat:'N\nU_1 V_1\n...\nU_(N-1) V_(N-1)',
+  cases:[{in:'4\n1 2\n2 3\n2 4',out:'2'},{in:'2\n1 2',out:'1'},{in:'5\n1 2\n2 3\n3 4\n4 5',out:'4'},{in:'1',out:'0'},{in:'6\n1 2\n1 3\n3 4\n4 5\n3 6',out:'4'},{in:'7\n1 2\n1 3\n2 4\n3 5\n3 6\n2 7',out:'4'},{in:'3\n1 2\n2 3',out:'2'},{in:'5\n1 2\n2 3\n1 4\n3 5',out:'4'},{in:'4\n1 2\n2 3\n3 4',out:'3'},{in:'4\n1 2\n1 3\n3 4',out:'3'}],
+  hint:'どこでもよいので 1 点から最も遠い頂点を探すと、それは必ず直径の端点になります。',
+  idea:`「2 点の組をすべて試す」と O(N^2) で間に合いません。BFS を 2 回するだけで求まります。
+
+  1. 適当な頂点（例えば 1）から BFS し、最も遠い頂点 a を見つける
+  2. a から BFS し、最も遠い距離を求める → それが直径
+
+【なぜ 1 回目で端点が見つかるのか】
+どの頂点から出発しても、最も遠い頂点は必ず直径の端点になります。
+直感的には、直径は木の中で最も長い「背骨」であり、
+どこから測っても、いちばん遠いのはその背骨の端になるからです
+（背骨の端でない頂点が最遠だと仮定すると、より長い経路が作れてしまい矛盾します）。
+
+この性質は木（閉路がない）だからこそ成り立ちます。
+一般のグラフでは使えないので、閉路があるときは別の方法が必要です。
+
+計算量は BFS 2 回で O(N)。N = 1 のときは辺が 0 本で答えは 0 になります。`,
+  complexity:'O(N)',
+  pitfalls:['BFS を 1 回しか行わず、始点からの最遠距離を答える','辺の本数を N 本だと思って読み込む','N = 1 のケースを考えていない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  const g = Array.from({ length: n + 1 }, () => []);
+  for (let i = 1; i <= n - 1; i++) {
+    const [u, v] = lines[i].trim().split(/\\s+/).map(Number);
+    g[u].push(v);
+    g[v].push(u);
+  }
+  const bfs = (s) => {
+    const dist = new Array(n + 1).fill(-1);
+    dist[s] = 0;
+    const queue = [s];
+    let head = 0;
+    while (head < queue.length) {
+      const v = queue[head++];
+      for (const to of g[v]) {
+        if (dist[to] === -1) { dist[to] = dist[v] + 1; queue.push(to); }
+      }
+    }
+    let far = s;
+    for (let i = 1; i <= n; i++) if (dist[i] > dist[far]) far = i;
+    return [far, dist[far]];
+  };
+  const [a] = bfs(1);
+  const [, d] = bfs(a);
+  return d;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static List<List<Integer>> g;
+    static int n;
+
+    static int[] bfs(int s) {
+        int[] dist = new int[n + 1];
+        Arrays.fill(dist, -1);
+        dist[s] = 0;
+        Deque<Integer> q = new ArrayDeque<>();
+        q.add(s);
+        while (!q.isEmpty()) {
+            int v = q.poll();
+            for (int to : g.get(v)) {
+                if (dist[to] == -1) { dist[to] = dist[v] + 1; q.add(to); }
+            }
+        }
+        int far = s;
+        for (int i = 1; i <= n; i++) if (dist[i] > dist[far]) far = i;
+        return new int[]{far, dist[far]};
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        n = Integer.parseInt(br.readLine().trim());
+        g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        for (int i = 0; i < n - 1; i++) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int u = Integer.parseInt(st.nextToken()), v = Integer.parseInt(st.nextToken());
+            g.get(u).add(v);
+            g.get(v).add(u);
+        }
+        int a = bfs(1)[0];
+        System.out.println(bfs(a)[1]);
+    }
+}`,
+  quiz:[
+    {note:`BFS が 1 回だけで、頂点 1 からの最遠距離を答えている`, edits:[[`  const [a] = bfs(1);\n  const [, d] = bfs(a);\n  return d;`,`  const [, d] = bfs(1);\n  return d;`]]},
+    {note:`最も遠い頂点ではなく最も近い頂点を選んでいる`, edits:[[`if (dist[i] > dist[far]) far = i;`,`if (dist[i] < dist[far]) far = i;`]]},
+    {note:`無向グラフなのに片方向しか辺を張っていない`, edits:[[`    g[u].push(v);\n    g[v].push(u);`,`    g[u].push(v);`]]},
+    {note:`距離を積み上げておらず、常に 1 になる`, edits:[[`dist[to] = dist[v] + 1;`,`dist[to] = 1;`]]},
+    {note:`辺の本数を N 本だと思って読み込んでいる`, edits:[[`for (let i = 1; i <= n - 1; i++) {`,`for (let i = 1; i <= n; i++) {`]]}
+  ]
+}
+,{
+  kind:'algo', id:'c32', level:3, tags:['グラフ'], title:'いちばん遠い 2 地点',
+  statement:`N 個の都市と M 本の道路があります。i 本目の道路は都市 U_i と V_i を双方向に結び、
+通るのに W_i 分かかります。
+
+すべての都市の組について最短の移動時間を考え、そのうち最大の値を出力してください。
+どこかの組がたどり着けない場合は -1 を出力してください。`,
+  constraints:['1 ≤ N ≤ 100','0 ≤ M ≤ 5000','1 ≤ U_i, V_i ≤ N','1 ≤ W_i ≤ 10^9'],
+  inputFormat:'N M\nU_1 V_1 W_1\n...\nU_M V_M W_M',
+  cases:[{in:'3 3\n1 2 1\n2 3 2\n1 3 5',out:'3'},{in:'2 0',out:'-1'},{in:'2 1\n1 2 7',out:'7'},{in:'4 3\n1 2 1\n2 3 1\n3 4 1',out:'3'},{in:'2 4\n1 2 4\n2 1 7\n2 1 8\n2 1 9',out:'4'},{in:'5 3\n4 3 2\n1 4 5\n5 4 8',out:'-1'},{in:'5 0',out:'-1'},{in:'5 3\n3 4 7\n3 2 5\n2 4 7',out:'-1'},{in:'4 4\n2 4 9\n1 4 5\n1 2 3\n1 2 1',out:'-1'},{in:'5 3\n4 1 1\n2 3 8\n2 1 4',out:'-1'}],
+  hint:'すべての組の最短距離が必要です。中継地点を 1 つずつ増やしていく方法があります。',
+  idea:`全頂点対の最短距離を求めるにはワーシャルフロイド法が最も簡単です。
+
+  for k = 1..N        （中継してよい頂点を 1 つずつ増やす）
+    for i = 1..N
+      for j = 1..N
+        d[i][j] = min(d[i][j], d[i][k] + d[k][j])
+
+【ループの順番が最重要】
+k が最も外側でなければなりません。
+「k までの頂点を中継地点として使ってよいときの最短距離」を順に確定させていく、
+という DP になっているためです。k を内側に書くと、まだ確定していない値を使ってしまいます。
+
+初期化は、自分自身への距離を 0、辺があるところをその重み、それ以外を無限大にします。
+多重辺がある場合は、小さいほうを残してください。
+
+【計算量】
+O(N^3)。N = 100 なら 10^6 で問題ありません。
+N が 1000 を超えると厳しいので、その場合は各頂点からダイクストラ法を N 回行います。
+
+距離の最大は 100 × 10^9 = 10^11 になるので、32bit では溢れます。`,
+  complexity:'O(N^3)',
+  pitfalls:['k のループを内側に書いて誤答する','自分自身への距離を 0 に初期化し忘れる','到達できない組の -1 判定を忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const INF = Infinity;
+  const d = Array.from({ length: n + 1 }, () => new Array(n + 1).fill(INF));
+  for (let i = 1; i <= n; i++) d[i][i] = 0;
+  for (let i = 1; i <= m; i++) {
+    const [u, v, w] = lines[i].trim().split(/\\s+/).map(Number);
+    if (w < d[u][v]) { d[u][v] = w; d[v][u] = w; }
+  }
+  for (let k = 1; k <= n; k++)
+    for (let i = 1; i <= n; i++)
+      for (let j = 1; j <= n; j++)
+        if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];
+  let best = 0;
+  for (let i = 1; i <= n; i++)
+    for (let j = 1; j <= n; j++) {
+      if (d[i][j] === INF) return -1;
+      if (d[i][j] > best) best = d[i][j];
+    }
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        final long INF = Long.MAX_VALUE / 4;
+        long[][] d = new long[n + 1][n + 1];
+        for (long[] row : d) Arrays.fill(row, INF);
+        for (int i = 1; i <= n; i++) d[i][i] = 0;
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int u = Integer.parseInt(st.nextToken()), v = Integer.parseInt(st.nextToken());
+            long w = Long.parseLong(st.nextToken());
+            if (w < d[u][v]) { d[u][v] = w; d[v][u] = w; }
+        }
+        for (int k = 1; k <= n; k++)
+            for (int i = 1; i <= n; i++)
+                for (int j = 1; j <= n; j++)
+                    if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];
+        long best = 0;
+        for (int i = 1; i <= n; i++)
+            for (int j = 1; j <= n; j++) {
+                if (d[i][j] >= INF) { System.out.println(-1); return; }
+                best = Math.max(best, d[i][j]);
+            }
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`自分自身への距離を 0 にしていないため、すべて到達不能になる`, edits:[[`  for (let i = 1; i <= n; i++) d[i][i] = 0;\n`,``]]},
+    {note:`無向グラフなのに片方向しか距離を入れていない`, edits:[[`if (w < d[u][v]) { d[u][v] = w; d[v][u] = w; }`,`if (w < d[u][v]) { d[u][v] = w; }`]]},
+    {note:`到達できない組の判定がなく、無限大がそのまま出てしまう`, edits:[[`      if (d[i][j] === INF) return -1;\n`,``]]},
+    {note:`最短ではなく最長になるよう更新している`, edits:[[`if (d[i][k] + d[k][j] < d[i][j]) d[i][j] = d[i][k] + d[k][j];`,`if (d[i][k] + d[k][j] > d[i][j]) d[i][j] = d[i][k] + d[k][j];`]]},
+    {note:`最大ではなく最小の距離を答えている`, edits:[[`      if (d[i][j] > best) best = d[i][j];`,`      if (d[i][j] < best) best = d[i][j];`]]}
+  ]
+},{
+  kind:'algo', id:'c33', level:3, tags:['グラフ','貪欲法','データ構造'], title:'全部つなぐ最小コスト',
+  statement:`N 個の島と、島の間に架けられる M 本の橋の候補があります。
+i 番目の候補は島 U_i と V_i を結び、建設費は W_i です。
+
+すべての島が行き来できるように橋を選ぶとき、建設費の合計の最小値を出力してください。
+どう選んでもすべてつなげられない場合は -1 を出力してください。`,
+  constraints:['1 ≤ N ≤ 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ U_i, V_i ≤ N','1 ≤ W_i ≤ 10^9'],
+  inputFormat:'N M\nU_1 V_1 W_1\n...\nU_M V_M W_M',
+  cases:[{in:'4 5\n1 2 1\n2 3 2\n3 4 3\n1 4 10\n1 3 4',out:'6'},{in:'2 0',out:'-1'},{in:'3 3\n1 2 5\n2 3 5\n1 3 5',out:'10'},{in:'1 0',out:'0'},{in:'5 2\n5 4 3\n2 1 7',out:'-1'},{in:'5 1\n3 2 2',out:'-1'},{in:'3 1\n3 2 5',out:'-1'},{in:'4 3\n1 4 8\n4 3 3\n3 1 6',out:'-1'},{in:'5 6\n3 5 2\n2 3 4\n2 3 1\n4 2 6\n5 2 8\n2 4 3',out:'-1'},{in:'2 4\n2 1 8\n2 1 4\n2 1 1\n1 2 4',out:'1'}],
+  hint:'安い橋から順に見て、「まだつながっていない 2 つの島を結ぶ橋」だけを採用します。',
+  idea:`最小全域木（MST）を求める問題で、クラスカル法が素直です。
+
+  1. 辺を重みの小さい順にソートする
+  2. 順に見て、両端がまだ別のグループなら採用してグループを合体させる
+  3. 採用した辺が N − 1 本になれば完成
+
+グループの管理は Union-Find で行います。計算量は O(M log M)。
+
+【なぜ安い順に採用してよいのか】
+ある辺が「両端をつなぐ最も安い辺」なら、それを使わない最小全域木があったとしても、
+その木にその辺を足してできる閉路から、より重い辺を 1 本外せば、
+同じかより安い木が作れます。だから安い辺を採用して損はありません（カット性質）。
+
+【つながらない場合】
+採用した辺が N − 1 本に足りなければ、グラフが非連結です。
+N = 1 のときは辺が 0 本で完成なので、答えは 0 になります。
+
+合計は最大で 10^5 × 10^9 = 10^14 なので、32bit では溢れます。`,
+  complexity:'O(M log M)',
+  pitfalls:['重い順にソートしてしまう','すでに同じグループの辺を採用して閉路を作る','非連結の判定（-1）を忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const edges = [];
+  for (let i = 1; i <= m; i++) {
+    const [u, v, w] = lines[i].trim().split(/\\s+/).map(Number);
+    edges.push([w, u, v]);
+  }
+  edges.sort((x, y) => x[0] - y[0]);
+  const par = new Array(n + 1);
+  for (let i = 0; i <= n; i++) par[i] = i;
+  const find = (x) => {
+    while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; }
+    return x;
+  };
+  let total = 0, used = 0;
+  for (const [w, u, v] of edges) {
+    const a = find(u), b = find(v);
+    if (a === b) continue;
+    par[a] = b;
+    total += w;
+    used++;
+  }
+  return used === n - 1 ? total : -1;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static int[] par;
+
+    static int find(int x) {
+        while (par[x] != x) { par[x] = par[par[x]]; x = par[x]; }
+        return x;
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        long[][] e = new long[m][3];
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            e[i][1] = Long.parseLong(st.nextToken());
+            e[i][2] = Long.parseLong(st.nextToken());
+            e[i][0] = Long.parseLong(st.nextToken());
+        }
+        Arrays.sort(e, (x, y) -> Long.compare(x[0], y[0]));
+        par = new int[n + 1];
+        for (int i = 0; i <= n; i++) par[i] = i;
+        long total = 0;
+        int used = 0;
+        for (long[] ed : e) {
+            int a = find((int) ed[1]), b = find((int) ed[2]);
+            if (a == b) continue;
+            par[a] = b;
+            total += ed[0];
+            used++;
+        }
+        System.out.println(used == n - 1 ? total : -1);
+    }
+}`,
+  quiz:[
+    {note:`重い順にソートしており、最大全域木になっている`, edits:[[`edges.sort((x, y) => x[0] - y[0]);`,`edges.sort((x, y) => y[0] - x[0]);`]]},
+    {note:`すでに同じグループの辺も採用しており、余分な橋を建てている`, edits:[[`    if (a === b) continue;\n`,``]]},
+    {note:`すべてつながったかを確認しておらず、非連結でも合計を返す`, edits:[[`return used === n - 1 ? total : -1;`,`return total;`]]},
+    {note:`費用ではなく採用した本数を足している`, edits:[[`    total += w;`,`    total += 1;`]]},
+    {note:`並べ替えていないので、入力順に採用してしまう`, edits:[[`  edges.sort((x, y) => x[0] - y[0]);\n`,``]]}
+  ]
+},{
+  kind:'algo', id:'c34', level:3, tags:['動的計画法','文字列'], title:'編集距離',
+  statement:`2 つの文字列 S と T が与えられます。
+次の 3 種類の操作をそれぞれ 1 回とカウントして、S を T に一致させたいです。
+
+・好きな位置に 1 文字挿入する
+・好きな位置の 1 文字を削除する
+・好きな位置の 1 文字を別の文字に置き換える
+
+必要な操作回数の最小値を出力してください。`,
+  constraints:['1 ≤ |S|, |T| ≤ 2000','S, T は英小文字のみからなる'],
+  inputFormat:'S\nT',
+  cases:[{in:'kitten\nsitting',out:'3'},{in:'abc\nabc',out:'0'},{in:'a\nabc',out:'2'},{in:'horse\nros',out:'3'},{in:'aa\nca',out:'1'},{in:'ca\nccb',out:'2'},{in:'ccaba\ncb',out:'3'},{in:'cbbc\nbbba',out:'2'},{in:'bbcac\nbca',out:'2'},{in:'cabbb\naaa',out:'4'}],
+  hint:'S の先頭 i 文字を T の先頭 j 文字にするための最小回数、という表を作ります。',
+  idea:`dp[i][j] =「S の先頭 i 文字を、T の先頭 j 文字に一致させる最小操作回数」とします。
+
+  末尾の文字をどう扱うかで 3 通りに場合分けします。
+  ・S の末尾を削除する    → dp[i−1][j] + 1
+  ・T の末尾を挿入する    → dp[i][j−1] + 1
+  ・末尾どうしを対応させる → dp[i−1][j−1] + (文字が同じなら 0、違えば 1)
+
+この 3 つの最小値が dp[i][j] です。
+
+初期化がとても大事です。
+  dp[i][0] = i （S を i 回削除して空文字にする）
+  dp[0][j] = j （空文字に j 回挿入する）
+ここを 0 のままにすると、答えが小さくなりすぎます。
+
+計算量は O(|S| × |T|) = 4×10^6。
+
+編集距離（レーベンシュタイン距離）は、スペルチェッカーや DNA 配列の比較、
+diff の実装など、実務でも広く使われています。`,
+  complexity:'O(|S| × |T|)',
+  pitfalls:['境界（空文字との距離）の初期化を忘れる','文字を比べる位置が 1 つずれる','3 通りのうちどれかを書き忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim(), t = lines[1].trim();
+  const dp = Array.from({ length: s.length + 1 }, () => new Array(t.length + 1).fill(0));
+  for (let i = 0; i <= s.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= t.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= s.length; i++) {
+    for (let j = 1; j <= t.length; j++) {
+      const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+    }
+  }
+  return dp[s.length][t.length];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next(), t = sc.next();
+        int[][] dp = new int[s.length() + 1][t.length() + 1];
+        for (int i = 0; i <= s.length(); i++) dp[i][0] = i;
+        for (int j = 0; j <= t.length(); j++) dp[0][j] = j;
+        for (int i = 1; i <= s.length(); i++) {
+            for (int j = 1; j <= t.length(); j++) {
+                int cost = s.charAt(i - 1) == t.charAt(j - 1) ? 0 : 1;
+                dp[i][j] = Math.min(Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1), dp[i - 1][j - 1] + cost);
+            }
+        }
+        System.out.println(dp[s.length()][t.length()]);
+    }
+}`,
+  quiz:[
+    {note:`空文字との距離（境界）を初期化しておらず、答えが小さくなる`, edits:[[`  for (let i = 0; i <= s.length; i++) dp[i][0] = i;\n  for (let j = 0; j <= t.length; j++) dp[0][j] = j;\n`,``]]},
+    {note:`文字が一致していても 1 回かかるとしている`, edits:[[`const cost = s[i - 1] === t[j - 1] ? 0 : 1;`,`const cost = 1;`]]},
+    {note:`最小ではなく最大を取っている`, edits:[[`dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);`,`dp[i][j] = Math.max(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);`]]},
+    {note:`文字を比べる位置が 1 つずれている`, edits:[[`s[i - 1] === t[j - 1]`,`s[i] === t[j]`]]},
+    {note:`挿入の遷移が抜けている`, edits:[[`Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)`,`Math.min(dp[i - 1][j] + 1, dp[i - 1][j - 1] + cost)`]]}
+  ]
+},{
+  kind:'algo', id:'c35', level:3, tags:['動的計画法','文字列'], title:'最長の回文部分列',
+  statement:`英小文字からなる文字列 S が与えられます。
+S からいくつかの文字を取り除いて（順序は変えずに）作れる文字列のうち、
+回文になっているものの最大の長さを出力してください。`,
+  constraints:['1 ≤ |S| ≤ 2000','S は英小文字のみからなる'],
+  inputFormat:'S',
+  cases:[{in:'bbbab',out:'4'},{in:'abc',out:'1'},{in:'aba',out:'3'},{in:'agbdba',out:'5'},{in:'a',out:'1'},{in:'bca',out:'1'},{in:'cabaa',out:'3'},{in:'bbc',out:'2'},{in:'abac',out:'3'},{in:'aabb',out:'2'}],
+  hint:'両端の文字が同じなら、内側の答えに 2 を足せます。違うなら、どちらかの端を捨てます。',
+  idea:`区間 DP の代表例です。
+
+dp[i][j] =「S の i 文字目から j 文字目までの範囲で作れる、最長の回文部分列の長さ」
+
+  S[i] === S[j] のとき： dp[i][j] = dp[i+1][j-1] + 2   （両端を使える）
+  違うとき：             dp[i][j] = max(dp[i+1][j], dp[i][j-1])  （どちらかの端を捨てる）
+
+初期値は dp[i][i] = 1（1 文字はそれ自体が回文）。
+
+【埋める順番が重要】
+dp[i][j] は dp[i+1][...] を参照するので、i は大きいほうから小さいほうへ回します。
+順番を逆にすると、まだ計算していない値を読んでしまいます。
+区間 DP では「区間の長さが短いものから確定させる」のが原則です。
+
+【別の見方】
+S と S を反転した文字列の最長共通部分列（LCS）を求めても、同じ答えになります。
+どちらでも O(|S|^2) です。`,
+  complexity:'O(|S|^2)',
+  pitfalls:['埋める順番を逆にして未計算の値を読む','両端が一致したときに足す値を 1 にする','1 文字の初期値を 0 にする'],
+  codeJs:`function solve(input) {
+  const s = input.trim();
+  const n = s.length;
+  const dp = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let i = n - 1; i >= 0; i--) {
+    dp[i][i] = 1;
+    for (let j = i + 1; j < n; j++) {
+      if (s[i] === s[j]) dp[i][j] = (i + 1 <= j - 1 ? dp[i + 1][j - 1] : 0) + 2;
+      else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[0][n - 1];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        int n = s.length();
+        int[][] dp = new int[n][n];
+        for (int i = n - 1; i >= 0; i--) {
+            dp[i][i] = 1;
+            for (int j = i + 1; j < n; j++) {
+                if (s.charAt(i) == s.charAt(j)) dp[i][j] = (i + 1 <= j - 1 ? dp[i + 1][j - 1] : 0) + 2;
+                else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);
+            }
+        }
+        System.out.println(dp[0][n - 1]);
+    }
+}`,
+  quiz:[
+    {note:`両端が一致したときに 1 しか足しておらず、片方しか数えていない`, edits:[[`: 0) + 2;`,`: 0) + 1;`]]},
+    {note:`最大ではなく最小を取っている`, edits:[[`else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j - 1]);`,`else dp[i][j] = Math.min(dp[i + 1][j], dp[i][j - 1]);`]]},
+    {note:`1 文字の初期値が 0 になっている`, edits:[[`    dp[i][i] = 1;`,`    dp[i][i] = 0;`]]},
+    {note:`両端の一致判定が逆になっている`, edits:[[`if (s[i] === s[j])`,`if (s[i] !== s[j])`]]},
+    {note:`埋める順番が逆で、まだ計算していない値を参照している`, edits:[[`for (let i = n - 1; i >= 0; i--) {`,`for (let i = 0; i < n; i++) {`]]}
+  ]
+},{
+  kind:'algo', id:'c36', level:3, tags:['動的計画法','数え上げ'], title:'和が K になる選び方の数',
+  statement:`N 個の正整数 A_1, ..., A_N が与えられます。
+この中からいくつか（0 個でもよい）選んで、選んだ数の和がちょうど K になる選び方は何通りありますか。
+
+同じ値であっても、位置が違えば別の選び方として数えます。
+答えは非常に大きくなることがあるので、998244353 で割った余りを出力してください。`,
+  constraints:['1 ≤ N ≤ 100','1 ≤ K ≤ 10^4','1 ≤ A_i ≤ 10^4','入力はすべて整数'],
+  inputFormat:'N K\nA_1 A_2 ... A_N',
+  cases:[{in:'4 5\n1 2 3 4',out:'2'},{in:'3 6\n1 2 3',out:'1'},{in:'2 3\n1 1',out:'0'},{in:'5 5\n1 1 1 1 1',out:'1'},{in:'4 3\n1 1 1 3',out:'2'},{in:'5 9\n5 6 1 1 3',out:'3'},{in:'2 3\n6 2',out:'0'},{in:'2 2\n1 2',out:'1'},{in:'2 2\n3 5',out:'0'},{in:'5 10\n4 2 4 6 2',out:'5'}],
+  hint:'「作れるか」を真偽値で持つ代わりに、「何通りで作れるか」を数で持ちます。',
+  idea:`部分和問題（作れるかどうか）の数え上げ版です。
+
+dp[j] =「これまでに見た数から選んで、和が j になる選び方の数」
+
+真偽値の代わりに個数を持ち、更新を「または」から「足し算」に変えるだけです。
+
+  dp[j] += dp[j − v]      （j は大きいほうから回す）
+
+初期値は dp[0] = 1（何も選ばない、という 1 通り）。ここを 0 にすると答えが全部 0 になります。
+
+j を大きいほうから回すのは、各要素を高々 1 回しか使わないためです。
+小さいほうから回すと同じ要素を何度も使えることになり、
+「同じ数を何個でも選べる」別の問題（重複組合せ）の数え上げになります。
+
+【mod の扱い】
+足すたびに余りを取ります。答えの通り数は最大で 2^100 になり得るので、
+mod を取らないと桁があふれます。
+
+「判定 → 数え上げ → 最小化」と、同じ DP の形で目的だけを変えられるのは、
+DP の設計に慣れる良い練習になります。`,
+  complexity:'O(NK)',
+  pitfalls:['dp[0] = 1 の初期化を忘れる','ループの向きを逆にして同じ要素を複数回使う','mod を取り忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const MOD = 998244353;
+  const dp = new Array(k + 1).fill(0);
+  dp[0] = 1;
+  for (const v of a) {
+    for (let j = k; j >= v; j--) {
+      dp[j] = (dp[j] + dp[j - v]) % MOD;
+    }
+  }
+  return dp[k];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt(), k = sc.nextInt();
+        final int MOD = 998244353;
+        long[] dp = new long[k + 1];
+        dp[0] = 1;
+        for (int i = 0; i < n; i++) {
+            int v = sc.nextInt();
+            for (int j = k; j >= v; j--) {
+                dp[j] = (dp[j] + dp[j - v]) % MOD;
+            }
+        }
+        System.out.println(dp[k]);
+    }
+}`,
+  quiz:[
+    {note:`ループの向きが逆で、同じ要素を何度も選べてしまう`, edits:[[`for (let j = k; j >= v; j--) {`,`for (let j = v; j <= k; j++) {`]]},
+    {note:`dp[0] を 1 にしておらず、どの和も作れないことになる`, edits:[[`  dp[0] = 1;`,`  dp[0] = 0;`]]},
+    {note:`足すのではなく掛けており、数え上げになっていない`, edits:[[`dp[j] = (dp[j] + dp[j - v]) % MOD;`,`dp[j] = (dp[j] * dp[j - v]) % MOD;`]]},
+    {note:`選ぶ場合を数えておらず、常に 0 通りになる`, edits:[[`dp[j] = (dp[j] + dp[j - v]) % MOD;`,`dp[j] = (dp[j] + dp[j]) % MOD;`]]},
+    {note:`最後に見る添字が 1 つずれている`, edits:[[`  return dp[k];`,`  return dp[k - 1];`]]}
+  ]
+}
 /* ---------------- 論理パズル ---------------- */
 ,{
   kind:'puzzle', id:'q01', level:1, tags:['論理パズル','数当て'], title:'2 けたの数を当てる',
