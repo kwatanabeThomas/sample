@@ -298,9 +298,9 @@ pre.code{
       <div class="field hidden" id="levelField">
         <div class="field-label">レベル</div>
         <div class="row" id="levelChips">
-          <button class="chip on" data-level="1">Lv1 入門</button>
-          <button class="chip on" data-level="2">Lv2 初級</button>
-          <button class="chip on" data-level="3">Lv3 中級</button>
+          <button class="chip on" data-level="1">Lv1 初級</button>
+          <button class="chip on" data-level="2">Lv2 中級</button>
+          <button class="chip on" data-level="3">Lv3 上級</button>
         </div>
       </div>
       <div class="field hidden" id="tagField">
@@ -465,9 +465,9 @@ pre.code{
         </select>
         <select id="libLevel">
           <option value="0">すべてのレベル</option>
-          <option value="1">Lv1 入門</option>
-          <option value="2">Lv2 初級</option>
-          <option value="3">Lv3 中級</option>
+          <option value="1">Lv1 初級</option>
+          <option value="2">Lv2 中級</option>
+          <option value="3">Lv3 上級</option>
         </select>
         <select id="libTag"><option value="">すべての分野</option></select>
         <select id="libState">
@@ -500,7 +500,7 @@ pre.code{
    ============================================================ */
 /* PROBLEMS_START */
 const PROBLEMS = [
-/* ---------------- Lv1 入門 ---------------- */
+/* ---------------- Lv1 初級 ---------------- */
 {
   kind:'algo', id:'a01', level:1, tags:['実装','数学'], title:'おつり',
   statement:`高橋くんは 1 個 A 円の品物を B 個買い、店員に X 円を渡しました。
@@ -818,7 +818,7 @@ public class Main {
     {note:`3 で割ったあまりを取っておらず、手が一周する関係を扱えていない`, edits:[[`((s + 1) % 3 === t)`,`((s + 1) === t)`]]}
   ]
 },
-/* ---------------- Lv2 初級 ---------------- */
+/* ---------------- Lv2 中級 ---------------- */
 {
   kind:'algo', id:'b01', level:2, tags:['全探索'], title:'3 つ選んで和を K にする',
   statement:`N 個の整数 A_1, ..., A_N が与えられます。
@@ -1293,7 +1293,7 @@ public class Main {
     {note:`種類数から 1 引いている`, edits:[[`return set.size;`,`return set.size - 1;`]]}
   ]
 },
-/* ---------------- Lv3 中級 ---------------- */
+/* ---------------- Lv3 上級 ---------------- */
 {
   kind:'algo', id:'c01', level:3, tags:['二分探索'], title:'たこ焼きを X 個作るまでの時間',
   statement:`N 人の職人がたこ焼きを作ります。職人 i は 1 個作るのにちょうど A_i 秒かかり、
@@ -10024,6 +10024,2289 @@ public class Main {
     {note:`F(2k) の式で 2 倍を忘れている`, edits:[[`a * ((2n * b - a + MOD) % MOD)`,`a * ((b - a + MOD) % MOD)`]]}
   ]
 }
+,{
+  kind:'algo', id:'a51', level:1, tags:['実装'], title:'X より大きい数はいくつ？',
+  statement:`N 個の整数 A_1, ..., A_N と、整数 X が与えられます。
+A の中に X より大きい値はいくつありますか。`,
+  constraints:['1 ≤ N ≤ 10^5','-10^9 ≤ A_i, X ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N X\nA_1 A_2 ... A_N',
+  cases:[{in:'5 3\n1 3 5 7 9',out:'3'},{in:'3 10\n1 2 3',out:'0'},{in:'4 0\n-1 0 1 2',out:'2'},{in:'3 -5\n-9 -5 -1',out:'1'},{in:'4 4\n0 -2 6 -6',out:'1'},{in:'6 -1\n5 2 6 3 -9 0',out:'5'},{in:'3 7\n-3 -5 7',out:'0'},{in:'5 -1\n7 -2 5 1 -5',out:'3'},{in:'5 -3\n3 -6 -8 7 -9',out:'2'},{in:'2 7\n7 8',out:'1'}],
+  hint:'「より大きい」なので、X と等しいものは数えません。',
+  idea:`条件を満たす個数を数えるだけですが、「より大きい」と「以上」の違いに注意します。
+
+  X より大きい → A_i > X （X 自身は含まない）
+  X 以上       → A_i >= X （X 自身も含む）
+
+テストケース 1 3 5 7 9 に対して X = 3 の答えが 3 なのは、
+3 自身を数えていないからです。ここが 4 になるなら「以上」で数えています。
+
+日本語の「より大きい」「以上」「未満」「以下」は、それぞれ >, >=, <, <= に対応します。
+問題文を読むときに、まずこの 4 つを取り違えないことが、正答率に直結します。
+
+負の数が混ざっても、比較演算子はそのまま使えます。`,
+  complexity:'O(N)',
+  pitfalls:['「より大きい」と「以上」を取り違える','X と比べる向きを逆にする','数え始めの初期値を間違える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, x] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  let cnt = 0;
+  for (const v of a) if (v > x) cnt++;
+  return cnt;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long x = Long.parseLong(st.nextToken());
+        st = new StringTokenizer(br.readLine());
+        int cnt = 0;
+        for (int i = 0; i < n; i++) {
+            if (Long.parseLong(st.nextToken()) > x) cnt++;
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`「以上」で数えており、X と等しい値まで含めている`, edits:[[`if (v > x) cnt++;`,`if (v >= x) cnt++;`]]},
+    {note:`比べる向きが逆で、X より小さい値を数えている`, edits:[[`if (v > x) cnt++;`,`if (v < x) cnt++;`]]},
+    {note:`個数ではなく合計を求めている`, edits:[[`if (v > x) cnt++;`,`if (v > x) cnt += v;`]]},
+    {note:`数え始めが 1 になっている`, edits:[[`  let cnt = 0;`,`  let cnt = 1;`]]},
+    {note:`最初の要素を調べていない`, edits:[[`  for (const v of a) if (v > x) cnt++;`,`  for (const v of a.slice(1)) if (v > x) cnt++;`]]}
+  ]
+},{
+  kind:'algo', id:'a52', level:1, tags:['文字列'], title:'文字列をくりかえす',
+  statement:`文字列 S と正の整数 N が与えられます。
+S を N 回つなげた文字列を出力してください。`,
+  constraints:['1 ≤ |S| ≤ 100','1 ≤ N ≤ 100','S は英小文字のみからなる'],
+  inputFormat:'S\nN',
+  cases:[{in:'abc\n3',out:'abcabcabc'},{in:'x\n1',out:'x'},{in:'ab\n4',out:'abababab'},{in:'z\n5',out:'zzzzz'},{in:'bbac\n2',out:'bbacbbac'},{in:'caac\n5',out:'caaccaaccaaccaaccaac'},{in:'a\n6',out:'aaaaaa'},{in:'aabb\n2',out:'aabbaabb'},{in:'aac\n3',out:'aacaacaac'},{in:'aaba\n3',out:'aabaaabaaaba'}],
+  hint:'繰り返し用の機能があればそれを使い、なければループで足していきます。',
+  idea:`多くの言語には文字列を繰り返す機能があります（repeat など）。
+なければループで N 回足せば済みます。
+
+  res = ""
+  for (i = 0; i < N; i++) res += S
+
+【効率の話】
+文字列に += で足していくと、言語によっては毎回コピーが発生し O(N × |S|) より遅くなることがあります。
+配列に貯めて最後に join する書き方のほうが安全です。
+この問題は |S| ≤ 100、N ≤ 100 と小さいので、どちらでも問題ありません。
+
+【回数の境界】
+「N 回つなげる」なのでループは N 回です。
+N−1 回にしてしまうと 1 つ足りず、N+1 回にすると 1 つ多くなります。
+小さい例（N = 1 のとき S そのもの）で必ず確認してください。`,
+  complexity:'O(N × |S|)',
+  pitfalls:['繰り返す回数が 1 つずれる','区切り文字を入れてしまう','N を読み込む行を間違える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim();
+  const n = Number(lines[1].trim());
+  let res = "";
+  for (let i = 0; i < n; i++) res += s;
+  return res;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        int n = sc.nextInt();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) sb.append(s);
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`繰り返す回数が 1 回足りない`, edits:[[`for (let i = 0; i < n; i++) res += s;`,`for (let i = 1; i < n; i++) res += s;`]]},
+    {note:`繰り返す回数が 1 回多い`, edits:[[`for (let i = 0; i < n; i++) res += s;`,`for (let i = 0; i <= n; i++) res += s;`]]},
+    {note:`つなぐときに空白が入ってしまっている`, edits:[[`res += s;`,`res += s + " ";`]]},
+    {note:`文字列と回数の行を取り違えている`, edits:[[`  const s = lines[0].trim();\n  const n = Number(lines[1].trim());`,`  const s = lines[1].trim();\n  const n = Number(lines[0].trim());`]]},
+    {note:`足すのではなく上書きしており、常に 1 回分になる`, edits:[[`res += s;`,`res = s;`]]}
+  ]
+},{
+  kind:'algo', id:'a53', level:1, tags:['実装','数学'], title:'秒に直す',
+  statement:`H 時間 M 分 S 秒が与えられます。
+これが合計で何秒になるかを出力してください。`,
+  constraints:['0 ≤ H ≤ 100','0 ≤ M ≤ 59','0 ≤ S ≤ 59','入力はすべて整数'],
+  inputFormat:'H M S',
+  cases:[{in:'1 1 1',out:'3661'},{in:'0 0 0',out:'0'},{in:'23 59 59',out:'86399'},{in:'2 2 5',out:'7325'},{in:'100 0 0',out:'360000'},{in:'42 36 12',out:'153372'},{in:'35 52 21',out:'129141'},{in:'17 19 57',out:'62397'},{in:'17 39 1',out:'63541'},{in:'49 28 25',out:'178105'}],
+  hint:'1 時間は 3600 秒、1 分は 60 秒です。',
+  idea:`単位をそろえて足すだけです。
+
+  合計 = H × 3600 + M × 60 + S
+
+「秒を時分秒に直す」問題（割り算とあまり）のちょうど逆向きの操作です。
+セットで覚えておくと、時間の計算で迷わなくなります。
+
+【単位の係数を間違えないコツ】
+1 時間 = 60 分 = 60 × 60 秒 = 3600 秒。
+3600 を 360 や 600 と書き間違えるのが定番のミスなので、
+「60 × 60」と書いてしまうのも一つの手です（可読性も上がります）。
+
+時刻や日付の計算では、いちばん小さい単位（この場合は秒）に統一してから計算し、
+必要なら最後に戻す、という手順が鉄則です。`,
+  complexity:'O(1)',
+  pitfalls:['1 時間を 60 秒としてしまう','分の係数を間違える','入力の順番を取り違える'],
+  codeJs:`function solve(input) {
+  const [h, m, s] = input.trim().split(/\\s+/).map(Number);
+  return h * 3600 + m * 60 + s;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long h = sc.nextLong(), m = sc.nextLong(), s = sc.nextLong();
+        System.out.println(h * 3600 + m * 60 + s);
+    }
+}`,
+  quiz:[
+    {note:`1 時間を 60 秒として計算している`, edits:[[`h * 3600`,`h * 60`]]},
+    {note:`1 分を 100 秒として計算している`, edits:[[`m * 60`,`m * 100`]]},
+    {note:`秒の項を足し忘れている`, edits:[[`return h * 3600 + m * 60 + s;`,`return h * 3600 + m * 60;`]]},
+    {note:`時間と分の係数が入れ替わっている`, edits:[[`return h * 3600 + m * 60 + s;`,`return h * 60 + m * 3600 + s;`]]},
+    {note:`1 時間を 360 秒として計算している`, edits:[[`h * 3600`,`h * 360`]]}
+  ]
+},{
+  kind:'algo', id:'a54', level:1, tags:['文字列'], title:'文字列の中の数字を足す',
+  statement:`英小文字と数字からなる文字列 S が与えられます。
+S に含まれる数字をすべて足し合わせた値を出力してください。
+数字が 1 つも含まれない場合は 0 を出力してください。`,
+  constraints:['1 ≤ |S| ≤ 10^5','S は英小文字と数字 0〜9 のみからなる'],
+  inputFormat:'S',
+  cases:[{in:'a1b2c3',out:'6'},{in:'abc',out:'0'},{in:'999',out:'27'},{in:'x0y',out:'0'},{in:'a9z8',out:'17'},{in:'aa2a9710',out:'19'},{in:'00a0',out:'0'},{in:'92a2b89',out:'30'},{in:'0a1a',out:'1'},{in:'1277082',out:'27'}],
+  hint:'1 文字ずつ見て、それが数字かどうかを判定します。',
+  idea:`1 文字ずつ見て、数字なら数値に変換して足します。
+
+数字かどうかの判定は、文字コードで '0' 以上 '9' 以下かを見るのが確実です。
+言語の判定関数を使ってもよいのですが、
+全角数字や特殊な文字まで「数字」とみなす実装があるので、
+競技プログラミングでは範囲で判定するほうが安全です。
+
+【複数けたの数はどう扱うか】
+この問題では 1 文字ずつ足すので、"99" は 9 + 9 = 18 です。
+もし "99" を 99 として扱いたいなら、
+数字が続く限り読み進めて 1 つの数にまとめる処理が必要になります。
+問題文がどちらを求めているかを、例で必ず確認してください
+（テストケース 999 の答えが 27 であることが、その確認になっています）。`,
+  complexity:'O(|S|)',
+  pitfalls:['文字のまま足して文字列連結になる','数字の判定範囲を間違える','複数けたをまとめて数として読んでしまう'],
+  codeJs:`function solve(input) {
+  const s = input.trim();
+  let sum = 0;
+  for (const c of s) {
+    if (c >= "0" && c <= "9") sum += Number(c);
+  }
+  return sum;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        int sum = 0;
+        for (char c : s.toCharArray()) {
+            if (c >= '0' && c <= '9') sum += c - '0';
+        }
+        System.out.println(sum);
+    }
+}`,
+  quiz:[
+    {note:`数値に変換しておらず、文字列の連結になっている`, edits:[[`sum += Number(c);`,`sum += c;`]]},
+    {note:`数字かどうかの判定が逆で、英小文字を足そうとしている`, edits:[[`if (c >= "0" && c <= "9") sum += Number(c);`,`if (c < "0" || c > "9") sum += Number(c);`]]},
+    {note:`判定の上限が誤っており、9 を数え落とす`, edits:[[`c <= "9"`,`c < "9"`]]},
+    {note:`合計ではなく個数を数えている`, edits:[[`sum += Number(c);`,`sum += 1;`]]},
+    {note:`合計の初期値が 1 になっている`, edits:[[`  let sum = 0;`,`  let sum = 1;`]]}
+  ]
+},{
+  kind:'algo', id:'a55', level:1, tags:['数学','文字列'], title:'けた数を求める',
+  statement:`正の整数 N が与えられます。
+N を 10 進法で書いたときのけた数を出力してください。`,
+  constraints:['1 ≤ N ≤ 10^18','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'1234',out:'4'},{in:'9',out:'1'},{in:'100',out:'3'},{in:'1000000000000000000',out:'19',big:true},{in:'10',out:'2'},{in:'140418',out:'6'},{in:'150445',out:'6'},{in:'901396',out:'6'},{in:'742218',out:'6'},{in:'412608',out:'6'},{in:'960229',out:'6'}],
+  hint:'文字列として読めば、長さがそのままけた数です。',
+  idea:`いちばん確実なのは、入力を文字列として受け取って長さを見る方法です。
+N が 10^18 と大きく、数値型で扱うと精度の問題が出る言語もあるため、
+文字列のまま扱うのが安全です。
+
+数値として解くなら、10 で割り続けて回数を数えます。
+
+  while (n > 0) { n = floor(n / 10); けた数++ }
+
+【log を使う方法の危険性】
+けた数は floor(log10(N)) + 1 でも求まりますが、
+浮動小数点の誤差により、1000 のようなちょうどの値で 1 ずれることがあります。
+競技プログラミングでは避けたほうが無難です。
+
+【0 の扱い】
+この問題では N ≥ 1 ですが、0 のけた数を 1 とするかどうかは定義次第です。
+while ループで書くと 0 回になってしまうので、境界として意識しておいてください。`,
+  complexity:'O(log N)',
+  pitfalls:['log を使って境界で 1 ずれる','数値型の精度不足で桁が壊れる','0 の扱いを考えていない'],
+  codeJs:`function solve(input) {
+  const s = input.trim();
+  return s.length;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        System.out.println(s.length());
+    }
+}`,
+  quiz:[
+    {note:`けた数が 1 多く数えられている`, edits:[[`  return s.length;`,`  return s.length + 1;`]]},
+    {note:`けた数が 1 少なく数えられている`, edits:[[`  return s.length;`,`  return s.length - 1;`]]},
+    {note:`けた数ではなく、けたの合計を求めている`, edits:[[`  return s.length;`,`  let sum = 0;\n  for (const c of s) sum += Number(c);\n  return sum;`]]},
+    {note:`10 で割る回数を数えているが、精度が足りず大きな数で壊れる`, edits:[[`  return s.length;`,`  let n = Number(s), cnt = 0;\n  while (n >= 10) { n = Math.floor(n / 10); cnt++; }\n  return cnt;`]]},
+    {note:`けた数ではなく数値そのものを返している`, edits:[[`  return s.length;`,`  return Number(s);`]]}
+  ]
+},{
+  kind:'algo', id:'b61', level:2, tags:['しゃくとり法'], title:'和が K 以上になる最短区間',
+  statement:`N 個の正整数 A_1, ..., A_N と、正の整数 K が与えられます。
+連続する部分列であって、その総和が K 以上であるもののうち、
+最も短いものの長さを出力してください。そのような部分列が存在しない場合は 0 を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ K ≤ 10^14','1 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N K\nA_1 A_2 ... A_N',
+  cases:[{in:'6 10\n3 1 4 1 5 9',out:'2'},{in:'3 100\n1 2 3',out:'0'},{in:'5 5\n5 1 1 1 1',out:'1'},{in:'4 7\n1 2 3 4',out:'2'},{in:'2 1\n2 1',out:'1'},{in:'6 16\n5 8 9 1 3 1',out:'2'},{in:'4 4\n9 4 5 3',out:'1'},{in:'3 3\n2 1 9',out:'1'},{in:'2 24\n1 6',out:'0'},{in:'5 10\n7 1 4 3 5',out:'3'}],
+  hint:'右端を伸ばして条件を満たしたら、条件を満たす限り左端を縮めます。',
+  idea:`しゃくとり法の典型です。「K 以下の最長区間」を求める問題と対になっています。
+
+  右端 r を 1 つずつ伸ばして和に足す
+  和が K 以上である間、最短を更新しながら左端 l を縮める
+
+すべての A_i が正なので、左端を縮めると和は必ず減ります。この単調性があるおかげで、
+l と r をそれぞれ一方向に進めるだけで済み、全体で O(N) になります。
+
+【最長を求める場合との違い】
+・K 以下の最長 → 条件を満たさなくなったら縮める
+・K 以上の最短 → 条件を満たす間は縮める（縮めた直後が最短の候補）
+どちらも「条件を満たす／満たさない」の境目で更新しますが、
+更新するタイミングが逆になります。ここを取り違えると答えがずれます。
+
+【存在しない場合】
+和が一度も K に届かなければ 0 を返します。
+初期値を無限大にしておき、更新されなければ 0 に直すのが安全です。`,
+  complexity:'O(N)',
+  pitfalls:['最短の更新タイミングを誤る','存在しない場合の 0 を返し忘れる','和が 64bit の範囲になることを見落とす'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  let sum = 0, l = 0, best = Infinity;
+  for (let r = 0; r < n; r++) {
+    sum += a[r];
+    while (sum >= k) {
+      if (r - l + 1 < best) best = r - l + 1;
+      sum -= a[l];
+      l++;
+    }
+  }
+  return best === Infinity ? 0 : best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long k = Long.parseLong(st.nextToken());
+        long[] a = new long[n];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) a[i] = Long.parseLong(st.nextToken());
+        long sum = 0;
+        int l = 0, best = Integer.MAX_VALUE;
+        for (int r = 0; r < n; r++) {
+            sum += a[r];
+            while (sum >= k) {
+                best = Math.min(best, r - l + 1);
+                sum -= a[l];
+                l++;
+            }
+        }
+        System.out.println(best == Integer.MAX_VALUE ? 0 : best);
+    }
+}`,
+  quiz:[
+    {note:`存在しない場合に 0 を返しておらず、無限大が出てしまう`, edits:[[`return best === Infinity ? 0 : best;`,`return best;`]]},
+    {note:`最短ではなく最長を求めている`, edits:[[`if (r - l + 1 < best) best = r - l + 1;`,`if (r - l + 1 > best) best = r - l + 1;`]]},
+    {note:`区間の長さが 1 つ足りない`, edits:[[`if (r - l + 1 < best) best = r - l + 1;`,`if (r - l < best) best = r - l;`]]},
+    {note:`条件が「K より大きい」になっており、ちょうど K の区間を数えられない`, edits:[[`while (sum >= k) {`,`while (sum > k) {`]]},
+    {note:`左端を縮めるときに和から引いておらず、条件が外れなくなる`, edits:[[`      sum -= a[l];\n      l++;`,`      l++;`]]}
+  ]
+},{
+  kind:'algo', id:'b62', level:2, tags:['二分探索','数学'], title:'整数の平方根',
+  statement:`0 以上の整数 N が与えられます。
+N の平方根を超えない最大の整数（floor(√N)）を出力してください。`,
+  constraints:['0 ≤ N ≤ 10^18','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'16',out:'4'},{in:'15',out:'3'},{in:'0',out:'0'},{in:'99',out:'9'},{in:'1',out:'1'},{in:'1000000000000000000',out:'1000000000',big:true},{in:'2546',out:'50'},{in:'1376',out:'37'},{in:'49',out:'7'},{in:'625',out:'25'},{in:'1026',out:'32'}],
+  hint:'x × x ≤ N を満たす最大の x を探します。x を大きくすると条件はいずれ満たされなくなります。',
+  idea:`浮動小数点の平方根を使うと、N が 10^18 に近いときに誤差で 1 ずれることがあります。
+整数のまま二分探索すれば、誤差の心配がありません。
+
+  「x × x ≤ N」を満たす最大の x を探す
+
+x を大きくすると x × x は単調に増えるので、条件は「満たす → 満たさない」と一度だけ切り替わります。
+その境界を二分探索で求めます。
+
+【実装のポイント】
+・探索範囲は 0 から 10^9 まで（(10^9)^2 = 10^18 なので十分）
+・「条件を満たす最大」を探すので、mid を含めて lo を更新します
+  （lo = mid とする形。無限ループを避けるため mid の計算を切り上げにします）
+・x × x が 10^18 になるため、64bit（JavaScript では BigInt）が必要です
+
+「答えが単調な条件で決まるなら二分探索」という考え方は、
+平方根に限らず、あらゆる場面で使える汎用的な武器です。`,
+  complexity:'O(log N)',
+  pitfalls:['浮動小数点の誤差で境界を誤る','二分探索の更新で無限ループする','掛け算で桁あふれする'],
+  codeJs:`function solve(input) {
+  const n = BigInt(input.trim());
+  let lo = 0n, hi = 1000000000n;
+  while (lo < hi) {
+    const mid = (lo + hi + 1n) / 2n;      // 上側に寄せて無限ループを防ぐ
+    if (mid * mid <= n) lo = mid; else hi = mid - 1n;
+  }
+  return lo.toString();
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        long lo = 0, hi = 1000000000L;
+        while (lo < hi) {
+            long mid = lo + (hi - lo + 1) / 2;
+            if (mid * mid <= n) lo = mid; else hi = mid - 1;
+        }
+        System.out.println(lo);
+    }
+}`,
+  quiz:[
+    {note:`mid の計算が切り下げのままで、lo = mid のときに無限ループする形になっている`, edits:[[`const mid = (lo + hi + 1n) / 2n;      // 上側に寄せて無限ループを防ぐ`,`const mid = (lo + hi) / 2n;`]]},
+    {note:`判定が「未満」になっており、平方数のときに 1 小さくなる`, edits:[[`if (mid * mid <= n) lo = mid; else hi = mid - 1n;`,`if (mid * mid < n) lo = mid; else hi = mid - 1n;`]]},
+    {note:`探索範囲の上限が小さく、大きな N に対応できない`, edits:[[`let lo = 0n, hi = 1000000000n;`,`let lo = 0n, hi = 1000n;`]]},
+    {note:`2 乗ではなく 2 倍で判定している`, edits:[[`if (mid * mid <= n)`,`if (mid + mid <= n)`]]},
+    {note:`更新の向きが逆になっている`, edits:[[`if (mid * mid <= n) lo = mid; else hi = mid - 1n;`,`if (mid * mid <= n) hi = mid - 1n; else lo = mid;`]]}
+  ]
+},{
+  kind:'algo', id:'b63', level:2, tags:['文字列','ハッシュ'], title:'アナグラムのグループ',
+  statement:`N 個の文字列が与えられます。
+文字を並べ替えると一致する文字列どうしを、同じグループとみなします。
+
+グループはいくつできますか。`,
+  constraints:['1 ≤ N ≤ 10^5','各文字列は英小文字からなり、長さは 1 以上 20 以下'],
+  inputFormat:'N\nS_1\n...\nS_N',
+  cases:[{in:'4\nabc\nbca\nxyz\nzyx',out:'2'},{in:'1\na',out:'1'},{in:'3\naa\naa\nab',out:'2'},{in:'3\nab\nba\nab',out:'1'},{in:'2\nabcc\nccca',out:'2'},{in:'3\nca\ncab\ncbaa',out:'3'},{in:'4\nbac\ncbca\naa\ncc',out:'4'},{in:'2\naba\naa',out:'2'},{in:'5\nbb\naaab\nccaa\nbaca\nbcc',out:'5'},{in:'3\nbac\naab\nccba',out:'3'}],
+  hint:'同じグループの文字列に共通する「代表の形」を作れないでしょうか。',
+  idea:`並べ替えて一致するかを 2 つずつ比べると O(N^2) になり、間に合いません。
+
+グループごとに共通する「代表の形（正規形）」を作るのが定石です。
+各文字列の文字をソートすると、同じグループの文字列は必ず同じ文字列になります。
+
+  abc → abc、bca → abc、xyz → xyz、zyx → xyz
+
+このソート済み文字列を集合に入れ、その要素数を数えれば答えです。
+
+【正規形という考え方】
+「同じとみなしたいものを、必ず同じ表現に変換する」というのは非常に強力な手法です。
+・分数なら約分した形
+・図形なら基準の向きに回転した形
+・文字列なら並べ替えた形
+
+一度この形に直してしまえば、あとは単純な一致判定や集合で扱えます。
+なお、文字数を数えた 26 個の配列を文字列化しても正規形になります（長さが長いときはこちらが有利）。`,
+  complexity:'O(N × L log L)',
+  pitfalls:['総当たりで比べて間に合わない','ソートせずにそのまま集合へ入れる','文字列の長さの違いを考慮しない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  const set = new Set();
+  for (let i = 1; i <= n; i++) {
+    set.add(lines[i].trim().split("").sort().join(""));
+  }
+  return set.size;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        Set<String> set = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            char[] c = br.readLine().trim().toCharArray();
+            Arrays.sort(c);
+            set.add(new String(c));
+        }
+        System.out.println(set.size());
+    }
+}`,
+  quiz:[
+    {note:`ソートしておらず、並べ替えて一致するものを別グループにしている`, edits:[[`set.add(lines[i].trim().split("").sort().join(""));`,`set.add(lines[i].trim());`]]},
+    {note:`グループ数ではなく文字列の個数を返している`, edits:[[`  return set.size;`,`  return n;`]]},
+    {note:`最後の文字列を読み込んでいない`, edits:[[`for (let i = 1; i <= n; i++) {`,`for (let i = 1; i < n; i++) {`]]},
+    {note:`長さだけを正規形にしており、中身が違っても同じグループになる`, edits:[[`set.add(lines[i].trim().split("").sort().join(""));`,`set.add(String(lines[i].trim().length));`]]},
+    {note:`重複を除く集合ではなく配列に入れており、同じ形が何度も数えられる`, edits:[[`  const set = new Set();`,`  const set = [];`],[`    set.add(lines[i].trim().split("").sort().join(""));`,`    set.push(lines[i].trim().split("").sort().join(""));`],[`  return set.size;`,`  return set.length;`]]}
+  ]
+},{
+  kind:'algo', id:'b64', level:2, tags:['数え上げ','ハッシュ'], title:'いちばん多い数',
+  statement:`N 個の整数 A_1, ..., A_N が与えられます。
+最も多く現れる値と、その出現回数を、この順に空白区切りで出力してください。
+最も多く現れる値が複数ある場合は、そのうち最も小さい値を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'5\n1 2 2 3 3',out:'2 2'},{in:'1\n7',out:'7 1'},{in:'4\n5 5 5 1',out:'5 3'},{in:'5\n3 1 3 1 2',out:'1 2'},{in:'4\n1 3 3 1',out:'1 2'},{in:'5\n3 5 3 4 5',out:'3 2'},{in:'2\n3 1',out:'1 1'},{in:'5\n4 2 1 1 2',out:'1 2'},{in:'2\n5 2',out:'2 1'},{in:'7\n2 2 1 5 4 3 5',out:'2 2'}],
+  hint:'連想配列で個数を数えてから、回数が最大かつ値が最小のものを選びます。',
+  idea:`値の範囲が広いので、配列ではなく連想配列（ハッシュマップ）で個数を数えます。
+
+  出現回数[v] += 1
+
+そのあと、すべての (値, 回数) の組を見て
+・回数が今までの最大より多ければ更新
+・回数が同じなら、値が小さいほうを採用
+という 2 段構えの比較を行います。
+
+【同点の扱い】
+「同数なら最小の値」という条件を実装し忘れると、
+連想配列の走査順（言語や実装によって変わる）に答えが左右され、
+環境によって通ったり落ちたりします。
+テストケース 3 1 3 1 2 は、1 と 3 がどちらも 2 回なので、この確認になります。
+
+【値の範囲が狭い場合】
+値が 0〜10^5 のように小さいなら、配列で数えるほうが速くて簡単です。
+制約を見て、配列か連想配列かを選んでください。`,
+  complexity:'O(N)',
+  pitfalls:['同数のときの規則を実装せず、環境依存の答えになる','値と回数の出力順を逆にする','最大回数の初期値を誤る'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const cnt = new Map();
+  for (const v of a) cnt.set(v, (cnt.get(v) || 0) + 1);
+  let bestV = null, bestC = 0;
+  for (const [v, c] of cnt) {
+    if (c > bestC || (c === bestC && v < bestV)) { bestV = v; bestC = c; }
+  }
+  return bestV + " " + bestC;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        Map<Long, Integer> cnt = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            long v = Long.parseLong(st.nextToken());
+            cnt.merge(v, 1, Integer::sum);
+        }
+        long bestV = 0;
+        int bestC = 0;
+        for (Map.Entry<Long, Integer> e : cnt.entrySet()) {
+            if (e.getValue() > bestC || (e.getValue() == bestC && e.getKey() < bestV)) {
+                bestV = e.getKey();
+                bestC = e.getValue();
+            }
+        }
+        System.out.println(bestV + " " + bestC);
+    }
+}`,
+  quiz:[
+    {note:`同数のときに値の小さいほうを選ぶ規則がなく、走査順に左右される`, edits:[[`if (c > bestC || (c === bestC && v < bestV)) { bestV = v; bestC = c; }`,`if (c > bestC) { bestV = v; bestC = c; }`]]},
+    {note:`同数のときに値の大きいほうを選んでいる`, edits:[[`(c === bestC && v < bestV)`,`(c === bestC && v > bestV)`]]},
+    {note:`値と回数の出力順が逆になっている`, edits:[[`return bestV + " " + bestC;`,`return bestC + " " + bestV;`]]},
+    {note:`最も少ない回数の値を選んでいる`, edits:[[`if (c > bestC || (c === bestC && v < bestV))`,`if (c < bestC || (c === bestC && v < bestV))`]]},
+    {note:`個数を数えるときに上書きしており、常に 1 回になる`, edits:[[`cnt.set(v, (cnt.get(v) || 0) + 1);`,`cnt.set(v, 1);`]]}
+  ]
+},{
+  kind:'algo', id:'b65', level:2, tags:['実装','累積和'], title:'奇数番目と偶数番目',
+  statement:`N 個の整数 A_1, ..., A_N が与えられます。
+奇数番目（1, 3, 5, ... 番目）の合計と、偶数番目（2, 4, 6, ... 番目）の合計を、
+この順に空白区切りで出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','-10^9 ≤ A_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nA_1 A_2 ... A_N',
+  cases:[{in:'5\n1 2 3 4 5',out:'9 6'},{in:'1\n7',out:'7 0'},{in:'4\n1 1 1 1',out:'2 2'},{in:'3\n-1 2 -3',out:'-4 2'},{in:'4\n-2 4 -1 1',out:'-3 5'},{in:'7\n3 2 -2 5 2 -2 -4',out:'-1 5'},{in:'1\n6',out:'6 0'},{in:'5\n-2 -7 -6 7 4',out:'-4 0'},{in:'2\n-7 9',out:'-7 9'},{in:'1\n4',out:'4 0'}],
+  hint:'0 始まりの添字と 1 始まりの番号で、偶奇が入れ替わることに注意してください。',
+  idea:`添字の偶奇で振り分けて足すだけですが、
+「1 始まりの番号」と「0 始まりの添字」で偶奇が逆になる点が最大の落とし穴です。
+
+  1 番目 → 添字 0（偶数）
+  2 番目 → 添字 1（奇数）
+
+つまり 0 始まりの配列では、添字が偶数のものが「奇数番目」です。
+ここを取り違えると、2 つの合計がそっくり入れ替わります。
+
+【確認のコツ】
+N = 1 のケース（答えは「A_1 0」）を通せば、向きが合っているか一目でわかります。
+テストケースの 2 番目がそれです。
+
+合計は最大で 2×10^5 × 10^9 = 2×10^14 になるので、32bit では溢れます。
+どちらの合計も 0 で初期化し、片方が空でも 0 と出力されるようにしてください。`,
+  complexity:'O(N)',
+  pitfalls:['0 始まりと 1 始まりで偶奇を取り違える','出力の順番を逆にする','合計が 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  let odd = 0, even = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (i % 2 === 0) odd += a[i]; else even += a[i];
+  }
+  return odd + " " + even;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        long odd = 0, even = 0;
+        for (int i = 0; i < n; i++) {
+            long v = Long.parseLong(st.nextToken());
+            if (i % 2 == 0) odd += v; else even += v;
+        }
+        System.out.println(odd + " " + even);
+    }
+}`,
+  quiz:[
+    {note:`0 始まりと 1 始まりの偶奇を取り違えており、2 つの合計が入れ替わる`, edits:[[`if (i % 2 === 0) odd += a[i]; else even += a[i];`,`if (i % 2 === 1) odd += a[i]; else even += a[i];`]]},
+    {note:`出力の順番が逆になっている`, edits:[[`return odd + " " + even;`,`return even + " " + odd;`]]},
+    {note:`奇数番目しか足しておらず、偶数番目が常に 0 になる`, edits:[[`if (i % 2 === 0) odd += a[i]; else even += a[i];`,`if (i % 2 === 0) odd += a[i];`]]},
+    {note:`3 で割ったあまりで振り分けている`, edits:[[`if (i % 2 === 0)`,`if (i % 3 === 0)`]]},
+    {note:`合計の初期値が 1 になっている`, edits:[[`  let odd = 0, even = 0;`,`  let odd = 1, even = 1;`]]}
+  ]
+}
+,{
+  kind:'algo', id:'b66', level:2, tags:['文字列'], title:'単語の数と最長の長さ',
+  statement:`英小文字と半角空白からなる文字列 S が与えられます。
+S は空白で区切られた 1 つ以上の単語からなります（先頭と末尾に空白はありません）。
+
+単語の個数と、最も長い単語の長さを、この順に空白区切りで出力してください。`,
+  constraints:['1 ≤ |S| ≤ 10^5','S は英小文字と半角空白のみからなる','単語は 1 つ以上ある'],
+  inputFormat:'S',
+  cases:[{in:'hello world abc',out:'3 5'},{in:'a',out:'1 1'},{in:'ab cde f',out:'3 3'},{in:'x y',out:'2 1'},{in:'baba aaa',out:'2 4'},{in:'aacca cacaa',out:'2 5'},{in:'b',out:'1 1'},{in:'ccbac ba abc',out:'3 5'},{in:'aacb',out:'1 4'},{in:'ccbb babc c ca',out:'4 4'}],
+  hint:'空白で分割してから、個数と最大の長さを求めます。',
+  idea:`空白で分割して単語の配列を作れば、あとは個数と最大長を求めるだけです。
+
+  単語の配列 = S を空白で分割
+  個数 = 配列の長さ
+  最長 = 各要素の長さの最大値
+
+【分割の落とし穴】
+空白が連続していると、単純な分割で「空の単語」が生まれる言語があります。
+この問題では連続する空白はありませんが、
+実務では空文字を取り除く処理を入れておくのが安全です。
+
+自分でループを書くなら、空白が来るたびに単語の区切りとみなし、
+文字列の最後でも 1 単語ぶん確定させる必要があります
+（最後の単語を数え忘れるのが定番のミスです）。
+
+最大長の初期値は 0 で構いません（単語が 1 つ以上あると保証されているため）。`,
+  complexity:'O(|S|)',
+  pitfalls:['最後の単語を数え忘れる','空の単語を数えてしまう','出力の順番を逆にする'],
+  codeJs:`function solve(input) {
+  const s = input.trim();
+  const words = s.split(/\\s+/);
+  let best = 0;
+  for (const w of words) if (w.length > best) best = w.length;
+  return words.length + " " + best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String[] words = br.readLine().trim().split("\\\\s+");
+        int best = 0;
+        for (String w : words) best = Math.max(best, w.length());
+        System.out.println(words.length + " " + best);
+    }
+}`,
+  quiz:[
+    {note:`出力の順番が逆になっている`, edits:[[`return words.length + " " + best;`,`return best + " " + words.length;`]]},
+    {note:`最長ではなく最短の長さを求めている`, edits:[[`if (w.length > best) best = w.length;`,`if (w.length < best) best = w.length;`]]},
+    {note:`単語ではなく文字数を数えている`, edits:[[`return words.length + " " + best;`,`return s.length + " " + best;`]]},
+    {note:`最初の単語を調べていない`, edits:[[`  for (const w of words) if (w.length > best) best = w.length;`,`  for (const w of words.slice(1)) if (w.length > best) best = w.length;`]]},
+    {note:`空白で分割しておらず、常に 1 単語になる`, edits:[[`const words = s.split(/\\s+/);`,`const words = [s];`]]}
+  ]
+},{
+  kind:'algo', id:'b67', level:2, tags:['数学'], title:'約数の総和',
+  statement:`正の整数 N が与えられます。
+N の正の約数をすべて足し合わせた値を出力してください（N 自身も含みます）。`,
+  constraints:['1 ≤ N ≤ 10^12','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'12',out:'28'},{in:'1',out:'1'},{in:'6',out:'12'},{in:'16',out:'31'},{in:'28',out:'56'},{in:'65',out:'84'},{in:'30',out:'72'},{in:'147',out:'228'},{in:'96',out:'252'},{in:'140',out:'336'}],
+  hint:'約数はペアで現れます。√N まで調べて、i と N / i の両方を足します。',
+  idea:`約数の列挙と同じく、1 から √N まで調べれば十分です。
+
+  i が N を割り切るなら、i と N / i の両方を合計に足す
+  ただし i × i === N のときは同じ数なので 1 回だけ
+
+計算量は O(√N) = 10^6 回で、N = 10^12 でも間に合います。
+
+【完全数との関係】
+「自分自身を除く約数の和」が N と等しい数を完全数といいます。
+6（1+2+3）と 28（1+2+4+7+14）が有名で、
+この問題の答えから N を引くとその値になります。
+
+【素因数分解を使う方法】
+N = p^a × q^b と素因数分解できるとき、約数の総和は
+  (1 + p + ... + p^a) × (1 + q + ... + q^b)
+という積で表せます。この形は、複数の N について高速に求めたいときに有効です。
+
+合計は最大で N の 2 倍程度を超えることがあるので、64bit で扱ってください。`,
+  complexity:'O(√N)',
+  pitfalls:['平方数のときに約数を二重に数える','N 自身を足し忘れる','ループを N まで回して間に合わない'],
+  codeJs:`function solve(input) {
+  const n = Number(input.trim());
+  let sum = 0;
+  for (let i = 1; i * i <= n; i++) {
+    if (n % i !== 0) continue;
+    sum += i;
+    if (i !== n / i) sum += n / i;
+  }
+  return sum;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        long n = sc.nextLong();
+        long sum = 0;
+        for (long i = 1; i * i <= n; i++) {
+            if (n % i != 0) continue;
+            sum += i;
+            if (i != n / i) sum += n / i;
+        }
+        System.out.println(sum);
+    }
+}`,
+  quiz:[
+    {note:`平方数のときに同じ約数を二重に数えている`, edits:[[`if (i !== n / i) sum += n / i;`,`sum += n / i;`]]},
+    {note:`ペアのもう一方を足しておらず、小さい約数だけの合計になっている`, edits:[[`    if (i !== n / i) sum += n / i;\n`,``]]},
+    {note:`約数の個数を数えており、合計になっていない`, edits:[[`    sum += i;\n    if (i !== n / i) sum += n / i;`,`    sum += 1;\n    if (i !== n / i) sum += 1;`]]},
+    {note:`N 自身を除いた合計になっている`, edits:[[`  return sum;`,`  return sum - n;`]]},
+    {note:`探索の開始が 2 からで、1 を約数に数えていない`, edits:[[`for (let i = 1; i * i <= n; i++)`,`for (let i = 2; i * i <= n; i++)`]]}
+  ]
+},{
+  kind:'algo', id:'b68', level:2, tags:['ソート','文字列'], title:'けたを並べ替えて最小の数',
+  statement:`正の整数 N が与えられます。
+N のけたを並べ替えて作れる整数のうち、最小のものを出力してください。
+ただし、先頭のけたを 0 にすることはできません。`,
+  constraints:['1 ≤ N ≤ 10^18','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'3021',out:'1023'},{in:'111',out:'111'},{in:'10',out:'10'},{in:'4321',out:'1234'},{in:'100',out:'100'},{in:'5',out:'5'},{in:'50728',out:'20578'},{in:'36100',out:'10036'},{in:'33287',out:'23378'},{in:'1339',out:'1339'}],
+  hint:'小さい順に並べるだけでは、先頭が 0 になってしまうことがあります。',
+  idea:`基本は「けたを小さい順に並べる」ですが、0 があると先頭が 0 になってしまいます。
+
+  1. けたを小さい順にソートする
+  2. 先頭が 0 なら、0 でない最小のけたを探して先頭に持ってくる
+  3. 残りはそのまま小さい順に並べる
+
+例：3021 → ソートすると 0123 → 先頭の 0 を、次の 1 と入れ替えて 1023。
+
+【なぜ「0 でない最小」を先頭にするのか】
+先頭のけたが小さいほど、数全体は小さくなります。
+0 が使えない以上、次に小さいけたを先頭に置くのが最適で、
+残りは小さい順に並べれば全体として最小になります。
+
+【出力は文字列で】
+N が 10^18 まであるので、数値に戻すと精度が足りない言語があります。
+文字列のまま出力するのが安全です。100 のように、
+答えの末尾に 0 が並ぶケースも文字列なら問題ありません。`,
+  complexity:'O(けた数 × log けた数)',
+  pitfalls:['先頭が 0 になってしまう','0 が 1 つもない場合に余計な処理をして壊す','数値に戻して精度を失う'],
+  codeJs:`function solve(input) {
+  const d = input.trim().split("").sort();
+  if (d[0] !== "0") return d.join("");
+  let i = 0;
+  while (d[i] === "0") i++;
+  return d[i] + d.slice(0, i).join("") + d.slice(i + 1).join("");
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        char[] d = sc.next().toCharArray();
+        Arrays.sort(d);
+        if (d[0] != '0') { System.out.println(new String(d)); return; }
+        int i = 0;
+        while (d[i] == '0') i++;
+        StringBuilder sb = new StringBuilder();
+        sb.append(d[i]);
+        for (int j = 0; j < d.length; j++) if (j != i) sb.append(d[j]);
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`先頭が 0 になる場合の処理がなく、余計な 0 が付く`, edits:[[`  if (d[0] !== "0") return d.join("");\n  let i = 0;\n  while (d[i] === "0") i++;\n  return d[i] + d.slice(0, i).join("") + d.slice(i + 1).join("");`,`  return d.join("");`]]},
+    {note:`先頭に持ってくるけたを取り除いておらず、同じけたが 2 回現れる`, edits:[[`return d[i] + d.slice(0, i).join("") + d.slice(i + 1).join("");`,`return d[i] + d.join("");`]]},
+    {note:`大きい順に並べており、最大の数になっている`, edits:[[`const d = input.trim().split("").sort();`,`const d = input.trim().split("").sort().reverse();`]]},
+    {note:`0 でない最小ではなく、最後のけたを先頭に持ってきている`, edits:[[`  while (d[i] === "0") i++;`,`  i = d.length - 1;`]]},
+    {note:`並べ替えをしておらず、入力のままになっている`, edits:[[`const d = input.trim().split("").sort();`,`const d = input.trim().split("");`]]}
+  ]
+},{
+  kind:'algo', id:'b69', level:2, tags:['実装'], title:'行列を 90 度回す',
+  statement:`H 行 W 列の表が与えられます。
+これを時計回りに 90 度回転させた W 行 H 列の表を出力してください。`,
+  constraints:['1 ≤ H, W ≤ 500','-10^9 ≤ 各要素 ≤ 10^9','入力はすべて整数'],
+  inputFormat:'H W\n(1 行目の W 個)\n...\n(H 行目の W 個)',
+  cases:[{in:'2 3\n1 2 3\n4 5 6',out:'4 1\n5 2\n6 3'},{in:'1 1\n7',out:'7'},{in:'2 2\n1 2\n3 4',out:'3 1\n4 2'},{in:'1 3\n1 2 3',out:'1\n2\n3'},{in:'1 2\n6 3',out:'6\n3'},{in:'4 1\n-5\n9\n8\n-2',out:'-2 8 9 -5'},{in:'3 2\n-2 -2\n5 1\n-9 -8',out:'-9 5 -2\n-8 1 -2'},{in:'3 1\n2\n4\n9',out:'9 4 2'},{in:'4 3\n-5 3 5\n2 -2 -4\n2 -8 3\n0 -1 -3',out:'0 2 2 -5\n-1 -8 -2 3\n-3 3 -4 5'},{in:'3 2\n-1 1\n1 3\n4 0',out:'4 1 -1\n0 3 1'}],
+  hint:'回転後の 1 行目には、元の表の「左端の列を下から上に読んだもの」が入ります。',
+  idea:`時計回りに 90 度回すと、元の (i, j) は回転後の (j, H−1−i) に移ります。
+出力側から見ると
+
+  回転後[j][i] = 元[H−1−i][j]
+
+となります。式で覚えるより、具体例で確認するほうが確実です。
+
+  1 2 3        4 1
+  4 5 6   →   5 2
+               6 3
+
+回転後の 1 行目「4 1」は、元の表の左端の列（1, 4）を下から上に読んだものです。
+つまり「元の列を、下から順に読んで行にする」と考えると迷いません。
+
+【転置との違い】
+転置は (i, j) → (j, i) で、対角線を軸にひっくり返す操作です。
+90 度回転は「転置してから各行を反転」または「各行を反転してから転置」で作れます。
+どちらの順で行うかで、時計回りと反時計回りが変わります。
+
+出力の行数が W、列数が H になる点にも注意してください。`,
+  complexity:'O(HW)',
+  pitfalls:['反時計回りに回してしまう','出力の行数と列数を取り違える','添字の反転を忘れて転置になる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = [];
+  for (let i = 1; i <= h; i++) g.push(lines[i].trim().split(/\\s+/).map(Number));
+  const out = [];
+  for (let j = 0; j < w; j++) {
+    const row = [];
+    for (let i = h - 1; i >= 0; i--) row.push(g[i][j]);
+    out.push(row.join(" "));
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        long[][] g = new long[h][w];
+        for (int i = 0; i < h; i++) {
+            st = new StringTokenizer(br.readLine());
+            for (int j = 0; j < w; j++) g[i][j] = Long.parseLong(st.nextToken());
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int j = 0; j < w; j++) {
+            for (int i = h - 1; i >= 0; i--) {
+                if (i < h - 1) sb.append(' ');
+                sb.append(g[i][j]);
+            }
+            if (j < w - 1) sb.append('\\n');
+        }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`反時計回りに回転している`, edits:[[`for (let i = h - 1; i >= 0; i--) row.push(g[i][j]);`,`for (let i = 0; i < h; i++) row.push(g[i][w - 1 - j]);`]]},
+    {note:`回転ではなく転置になっている`, edits:[[`for (let i = h - 1; i >= 0; i--) row.push(g[i][j]);`,`for (let i = 0; i < h; i++) row.push(g[i][j]);`]]},
+    {note:`出力の行数と列数が入れ替わっている`, edits:[[`for (let j = 0; j < w; j++) {`,`for (let j = 0; j < h; j++) {`]]},
+    {note:`行の区切りが空白になっている`, edits:[[`return out.join("\\n");`,`return out.join(" ");`]]},
+    {note:`要素の区切りがない`, edits:[[`out.push(row.join(" "));`,`out.push(row.join(""));`]]}
+  ]
+},{
+  kind:'algo', id:'b70', level:2, tags:['数学','動的計画法'], title:'フィボナッチ数列',
+  statement:`フィボナッチ数列を F(1) = 1, F(2) = 1, F(n) = F(n−1) + F(n−2) と定めます。
+N が与えられるので、F(N) を出力してください。`,
+  constraints:['1 ≤ N ≤ 85','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'1',out:'1'},{in:'2',out:'1'},{in:'10',out:'55'},{in:'50',out:'12586269025'},{in:'85',out:'259695496911122585'},{in:'19',out:'4181'},{in:'17',out:'1597'},{in:'24',out:'46368'},{in:'3',out:'2'},{in:'8',out:'21'}],
+  hint:'直前の 2 つの値だけ覚えておけば、順に計算できます。',
+  idea:`定義どおりに前から計算していきます。配列を持たなくても、直前 2 つの値だけで足ります。
+
+  a = 1（F(1)）, b = 1（F(2)）
+  for (i = 3; i <= N; i++) { 次 = a + b; a = b; b = 次 }
+
+【制約が N ≤ 85 な理由】
+フィボナッチ数は指数的に増え、F(85) は約 2.6×10^17 です。
+64bit 整数（約 9.2×10^18）にはぎりぎり収まりますが、
+F(93) を超えると溢れます。「制約の上限が中途半端な数」のときは、
+たいてい型の限界が理由です。
+
+【JavaScript の注意】
+JavaScript の Number（倍精度小数）が正確に表せる整数は 2^53 ≈ 9.0×10^15 までです。
+F(79) を超えたあたりから下の桁が狂うので、BigInt（末尾に n を付けた整数）を使います。
+
+【再帰で書いてはいけない理由】
+def fib(n): return fib(n−1) + fib(n−2) と素直に再帰すると、
+同じ値を何度も計算するため、呼び出し回数がフィボナッチ数そのものになり、
+N = 50 でも終わりません。
+メモ化（一度計算した値を覚える）か、この問題のようにループで書きます。
+これは動的計画法の考え方そのものです。`,
+  complexity:'O(N)',
+  pitfalls:['素直な再帰で書いて計算が終わらない','初項の設定を間違えて 1 つずれる','32bit 整数で桁あふれする','JavaScript で Number のまま計算し、下の桁が狂う'],
+  codeJs:`function solve(input) {
+  const n = Number(input.trim());
+  let a = 1n, b = 1n;                 // JS の Number は 2^53 までなので BigInt を使う
+  for (let i = 3; i <= n; i++) {
+    const next = a + b;
+    a = b;
+    b = next;
+  }
+  return (n === 1 ? 1n : b).toString();
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        long a = 1, b = 1;
+        for (int i = 3; i <= n; i++) {
+            long next = a + b;   // int だと N = 47 あたりで桁あふれする
+            a = b;
+            b = next;
+        }
+        System.out.println(n == 1 ? 1 : b);
+    }
+}`,
+  quiz:[
+    {note:`初項の設定が違い、数列が 1 つずれている`, edits:[[`  let a = 1n, b = 1n;`,`  let a = 0n, b = 1n;`]]},
+    {note:`前の値を更新しておらず、同じ値を足し続けている`, edits:[[`    a = b;\n    b = next;`,`    b = next;`]]},
+    {note:`ループの開始が 2 からで、1 回多く計算している`, edits:[[`for (let i = 3; i <= n; i++)`,`for (let i = 2; i <= n; i++)`]]},
+    {note:`足すのではなく掛けている`, edits:[[`const next = a + b;`,`const next = a * b;`]]},
+    {note:`ループの終わりが 1 つ手前で、N 項目まで計算していない`, edits:[[`for (let i = 3; i <= n; i++)`,`for (let i = 3; i < n; i++)`]]}
+  ]
+},{
+  kind:'algo', id:'c46', level:3, tags:['データ構造'], title:'更新できる区間の最小値',
+  statement:`N 個の整数 A_1, ..., A_N と、Q 個のクエリが与えられます。
+
+・「1 i x」… A_i を x に変更する
+・「2 l r」… A_l から A_r までの最小値を出力する
+
+種類 2 のクエリの答えを、1 行ずつ出力してください。`,
+  constraints:['1 ≤ N, Q ≤ 2 × 10^5','1 ≤ i ≤ N','1 ≤ l ≤ r ≤ N','-10^9 ≤ A_i, x ≤ 10^9'],
+  inputFormat:'N Q\nA_1 ... A_N\n(クエリ 1)\n...\n(クエリ Q)',
+  cases:[{in:'5 4\n5 3 7 9 6\n2 1 5\n1 2 10\n2 1 3\n2 4 5',out:'3\n5\n6'},{in:'1 2\n7\n2 1 1\n1 1 3',out:'7'},{in:'3 3\n4 4 4\n2 1 3\n1 2 1\n2 1 2',out:'4\n1'},{in:'3 4\n8 -5 5\n1 1 7\n1 2 9\n2 3 3\n1 3 7',out:'5'},{in:'5 2\n-4 7 -6 7 -5\n2 1 1\n2 5 5',out:'-4\n-5'},{in:'4 2\n-8 3 -9 9\n2 4 4\n1 1 0',out:'9'},{in:'3 2\n-5 -8 -7\n2 1 2\n2 1 3',out:'-8\n-8'},{in:'2 3\n-5 -2\n2 1 1\n2 2 2\n2 1 1',out:'-5\n-2\n-5'},{in:'5 4\n6 1 0 8 6\n2 1 1\n2 2 3\n1 5 -6\n1 2 0',out:'6\n0'},{in:'4 2\n-9 2 3 0\n1 3 5\n2 3 3',out:'5'}],
+  hint:'累積和は「和」だから使えます。最小値は引き算で戻せないので、別の構造が必要です。',
+  idea:`区間の和なら累積和や BIT が使えますが、最小値は引き算で打ち消せないため使えません。
+セグメント木を使います。
+
+【考え方】
+配列を半分ずつに分けた木を作り、各ノードにその範囲の最小値を持たせます。
+・更新：葉を書き換え、親をたどって min を計算し直す（O(log N)）
+・問い合わせ：区間を、木のノードが表す範囲に分割して min を取る（O(log N)）
+
+【配列で持つ実装】
+サイズを 2 のべき乗に切り上げ、長さ 2×size の配列 1 本で表せます。
+・葉は tree[size + i]
+・親は tree[k]、子は tree[2k] と tree[2k+1]
+・親の値 = min(左の子, 右の子)
+
+問い合わせは、左端と右端から内側へ上っていく「非再帰」の書き方が短くて速いです。
+
+【セグメント木が扱えるもの】
+min、max、和、gcd、行列積など、結合法則が成り立つ演算なら何でも載ります。
+「区間に対する問い合わせ＋一点更新」を見たら、まず候補に挙げたい構造です。`,
+  complexity:'O((N + Q) log N)',
+  pitfalls:['最小値を累積和のように引き算で求めようとする','木のサイズを 2 のべき乗にせず添字がずれる','初期値を 0 にして負の値が扱えなくなる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, q] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  let size = 1;
+  while (size < n) size *= 2;
+  const INF = Infinity;
+  const tree = new Array(2 * size).fill(INF);
+  for (let i = 0; i < n; i++) tree[size + i] = a[i];
+  for (let k = size - 1; k >= 1; k--) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);
+  const update = (i, x) => {
+    let k = size + i;
+    tree[k] = x;
+    for (k >>= 1; k >= 1; k >>= 1) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);
+  };
+  const query = (l, r) => {           // [l, r) 半開区間
+    let res = INF;
+    let lo = l + size, hi = r + size;
+    while (lo < hi) {
+      if (lo & 1) res = Math.min(res, tree[lo++]);
+      if (hi & 1) res = Math.min(res, tree[--hi]);
+      lo >>= 1; hi >>= 1;
+    }
+    return res;
+  };
+  const out = [];
+  for (let i = 0; i < q; i++) {
+    const t = lines[2 + i].trim().split(/\\s+/).map(Number);
+    if (t[0] === 1) update(t[1] - 1, t[2]);
+    else out.push(query(t[1] - 1, t[2]));
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static int size;
+    static long[] tree;
+    static final long INF = Long.MAX_VALUE / 4;
+
+    static void update(int i, long x) {
+        int k = size + i;
+        tree[k] = x;
+        for (k >>= 1; k >= 1; k >>= 1) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);
+    }
+
+    static long query(int l, int r) {
+        long res = INF;
+        int lo = l + size, hi = r + size;
+        while (lo < hi) {
+            if ((lo & 1) == 1) res = Math.min(res, tree[lo++]);
+            if ((hi & 1) == 1) res = Math.min(res, tree[--hi]);
+            lo >>= 1; hi >>= 1;
+        }
+        return res;
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), q = Integer.parseInt(st.nextToken());
+        size = 1;
+        while (size < n) size *= 2;
+        tree = new long[2 * size];
+        Arrays.fill(tree, INF);
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) tree[size + i] = Long.parseLong(st.nextToken());
+        for (int k = size - 1; k >= 1; k--) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < q; i++) {
+            st = new StringTokenizer(br.readLine());
+            int t = Integer.parseInt(st.nextToken());
+            int p = Integer.parseInt(st.nextToken());
+            long v = Long.parseLong(st.nextToken());
+            if (t == 1) update(p - 1, v);
+            else sb.append(query(p - 1, (int) v)).append('\\n');
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`葉を更新したあと、親の値を計算し直していない`, edits:[[`    for (k >>= 1; k >= 1; k >>= 1) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);\n`,``]]},
+    {note:`区間の右端の扱いがずれており、1 つ多く含めている`, edits:[[`else out.push(query(t[1] - 1, t[2]));`,`else out.push(query(t[1] - 1, t[2] + 1));`]]},
+    {note:`最小ではなく最大を求めている`, edits:[[`      if (lo & 1) res = Math.min(res, tree[lo++]);\n      if (hi & 1) res = Math.min(res, tree[--hi]);`,`      if (lo & 1) res = Math.max(res, tree[lo++]);\n      if (hi & 1) res = Math.max(res, tree[--hi]);`]]},
+    {note:`問い合わせの初期値が 0 なので、正の値しかない区間で 0 が返る`, edits:[[`    let res = INF;`,`    let res = 0;`]]},
+    {note:`木を上から順に作っており、子の値が決まる前に親を計算している`, edits:[[`  for (let k = size - 1; k >= 1; k--) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);`,`  for (let k = 1; k <= size - 1; k++) tree[k] = Math.min(tree[2 * k], tree[2 * k + 1]);`]]}
+  ]
+},{
+  kind:'algo', id:'c47', level:3, tags:['累積和'], title:'長方形をたくさん塗る',
+  statement:`H 行 W 列のマス目があり、最初はすべて 0 です。
+Q 個の操作が与えられます。i 番目の操作は 4 つの整数 y1, x1, y2, x2 で表され、
+左上が (y1, x1)、右下が (y2, x2) の長方形の範囲すべてに 1 を足します。
+
+すべての操作の後、マス目の中の最大値を出力してください。`,
+  constraints:['1 ≤ H, W ≤ 1000','1 ≤ Q ≤ 2 × 10^5','1 ≤ y1 ≤ y2 ≤ H','1 ≤ x1 ≤ x2 ≤ W'],
+  inputFormat:'H W Q\ny1 x1 y2 x2\n...（Q 行）',
+  cases:[{in:'3 3 2\n1 1 2 2\n2 2 3 3',out:'2'},{in:'2 2 1\n1 1 2 2',out:'1'},{in:'1 1 3\n1 1 1 1\n1 1 1 1\n1 1 1 1',out:'3'},{in:'3 3 2\n1 1 1 1\n3 3 3 3',out:'1'},{in:'4 4 2\n1 2 4 4\n3 4 3 4',out:'2'},{in:'1 3 2\n1 1 1 3\n1 1 1 3',out:'2'},{in:'1 4 1\n1 4 1 4',out:'1'},{in:'4 4 2\n2 2 3 3\n3 2 4 2',out:'2'},{in:'2 1 3\n1 1 1 1\n1 1 1 1\n1 1 2 1',out:'3'},{in:'1 1 2\n1 1 1 1\n1 1 1 1',out:'2'},{in:'3 3 3\n1 1 1 1\n2 2 3 3\n2 2 3 3',out:'2'}],
+  hint:'1 次元のいもす法を 2 次元に広げます。長方形の四隅に印を付けます。',
+  idea:`長方形の中を全部塗ると、最悪 O(Q × HW) = 2×10^11 で間に合いません。
+いもす法を 2 次元に広げます。
+
+各操作について、差分配列の 4 か所だけを更新します。
+
+  d[y1][x1]     += 1
+  d[y1][x2+1]   -= 1
+  d[y2+1][x1]   -= 1
+  d[y2+1][x2+1] += 1
+
+すべての操作を記録し終えたら、2 次元の累積和を取ると各マスの値が復元できます。
+
+  d[i][j] += d[i-1][j] + d[i][j-1] - d[i-1][j-1]
+
+【なぜ四隅なのか】
+1 次元では「始まりで +1、終わりの次で −1」でした。
+2 次元では、右方向と下方向の両方で打ち消す必要があり、
+右下の角で「引きすぎた分」を +1 で戻します。これは包除原理と同じ形です。
+
+【計算量】
+記録が O(Q)、復元が O(HW) で、全体 O(HW + Q)。
+配列は範囲外アクセスを避けるため、縦横に 2 ずつ余裕を持たせておきます。`,
+  complexity:'O(HW + Q)',
+  pitfalls:['右下の角で足し戻すのを忘れる','配列の余白が足りず範囲外アクセスする','2 次元の累積和で重なりを引き忘れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w, q] = lines[0].trim().split(/\\s+/).map(Number);
+  const d = Array.from({ length: h + 2 }, () => new Array(w + 2).fill(0));
+  for (let i = 1; i <= q; i++) {
+    const [y1, x1, y2, x2] = lines[i].trim().split(/\\s+/).map(Number);
+    d[y1][x1] += 1;
+    d[y1][x2 + 1] -= 1;
+    d[y2 + 1][x1] -= 1;
+    d[y2 + 1][x2 + 1] += 1;
+  }
+  let best = 0;
+  for (let i = 1; i <= h; i++) {
+    for (let j = 1; j <= w; j++) {
+      d[i][j] += d[i - 1][j] + d[i][j - 1] - d[i - 1][j - 1];
+      if (d[i][j] > best) best = d[i][j];
+    }
+  }
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        int q = Integer.parseInt(st.nextToken());
+        int[][] d = new int[h + 2][w + 2];
+        for (int i = 0; i < q; i++) {
+            st = new StringTokenizer(br.readLine());
+            int y1 = Integer.parseInt(st.nextToken()), x1 = Integer.parseInt(st.nextToken());
+            int y2 = Integer.parseInt(st.nextToken()), x2 = Integer.parseInt(st.nextToken());
+            d[y1][x1] += 1;
+            d[y1][x2 + 1] -= 1;
+            d[y2 + 1][x1] -= 1;
+            d[y2 + 1][x2 + 1] += 1;
+        }
+        int best = 0;
+        for (int i = 1; i <= h; i++) {
+            for (int j = 1; j <= w; j++) {
+                d[i][j] += d[i - 1][j] + d[i][j - 1] - d[i - 1][j - 1];
+                best = Math.max(best, d[i][j]);
+            }
+        }
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`右下の角で足し戻しておらず、引きすぎている`, edits:[[`    d[y2 + 1][x2 + 1] += 1;`,``]]},
+    {note:`2 次元の累積和で、重なった部分を引いていない`, edits:[[`d[i][j] += d[i - 1][j] + d[i][j - 1] - d[i - 1][j - 1];`,`d[i][j] += d[i - 1][j] + d[i][j - 1];`]]},
+    {note:`打ち消す位置が 1 つ手前で、右端と下端が塗られない`, edits:[[`    d[y1][x2 + 1] -= 1;\n    d[y2 + 1][x1] -= 1;\n    d[y2 + 1][x2 + 1] += 1;`,`    d[y1][x2] -= 1;\n    d[y2][x1] -= 1;\n    d[y2][x2] += 1;`]]},
+    {note:`最大値ではなく最後のマスの値を答えている`, edits:[[`      if (d[i][j] > best) best = d[i][j];`,`      best = d[i][j];`]]},
+    {note:`差分ではなく直接 1 を足しており、長方形の中しか塗られない（かつ遅い）`, edits:[[`    d[y1][x1] += 1;\n    d[y1][x2 + 1] -= 1;\n    d[y2 + 1][x1] -= 1;\n    d[y2 + 1][x2 + 1] += 1;`,`    d[y1][x1] += 1;`]]}
+  ]
+},{
+  kind:'algo', id:'c48', level:3, tags:['動的計画法','二分探索'], title:'報酬つきの予定',
+  statement:`N 個の仕事があり、i 番目の仕事は時刻 L_i に始まり時刻 R_i に終わり、報酬は V_i です。
+2 つの仕事を同時に行うことはできず、ある仕事の終了時刻と別の仕事の開始時刻が同じ場合も
+同時には行えないものとします（選んだ仕事の区間は一切重なってはいけません）。
+
+得られる報酬の合計の最大値を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ L_i < R_i ≤ 10^9','1 ≤ V_i ≤ 10^9','入力はすべて整数'],
+  inputFormat:'N\nL_1 R_1 V_1\n...\nL_N R_N V_N',
+  cases:[{in:'3\n1 3 5\n2 5 6\n4 6 5',out:'10'},{in:'1\n1 2 7',out:'7'},{in:'2\n1 5 3\n2 3 10',out:'10'},{in:'3\n1 2 1\n2 3 1\n3 4 1',out:'2'},{in:'3\n5 8 3\n6 10 8\n7 11 8',out:'8'},{in:'4\n8 9 2\n8 11 1\n8 12 9\n3 4 1',out:'10'},{in:'3\n5 9 4\n5 6 4\n5 9 6',out:'6'},{in:'5\n8 9 1\n1 2 4\n8 12 7\n3 6 1\n4 5 3',out:'14'},{in:'1\n6 8 7',out:'7'},{in:'1\n4 7 6',out:'6'},{in:'4\n9 12 7\n1 10 4\n5 12 2\n5 8 2',out:'9'}],
+  hint:'報酬がないときは「終了が早い順に貪欲」でしたが、報酬があると貪欲では最適になりません。',
+  idea:`報酬が全部同じなら「終了が早い順に貪欲」で解けますが、
+報酬が違うと、報酬の大きい仕事のために短い仕事を諦めるほうが得なことがあります。
+そこで DP を使います。
+
+  1. 仕事を終了時刻の昇順にソートする
+  2. dp[i] =「i 番目までの仕事から選んだときの最大報酬」
+  3. dp[i] = max(dp[i−1], dp[k] + V_i)
+     ここで k は「終了時刻が L_i より小さい仕事」の個数（二分探索で求める）
+
+「その仕事を使わない」か「使う（＋それ以前に終わる仕事の最良）」かの 2 択です。
+
+【二分探索の使いどころ】
+k を線形に探すと O(N^2) になります。
+終了時刻はソート済みなので、二分探索で O(log N) に落とせます。全体で O(N log N)。
+
+【端点が接する場合】
+この問題では「終了時刻と開始時刻が同じ」でも重なるとみなすので、
+探すのは「終了時刻 < L_i」を満たす最後の位置です。
+条件が「以下でよい」なら境界が 1 つ変わります。ここは問題文をよく読んでください。
+
+報酬の合計は最大 2×10^5 × 10^9 = 2×10^14 なので 64bit が必要です。`,
+  complexity:'O(N log N)',
+  pitfalls:['貪欲法で解こうとして誤答する','二分探索の境界（接する場合）を誤る','報酬の合計が 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0]);
+  const jobs = [];
+  for (let i = 1; i <= n; i++) {
+    const [l, r, v] = lines[i].trim().split(/\\s+/).map(Number);
+    jobs.push([l, r, v]);
+  }
+  jobs.sort((x, y) => x[1] - y[1]);
+  const ends = jobs.map(j => j[1]);
+  const dp = new Array(n + 1).fill(0);
+  for (let i = 0; i < n; i++) {
+    const [l, , v] = jobs[i];
+    // ends の中で l 以上になる最初の位置（= 終了時刻 < l の個数）
+    let lo = 0, hi = n;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (ends[mid] >= l) hi = mid; else lo = mid + 1;
+    }
+    dp[i + 1] = Math.max(dp[i], dp[lo] + v);
+  }
+  return dp[n];
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        long[][] jobs = new long[n][3];
+        for (int i = 0; i < n; i++) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            jobs[i][0] = Long.parseLong(st.nextToken());
+            jobs[i][1] = Long.parseLong(st.nextToken());
+            jobs[i][2] = Long.parseLong(st.nextToken());
+        }
+        Arrays.sort(jobs, (x, y) -> Long.compare(x[1], y[1]));
+        long[] ends = new long[n];
+        for (int i = 0; i < n; i++) ends[i] = jobs[i][1];
+        long[] dp = new long[n + 1];
+        for (int i = 0; i < n; i++) {
+            long l = jobs[i][0], v = jobs[i][2];
+            int lo = 0, hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi) >>> 1;
+                if (ends[mid] >= l) hi = mid; else lo = mid + 1;
+            }
+            dp[i + 1] = Math.max(dp[i], dp[lo] + v);
+        }
+        System.out.println(dp[n]);
+    }
+}`,
+  quiz:[
+    {note:`終了時刻ではなく開始時刻でソートしており、DP の前提が崩れている`, edits:[[`jobs.sort((x, y) => x[1] - y[1]);`,`jobs.sort((x, y) => x[0] - y[0]);`]]},
+    {note:`その仕事を使わない場合を考えておらず、必ず選んでしまう`, edits:[[`dp[i + 1] = Math.max(dp[i], dp[lo] + v);`,`dp[i + 1] = dp[lo] + v;`]]},
+    {note:`二分探索の境界が違い、端点が接する仕事も選べてしまう`, edits:[[`if (ends[mid] >= l) hi = mid; else lo = mid + 1;`,`if (ends[mid] > l) hi = mid; else lo = mid + 1;`]]},
+    {note:`直前の仕事の値を使っており、重ならない仕事まで遡れていない`, edits:[[`dp[i + 1] = Math.max(dp[i], dp[lo] + v);`,`dp[i + 1] = Math.max(dp[i], dp[i] + v);`]]},
+    {note:`報酬の最大ではなく、選べる個数の最大を求めている`, edits:[[`dp[i + 1] = Math.max(dp[i], dp[lo] + v);`,`dp[i + 1] = Math.max(dp[i], dp[lo] + 1);`]]}
+  ]
+},{
+  kind:'algo', id:'c49', level:3, tags:['動的計画法','数え上げ'], title:'サイコロの合計',
+  statement:`6 面のサイコロ（出る目は 1 から 6）を N 回振ります。
+出た目の合計がちょうど K になる出方は何通りありますか。
+（何回目に何が出たかを区別します）
+
+答えは非常に大きくなることがあるので、998244353 で割った余りを出力してください。`,
+  constraints:['1 ≤ N ≤ 1000','1 ≤ K ≤ 6000','入力はすべて整数'],
+  inputFormat:'N K',
+  cases:[{in:'2 7',out:'6'},{in:'1 1',out:'1'},{in:'2 2',out:'1'},{in:'3 10',out:'27'},{in:'2 13',out:'0'},{in:'4 14',out:'146'},{in:'4 20',out:'35'},{in:'3 11',out:'27'},{in:'3 1',out:'0'},{in:'2 10',out:'3'}],
+  hint:'「i 回振って合計が j になる場合の数」を表にして、1 回ずつ増やしていきます。',
+  idea:`dp[i][j] =「i 回振って合計が j になる出方の数」とします。
+
+  dp[i][j] = Σ_{f=1..6} dp[i−1][j−f]
+
+つまり、直前までの合計に 1〜6 のどれかを足して j になる場合を合計します。
+初期値は dp[0][0] = 1（0 回振れば合計 0 が 1 通り）。
+
+【計算量】
+状態が N × K、遷移が 6 なので O(6NK) = 6 × 1000 × 6000 = 3.6×10^7。十分間に合います。
+
+【1 次元に落とす】
+dp[i] は dp[i−1] だけから決まるので、配列 1 本を使い回せます。
+ただし、その場合は「新しい配列を作ってから入れ替える」形にしてください。
+同じ配列を上書きしながら更新すると、同じ回の結果を混ぜてしまいます
+（0-1 ナップサックのように、向きを工夫して防ぐこともできます）。
+
+【mod】
+足すたびに余りを取ります。N = 1000 のとき場合の数は 6^1000 になるので、
+mod を取らなければ到底扱えません。`,
+  complexity:'O(NK)',
+  pitfalls:['dp[0][0] = 1 の初期化を忘れる','1 本の配列を上書きして同じ回の結果を混ぜる','mod を取り忘れる'],
+  codeJs:`function solve(input) {
+  const [n, k] = input.trim().split(/\\s+/).map(Number);
+  const MOD = 998244353;
+  let dp = new Array(k + 1).fill(0);
+  dp[0] = 1;
+  for (let i = 0; i < n; i++) {
+    const nd = new Array(k + 1).fill(0);
+    for (let s = 0; s <= k; s++) {
+      if (dp[s] === 0) continue;
+      for (let f = 1; f <= 6; f++) {
+        if (s + f <= k) nd[s + f] = (nd[s + f] + dp[s]) % MOD;
+      }
+    }
+    dp = nd;
+  }
+  return dp[k];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt(), k = sc.nextInt();
+        final int MOD = 998244353;
+        long[] dp = new long[k + 1];
+        dp[0] = 1;
+        for (int i = 0; i < n; i++) {
+            long[] nd = new long[k + 1];
+            for (int s = 0; s <= k; s++) {
+                if (dp[s] == 0) continue;
+                for (int f = 1; f <= 6; f++) {
+                    if (s + f <= k) nd[s + f] = (nd[s + f] + dp[s]) % MOD;
+                }
+            }
+            dp = nd;
+        }
+        System.out.println(dp[k]);
+    }
+}`,
+  quiz:[
+    {note:`dp[0] を 1 にしておらず、どの出方も数えられない`, edits:[[`  dp[0] = 1;`,`  dp[0] = 0;`]]},
+    {note:`新しい配列を作らずに上書きしており、同じ回の結果が混ざる`, edits:[[`    const nd = new Array(k + 1).fill(0);`,`    const nd = dp;`]]},
+    {note:`サイコロの目が 0 から始まっており、6 面になっていない`, edits:[[`for (let f = 1; f <= 6; f++) {`,`for (let f = 0; f <= 6; f++) {`]]},
+    {note:`足すのではなく掛けており、数え上げになっていない`, edits:[[`nd[s + f] = (nd[s + f] + dp[s]) % MOD;`,`nd[s + f] = (nd[s + f] * dp[s]) % MOD;`]]},
+    {note:`目の上限が 5 になっている`, edits:[[`for (let f = 1; f <= 6; f++) {`,`for (let f = 1; f <= 5; f++) {`]]}
+  ]
+},{
+  kind:'algo', id:'c50', level:3, tags:['数学','数え上げ'], title:'4 を含まない数',
+  statement:`1 以上 N 以下の整数のうち、10 進法で書いたときに数字の 4 を含まないものは何個ありますか。`,
+  constraints:['1 ≤ N ≤ 10^15','N は整数'],
+  inputFormat:'N',
+  cases:[{in:'10',out:'9'},{in:'100',out:'81'},{in:'3',out:'3'},{in:'44',out:'35'},{in:'1000',out:'729'},{in:'1337',out:'1005'},{in:'1762',out:'1262'},{in:'2118',out:'1555'},{in:'818',out:'583'},{in:'2562',out:'1829'}],
+  hint:'1 つずつ調べると 10^15 回になります。けたごとに「何通り作れるか」を数えます。',
+  idea:`1 から N まで順に調べると 10^15 回で不可能です。けた DP（上のけたから数える）を使います。
+
+【考え方】
+N を上のけたから見ていき、「途中まで N と同じで、そのけたで N より小さい数字を選ぶ」
+場合の数を積み上げます。あるけたで N より小さい数字を選んでしまえば、
+それ以降のけたは自由（4 以外の 9 通り）に選べます。
+
+  各けた位置 i について
+    そのけたに置ける「N のけたより小さく、4 でない数字」の個数 × 9^(残りのけた数)
+  を足し上げる
+
+さらに、最後まで N と同じ数字を選び切れた場合（N 自身が 4 を含まないなら）1 を足します。
+
+途中で N のけたに 4 が出てきたら、それ以降は「N と同じ」を続けられないので打ち切ります。
+
+【0 の扱い】
+上の数え方は 0 も含めて数えるので、最後に 1 を引きます（この問題は 1 以上のため）。
+
+【一般化】
+「特定の数字を含まない」「各けたの和が K」「3 の倍数」など、
+けたに関する条件つきの数え上げは、すべてこの形（けた DP）で扱えます。
+競技プログラミングの上級テーマの入り口です。`,
+  complexity:'O(けた数)',
+  pitfalls:['0 を数に含めるかどうかで 1 ずれる','N 自身を数え忘れる','途中で 4 が出たときに打ち切り忘れる'],
+  codeJs:`function solve(input) {
+  const s = input.trim();
+  const len = s.length;
+  let cnt = 0;         // 0 以上 N 以下で条件を満たす個数（0 を含む）
+  let tight = true;    // ここまで N と同じ数字を選んできたか
+  for (let i = 0; i < len; i++) {
+    const d = Number(s[i]);
+    // このけたに、d より小さく 4 でない数字を置く場合
+    let smaller = 0;
+    for (let x = 0; x < d; x++) if (x !== 4) smaller++;
+    cnt += smaller * Math.pow(9, len - 1 - i);
+    if (d === 4) { tight = false; break; }
+  }
+  if (tight) cnt += 1;   // N 自身
+  return cnt - 1;        // 0 を除く
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.next();
+        int len = s.length();
+        long cnt = 0;
+        boolean tight = true;
+        for (int i = 0; i < len; i++) {
+            int d = s.charAt(i) - '0';
+            int smaller = 0;
+            for (int x = 0; x < d; x++) if (x != 4) smaller++;
+            long pow = 1;
+            for (int j = 0; j < len - 1 - i; j++) pow *= 9;
+            cnt += smaller * pow;
+            if (d == 4) { tight = false; break; }
+        }
+        if (tight) cnt += 1;
+        System.out.println(cnt - 1);
+    }
+}`,
+  quiz:[
+    {note:`0 を除いておらず、答えが 1 多い`, edits:[[`  return cnt - 1;        // 0 を除く`,`  return cnt;`]]},
+    {note:`N 自身を数えていない`, edits:[[`  if (tight) cnt += 1;   // N 自身`,``]]},
+    {note:`残りのけたの自由度が 10 通りになっており、4 を除いていない`, edits:[[`cnt += smaller * Math.pow(9, len - 1 - i);`,`cnt += smaller * Math.pow(10, len - 1 - i);`]]},
+    {note:`そのけたに 4 を置く場合まで数えている`, edits:[[`for (let x = 0; x < d; x++) if (x !== 4) smaller++;`,`for (let x = 0; x < d; x++) smaller++;`]]},
+    {note:`N のけたに 4 が出ても打ち切っておらず、条件を満たさない数まで数えている`, edits:[[`    if (d === 4) { tight = false; break; }`,`    if (d === 4) { tight = false; }`]]}
+  ]
+},{
+  kind:'algo', id:'c51', level:3, tags:['データ構造','グラフ'], title:'いちばん大きいグループ',
+  statement:`1 から N までの番号が付いた N 人がいます。
+「a と b は同じグループに属する」という情報が M 個与えられます。
+
+すべての情報を反映したあと、いちばん人数の多いグループの人数を出力してください。
+どの情報にも現れない人は、1 人だけのグループとして数えます。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ a, b ≤ N','同じ組が 2 回以上与えられることがある'],
+  inputFormat:'N M\na_1 b_1\n...\na_M b_M',
+  cases:[{in:'5 3\n1 2\n2 3\n4 5',out:'3'},{in:'1 0',out:'1'},{in:'5 3\n1 2\n1 2\n4 5',out:'2'},{in:'5 3\n5 1\n5 2\n5 3',out:'4'},{in:'4 0',out:'1'},{in:'4 3\n3 2\n4 1\n2 2',out:'2'},{in:'4 4\n1 1\n2 4\n2 3\n3 2',out:'3'},{in:'7 3\n5 7\n3 5\n7 4',out:'4'},{in:'2 4\n2 1\n1 2\n1 2\n1 2',out:'2'},{in:'3 3\n1 1\n2 3\n3 2',out:'2'}],
+  hint:'「つながっているかどうか」だけを高速に管理したいときの定番の道具があります。',
+  idea:`グラフを作って連結成分を数えてもよいのですが、
+「くっつける」「同じ仲間か調べる」だけなら Union-Find（素集合データ構造）が簡単です。
+
+【持つもの】
+・par[x] … x の親。自分自身が親なら、その人がグループの代表
+・size[x] … x が代表のとき、そのグループの人数
+
+【find(x)】
+親をたどって代表を返します。たどる途中で par[x] を祖父に付け替える（経路圧縮）と、
+木がどんどん平らになり、次回以降が速くなります。
+
+【union(a, b)】
+1. 代表 ra, rb を求める
+2. ra === rb ならすでに同じグループ。何もしない（ここを忘れると人数が二重になります）
+3. 小さいほうを大きいほうにぶら下げ（union by size）、人数を足す
+
+【計算量】
+経路圧縮と union by size を併用すると、1 回あたりほぼ定数時間（アッカーマン関数の逆数）です。
+全体で O((N + M) α(N))、実用上は O(N + M) と思ってかまいません。
+
+最後に「自分が代表になっている人」の size を見て、その最大値が答えです。`,
+  complexity:'O((N + M) α(N))',
+  pitfalls:['すでに同じグループなのに人数を足してしまう','代表ではない人の size を見てしまう','つなぐ向きと人数を足す先が食い違う'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const par = new Array(n + 1);
+  const size = new Array(n + 1).fill(1);
+  for (let i = 0; i <= n; i++) par[i] = i;
+  const find = (x) => {
+    while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; }
+    return x;
+  };
+  for (let i = 1; i <= m; i++) {
+    const [a, b] = lines[i].trim().split(/\\s+/).map(Number);
+    let ra = find(a), rb = find(b);
+    if (ra === rb) continue;
+    if (size[ra] < size[rb]) { const t = ra; ra = rb; rb = t; }
+    par[rb] = ra;
+    size[ra] += size[rb];
+  }
+  let best = 0;
+  for (let i = 1; i <= n; i++) if (find(i) === i && size[i] > best) best = size[i];
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    static int[] par, size;
+
+    static int find(int x) {
+        while (par[x] != x) { par[x] = par[par[x]]; x = par[x]; }
+        return x;
+    }
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        par = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i <= n; i++) { par[i] = i; size[i] = 1; }
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken()), b = Integer.parseInt(st.nextToken());
+            int ra = find(a), rb = find(b);
+            if (ra == rb) continue;
+            if (size[ra] < size[rb]) { int t = ra; ra = rb; rb = t; }
+            par[rb] = ra;
+            size[ra] += size[rb];
+        }
+        int best = 0;
+        for (int i = 1; i <= n; i++) if (find(i) == i) best = Math.max(best, size[i]);
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`人数を足しておらず、どのグループも 1 人のまま`, edits:[[`    size[ra] += size[rb];
+`,``]]},
+    {note:`すでに同じグループかを確かめておらず、同じ組が 2 回来ると人数が二重になる`, edits:[[`    if (ra === rb) continue;
+`,``]]},
+    {note:`グループの人数ではなく、グループの個数を数えている`, edits:[[`if (find(i) === i && size[i] > best) best = size[i];`,`if (find(i) === i) best++;`]]},
+    {note:`ぶら下げる向きと、人数を足す先が食い違っている`, edits:[[`    par[rb] = ra;`,`    par[ra] = rb;`]]},
+    {note:`最後の 1 人を調べておらず、答えを取りこぼす`, edits:[[`  for (let i = 1; i <= n; i++) if (find(i) === i`,`  for (let i = 1; i < n; i++) if (find(i) === i`]]}
+  ]
+},{
+  kind:'algo', id:'c52', level:3, tags:['グラフ','ソート'], title:'辞書順最小の並べ方',
+  statement:`1 から N までの番号が付いた N 個の作業があります。
+「a_i を終えてからでないと b_i を始められない」という制約が M 個あります。
+制約に矛盾はなく（循環はなく）、必ずすべての作業を並べられます。
+
+制約を満たす並べ方のうち、番号の列として辞書順が最小になるものを、
+空白区切りで 1 行に出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ a_i, b_i ≤ N','与えられるグラフに閉路はない'],
+  inputFormat:'N M\na_1 b_1\n...\na_M b_M',
+  cases:[{in:'4 3\n1 2\n1 3\n3 4',out:'1 2 3 4'},{in:'3 0',out:'1 2 3'},{in:'3 2\n3 1\n1 2',out:'3 1 2'},{in:'4 2\n4 1\n3 2',out:'3 2 4 1'},{in:'3 3\n1 2\n1 3\n2 3',out:'1 2 3'},{in:'5 0',out:'1 2 3 4 5'},{in:'5 4\n1 5\n5 4\n1 3\n1 2',out:'1 2 3 5 4'},{in:'4 3\n3 1\n3 4\n1 4',out:'2 3 1 4'},{in:'4 4\n3 1\n3 2\n4 2\n3 4',out:'3 1 4 2'},{in:'4 0',out:'1 2 3 4'}],
+  hint:'「今すぐ始められる作業」の集合から、いつも最小の番号を選びます。集合の出し入れが速い構造が要ります。',
+  idea:`依存関係を「a → b」の有向辺と見ると、これはトポロジカルソートです。
+基本形は次のとおりです。
+
+  1. 各頂点の入次数（自分より先にやるべき作業の数）を数える
+  2. 入次数 0 の頂点を候補に入れる
+  3. 候補から 1 つ取り出して並べ、その頂点から出る辺を消す
+     （消した先の入次数が 0 になったら候補に入れる）
+
+【辞書順最小にするには】
+候補から取り出すときに、いつも番号が最小のものを選びます。
+候補は増えたり減ったりするので、最小値の取り出しが速い優先度付きキュー（最小ヒープ）を使います。
+
+「毎回いちばん小さいものを選べば、全体でも辞書順最小になる」のは、
+先頭の要素を小さくすることが、どの後続よりも辞書順の比較で優先されるからです。
+
+【計算量】
+辺を 1 本ずつ処理し、ヒープの出し入れが O(log N) なので O((N + M) log N)。
+
+【よくある間違い】
+入次数が 0 になった瞬間だけ候補に入れること。
+毎回入れてしまうと、同じ頂点が何度も並んでしまいます。`,
+  complexity:'O((N + M) log N)',
+  pitfalls:['スタックやキューで代用して辞書順最小にならない','入次数が 0 になっていない頂点も候補に入れる','辺の向きを逆に張る'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = Array.from({ length: n + 1 }, () => []);
+  const indeg = new Array(n + 1).fill(0);
+  for (let i = 1; i <= m; i++) {
+    const [a, b] = lines[i].trim().split(/\\s+/).map(Number);
+    g[a].push(b);
+    indeg[b]++;
+  }
+  const heap = [];
+  const push = (x) => {
+    heap.push(x);
+    let i = heap.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (heap[p] <= heap[i]) break;
+      const t = heap[p]; heap[p] = heap[i]; heap[i] = t;
+      i = p;
+    }
+  };
+  const pop = () => {
+    const top = heap[0];
+    const last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      let i = 0;
+      while (true) {
+        let c = 2 * i + 1;
+        if (c >= heap.length) break;
+        if (c + 1 < heap.length && heap[c + 1] < heap[c]) c++;
+        if (heap[i] <= heap[c]) break;
+        const t = heap[i]; heap[i] = heap[c]; heap[c] = t;
+        i = c;
+      }
+    }
+    return top;
+  };
+  for (let v = 1; v <= n; v++) if (indeg[v] === 0) push(v);
+  const order = [];
+  while (heap.length) {
+    const v = pop();
+    order.push(v);
+    for (const to of g[v]) {
+      indeg[to]--;
+      if (indeg[to] === 0) push(to);
+    }
+  }
+  return order.join(" ");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        List<List<Integer>> g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        int[] indeg = new int[n + 1];
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken()), b = Integer.parseInt(st.nextToken());
+            g.get(a).add(b);
+            indeg[b]++;
+        }
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        for (int v = 1; v <= n; v++) if (indeg[v] == 0) pq.add(v);
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        while (!pq.isEmpty()) {
+            int v = pq.poll();
+            if (!first) sb.append(' ');
+            sb.append(v);
+            first = false;
+            for (int to : g.get(v)) {
+                indeg[to]--;
+                if (indeg[to] == 0) pq.add(to);
+            }
+        }
+        System.out.println(sb);
+    }
+}`,
+  quiz:[
+    {note:`大きいほうから取り出しており、辞書順が逆になっている`, edits:[[`      if (heap[p] <= heap[i]) break;`,`      if (heap[p] >= heap[i]) break;`],[`        if (c + 1 < heap.length && heap[c + 1] < heap[c]) c++;
+        if (heap[i] <= heap[c]) break;`,`        if (c + 1 < heap.length && heap[c + 1] > heap[c]) c++;
+        if (heap[i] >= heap[c]) break;`]]},
+    {note:`入次数が 0 になっていない作業まで候補に入れている`, edits:[[`      if (indeg[to] === 0) push(to);`,`      push(to);`]]},
+    {note:`依存の向きを逆に張っている`, edits:[[`    g[a].push(b);
+    indeg[b]++;`,`    g[b].push(a);
+    indeg[a]++;`]]},
+    {note:`最初にすべての作業を候補へ入れており、順序の条件を無視している`, edits:[[`  for (let v = 1; v <= n; v++) if (indeg[v] === 0) push(v);`,`  for (let v = 1; v <= n; v++) push(v);`]]},
+    {note:`ヒープを下ろすとき、子のうち小さいほうを選んでいない`, edits:[[`        if (c + 1 < heap.length && heap[c + 1] < heap[c]) c++;`,`        if (c + 1 < heap.length && heap[c + 1] > heap[c]) c++;`]]}
+  ]
+},{
+  kind:'algo', id:'c53', level:3, tags:['グラフ','数え上げ'], title:'最短経路の本数',
+  statement:`N 個の頂点と M 本の辺からなる単純な無向グラフがあります。辺の長さはすべて 1 です。
+頂点 1 から頂点 N への最短経路が何通りあるかを、1000000007 で割った余りで出力してください。
+頂点 N にたどり着けない場合は 0 を出力してください。
+N = 1 のときの答えは 1 とします。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ M ≤ 2 × 10^5','1 ≤ a_i < b_i ≤ N','同じ辺は 2 回以上与えられない'],
+  inputFormat:'N M\na_1 b_1\n...\na_M b_M',
+  cases:[{in:'4 4\n1 2\n1 3\n2 4\n3 4',out:'2'},{in:'2 1\n1 2',out:'1'},{in:'1 0',out:'1'},{in:'4 3\n1 2\n2 3\n3 4',out:'1'},{in:'3 1\n1 2',out:'0'},{in:'5 5\n1 2\n1 3\n2 3\n3 4\n4 5',out:'1'},{in:'7 8\n1 2\n1 3\n2 4\n3 4\n4 5\n4 6\n5 7\n6 7',out:'4'},{in:'5 4\n3 5\n1 2\n1 4\n2 3',out:'1'},{in:'6 2\n2 3\n2 5',out:'0'},{in:'3 2\n2 3\n1 2',out:'1'}],
+  hint:'幅優先探索で距離を求めながら、同時に「そこへ来る最短経路の本数」も持ち回ります。',
+  idea:`辺の長さがすべて 1 なので、最短距離は幅優先探索（BFS）で求まります。
+本数も、同じ BFS の中で一緒に数えられます。
+
+  dist[v] … 頂点 1 から v への最短距離
+  cnt[v]  … 頂点 1 から v への最短経路の本数
+
+頂点 v を取り出し、隣の頂点 to を見たとき、
+
+・dist[to] がまだ未確定 → dist[to] = dist[v] + 1、cnt[to] = cnt[v]（初めて到達）
+・dist[to] === dist[v] + 1 → cnt[to] += cnt[v]（別ルートが合流した）
+・それ以外（dist[to] ≤ dist[v]）→ 何もしない
+
+【なぜこれで数えられるのか】
+BFS は距離の小さい順に頂点を取り出します。
+v を取り出す時点で cnt[v] は確定しており、
+v より 1 だけ遠い頂点にだけ本数を配ればよい、という仕組みです。
+
+【条件を「それ以外」にしてはいけない理由】
+dist[to] ≤ dist[v] の辺（同じ距離どうしや、戻る辺）でも足してしまうと、
+最短経路ではない歩き方まで数えてしまい、答えが増えます。
+
+本数は非常に大きくなるので、足すたびに 1000000007 で割った余りを取ります。`,
+  complexity:'O(N + M)',
+  pitfalls:['合流したときに本数を足し忘れる','距離が等しい辺や戻る辺でも足してしまう','余りを取り忘れて桁があふれる'],
+  codeJs:`function solve(input) {
+  const MOD = 1000000007;
+  const lines = input.split("\\n");
+  const [n, m] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = Array.from({ length: n + 1 }, () => []);
+  for (let i = 1; i <= m; i++) {
+    const [a, b] = lines[i].trim().split(/\\s+/).map(Number);
+    g[a].push(b);
+    g[b].push(a);
+  }
+  const dist = new Array(n + 1).fill(-1);
+  const cnt = new Array(n + 1).fill(0);
+  dist[1] = 0;
+  cnt[1] = 1;
+  const queue = [1];
+  for (let head = 0; head < queue.length; head++) {
+    const v = queue[head];
+    for (const to of g[v]) {
+      if (dist[to] === -1) {
+        dist[to] = dist[v] + 1;
+        cnt[to] = cnt[v];
+        queue.push(to);
+      } else if (dist[to] === dist[v] + 1) {
+        cnt[to] = (cnt[to] + cnt[v]) % MOD;
+      }
+    }
+  }
+  return dist[n] === -1 ? 0 : cnt[n];
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        final int MOD = 1000000007;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), m = Integer.parseInt(st.nextToken());
+        List<List<Integer>> g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        for (int i = 0; i < m; i++) {
+            st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken()), b = Integer.parseInt(st.nextToken());
+            g.get(a).add(b);
+            g.get(b).add(a);
+        }
+        int[] dist = new int[n + 1];
+        long[] cnt = new long[n + 1];
+        Arrays.fill(dist, -1);
+        dist[1] = 0;
+        cnt[1] = 1;
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
+        queue.add(1);
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            for (int to : g.get(v)) {
+                if (dist[to] == -1) {
+                    dist[to] = dist[v] + 1;
+                    cnt[to] = cnt[v];
+                    queue.add(to);
+                } else if (dist[to] == dist[v] + 1) {
+                    cnt[to] = (cnt[to] + cnt[v]) % MOD;
+                }
+            }
+        }
+        System.out.println(dist[n] == -1 ? 0 : cnt[n]);
+    }
+}`,
+  quiz:[
+    {note:`別ルートが合流したときに本数を足していない`, edits:[[`      } else if (dist[to] === dist[v] + 1) {
+        cnt[to] = (cnt[to] + cnt[v]) % MOD;
+      }`,`      }`]]},
+    {note:`初めて到達したときに、手前までの本数を引き継いでいない`, edits:[[`        cnt[to] = cnt[v];`,`        cnt[to] = 1;`]]},
+    {note:`距離が等しい辺や戻る辺でも足しており、最短でない歩き方まで数えている`, edits:[[`      } else if (dist[to] === dist[v] + 1) {`,`      } else {`]]},
+    {note:`距離を 1 増やしておらず、すべて同じ距離になっている`, edits:[[`        dist[to] = dist[v] + 1;`,`        dist[to] = dist[v];`]]},
+    {note:`合流のときに、手前までの本数ではなく 1 を足している`, edits:[[`        cnt[to] = (cnt[to] + cnt[v]) % MOD;`,`        cnt[to] = (cnt[to] + 1) % MOD;`]]}
+  ]
+},{
+  kind:'algo', id:'c54', level:3, tags:['動的計画法'], title:'いちばん大きい正方形',
+  statement:`H 行 W 列のマス目があり、各マスには 0 か 1 が書かれています。
+1 だけからなる正方形のうち、いちばん大きいものの一辺の長さを出力してください。
+1 のマスが 1 つもない場合は 0 を出力してください。`,
+  constraints:['1 ≤ H, W ≤ 1000','各マスは 0 または 1'],
+  inputFormat:'H W\n(1 行目の文字列)\n...\n(H 行目の文字列)',
+  cases:[{in:'3 4\n1101\n1111\n0111',out:'2'},{in:'1 1\n0',out:'0'},{in:'1 1\n1',out:'1'},{in:'3 3\n111\n111\n111',out:'3'},{in:'2 2\n10\n01',out:'1'},{in:'3 3\n111\n101\n111',out:'1'},{in:'2 3\n111\n111',out:'2'},{in:'4 4\n1100\n0110\n1000\n1110',out:'1'},{in:'2 2\n11\n10',out:'1'},{in:'4 4\n1110\n0101\n1111\n1110',out:'2'}],
+  hint:'右下のマスを固定して「そこを右下とする正方形の最大の一辺」を考えると、左・上・左上から決まります。',
+  idea:`全部の正方形を試すと O(H W min(H,W)^2) で間に合いません。DP を使います。
+
+  dp[i][j] =「(i, j) を右下の角とする、1 だけからなる正方形の最大の一辺」
+
+マス (i, j) が 0 なら dp[i][j] = 0。1 なら
+
+  dp[i][j] = min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1
+
+【なぜ 3 方向の min なのか】
+一辺 k の正方形が (i, j) を右下として置けるということは、
+・(i-1, j) を右下とする一辺 k-1 の正方形
+・(i, j-1) を右下とする一辺 k-1 の正方形
+・(i-1, j-1) を右下とする一辺 k-1 の正方形
+がすべて置けることと同じです。
+このうち 1 つでも足りなければ、その分しか伸ばせません。だから最小値を取ります。
+
+左上（斜め）を見落とすと、下の図のような「真ん中に穴がある」形で
+正方形でないものを正方形と数えてしまいます。
+
+  1 1 1
+  1 0 1
+  1 1 1
+
+【計算量】
+各マスを 1 回ずつ見るだけなので O(HW)。
+配列は番兵として 0 行目・0 列目を 0 で用意しておくと、境界の場合分けが要りません。`,
+  complexity:'O(HW)',
+  pitfalls:['左上（斜め）を見ておらず、正方形でないものを数える','一辺ではなく面積を出力する','1 が 1 つもない場合に 0 を返さない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [h, w] = lines[0].trim().split(/\\s+/).map(Number);
+  const g = [];
+  for (let i = 1; i <= h; i++) g.push(lines[i].trim());
+  const dp = Array.from({ length: h + 1 }, () => new Array(w + 1).fill(0));
+  let best = 0;
+  for (let i = 1; i <= h; i++) {
+    for (let j = 1; j <= w; j++) {
+      if (g[i - 1][j - 1] === "1") {
+        dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1;
+        if (dp[i][j] > best) best = dp[i][j];
+      }
+    }
+  }
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int h = Integer.parseInt(st.nextToken()), w = Integer.parseInt(st.nextToken());
+        String[] g = new String[h];
+        for (int i = 0; i < h; i++) g[i] = br.readLine().trim();
+        int[][] dp = new int[h + 1][w + 1];
+        int best = 0;
+        for (int i = 1; i <= h; i++) {
+            for (int j = 1; j <= w; j++) {
+                if (g[i - 1].charAt(j - 1) == '1') {
+                    dp[i][j] = Math.min(dp[i - 1][j], Math.min(dp[i][j - 1], dp[i - 1][j - 1])) + 1;
+                    best = Math.max(best, dp[i][j]);
+                }
+            }
+        }
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`最小ではなく最大を取っており、正方形にならない形まで伸ばしている`, edits:[[`Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1`,`Math.max(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1`]]},
+    {note:`左上（斜め）を見ておらず、真ん中に穴がある形も正方形と数えてしまう`, edits:[[`Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1`,`Math.min(dp[i - 1][j], dp[i][j - 1]) + 1`]]},
+    {note:`斜めだけを見ており、左と上を見ていない`, edits:[[`Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1`,`dp[i - 1][j - 1] + 1`]]},
+    {note:`一辺ではなく面積を出力している`, edits:[[`  return best;`,`  return best * best;`]]},
+    {note:`答えの初期値が 1 で、1 のマスが 1 つもなくても 1 を返す`, edits:[[`  let best = 0;`,`  let best = 1;`]]}
+  ]
+},{
+  kind:'algo', id:'c55', level:3, tags:['スタック'], title:'ヒストグラムの最大長方形',
+  statement:`幅 1、高さ h_1, ..., h_N の長方形が、左から順にすき間なく並んでいます。
+この図形の中に完全に含まれる長方形のうち、面積が最大のものの面積を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','0 ≤ h_i ≤ 10^9'],
+  inputFormat:'N\nh_1 ... h_N',
+  cases:[{in:'3\n2 1 2',out:'3'},{in:'1\n5',out:'5'},{in:'4\n1 2 3 4',out:'6'},{in:'5\n2 1 5 6 2',out:'10'},{in:'4\n0 0 0 0',out:'0'},{in:'4\n2 2 2 2',out:'8'},{in:'2\n6 4',out:'8'},{in:'4\n1 9 0 5',out:'9'},{in:'5\n5 3 7 7 5',out:'15'},{in:'7\n5 5 5 2 4 1 4',out:'15'}],
+  hint:'「この棒を高さの上限とする長方形は、左右どこまで伸ばせるか」を、棒を積み上げながら決めていきます。',
+  idea:`答えとなる長方形は、必ずどれか 1 本の棒と同じ高さになります。
+そこで各 i について「高さ h_i のまま左右にどこまで伸ばせるか」がわかれば答えが出ます。
+素直に左右へ走査すると O(N^2) なので、スタックを使って O(N) にします。
+
+【スタックに何を積むか】
+「高さが単調増加になるように、棒の位置」を積みます。
+新しい棒 i の高さ cur を見たとき、スタックの一番上の棒がそれ以上に高ければ、
+その棒はもう右へ伸ばせません。取り出して面積を確定させます。
+
+  top   = スタックから取り出した位置
+  left  = 取り出したあとのスタックの一番上 + 1（左に伸ばせる限界）
+  面積  = h[top] × (i − left)
+
+【なぜ left がそれでよいのか】
+スタックの中は高さが単調増加なので、top のすぐ下にある棒は
+「top より低い、いちばん近い左の棒」です。その 1 つ右までは h[top] を保てます。
+
+【番兵】
+最後に高さ −1 の棒があると思って i = N まで回すと、
+積み残しがすべて取り出され、後片付けのコードを書かずに済みます。
+
+【計算量】
+各棒は 1 回積まれて 1 回取り出されるだけなので O(N)。
+面積は最大 10^9 × 2×10^5 = 2×10^14 なので、Java では long が必要です。`,
+  complexity:'O(N)',
+  pitfalls:['左に伸ばせる分を見ておらず、幅を 1 と数える','番兵を置かず、最後の積み残しを処理し忘れる','面積が 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0].trim());
+  const h = lines[1].trim().split(/\\s+/).map(Number);
+  const stack = [];               // 高さが単調増加になるように位置を積む
+  let best = 0;
+  for (let i = 0; i <= n; i++) {
+    const cur = i === n ? -1 : h[i];      // 最後は番兵
+    while (stack.length && h[stack[stack.length - 1]] >= cur) {
+      const top = stack.pop();
+      const left = stack.length ? stack[stack.length - 1] + 1 : 0;
+      const area = h[top] * (i - left);
+      if (area > best) best = area;
+    }
+    stack.push(i);
+  }
+  return best;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        long[] h = new long[n + 1];
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) h[i] = Long.parseLong(st.nextToken());
+        int[] stack = new int[n + 2];
+        int sp = 0;
+        long best = 0;
+        for (int i = 0; i <= n; i++) {
+            long cur = (i == n) ? -1 : h[i];
+            while (sp > 0 && h[stack[sp - 1]] >= cur) {
+                int top = stack[--sp];
+                int left = (sp > 0) ? stack[sp - 1] + 1 : 0;
+                long area = h[top] * (i - left);
+                if (area > best) best = area;
+            }
+            stack[sp++] = i;
+        }
+        System.out.println(best);
+    }
+}`,
+  quiz:[
+    {note:`左に伸ばせる分を見ておらず、幅を取り出した位置からしか数えていない`, edits:[[`      const left = stack.length ? stack[stack.length - 1] + 1 : 0;`,`      const left = top;`]]},
+    {note:`幅を 1 つ多く数えている`, edits:[[`      const area = h[top] * (i - left);`,`      const area = h[top] * (i - left + 1);`]]},
+    {note:`番兵の分を回しておらず、最後に積み残した棒を処理していない`, edits:[[`  for (let i = 0; i <= n; i++) {`,`  for (let i = 0; i < n; i++) {`]]},
+    {note:`まとめて取り出せておらず、1 本しか処理していない`, edits:[[`    while (stack.length && h[stack[stack.length - 1]] >= cur) {`,`    if (stack.length && h[stack[stack.length - 1]] >= cur) {`]]},
+    {note:`取り出した棒ではなく、左端の棒の高さを使っている`, edits:[[`      const area = h[top] * (i - left);`,`      const area = h[left] * (i - left);`]]}
+  ]
+},{
+  kind:'algo', id:'c56', level:3, tags:['累積和','数学'], title:'和が K の倍数になる区間',
+  statement:`長さ N の数列 A_1, ..., A_N が与えられます。
+連続する 1 個以上の要素の和が K の倍数になるような選び方（区間の選び方）が
+何通りあるかを出力してください。区間は左端と右端の組で区別します。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ K ≤ 10^9','1 ≤ A_i ≤ 10^9'],
+  inputFormat:'N K\nA_1 ... A_N',
+  cases:[{in:'4 3\n1 2 3 6',out:'6'},{in:'1 5\n5',out:'1'},{in:'3 2\n1 1 1',out:'2'},{in:'3 1\n1 2 3',out:'6'},{in:'4 7\n1 2 3 4',out:'1'},{in:'5 4\n4 4 4 4 4',out:'15'},{in:'3 10\n7 5 7',out:'0'},{in:'5 8\n3 5 4 6 3',out:'1'},{in:'6 5\n5 7 11 11 12 10',out:'2'},{in:'2 10\n9 11',out:'1'}],
+  hint:'区間の和は累積和の差です。差が K の倍数になるのは、K で割った余りが等しいときです。',
+  idea:`累積和を S_0 = 0, S_i = A_1 + ... + A_i と置くと、
+区間 [l, r] の和は S_r − S_{l−1} です。
+
+  「区間の和が K の倍数」⇔ S_r ≡ S_{l−1} (mod K)
+
+つまり、S_0, S_1, ..., S_N のうち「K で割った余りが等しい 2 つ」を選ぶ組の個数が答えです。
+余り c が m 回現れたなら、その余りからの寄与は m×(m−1)/2 通りです。
+
+【1 回で数える書き方】
+左から S_i を順に作りながら、
+「今までに同じ余りが何回出たか」をその場で足していけば、1 パスで数えられます。
+
+  余りの出現回数を記録する連想配列 count を用意し、count[0] = 1 から始める
+  各 i について
+    c = 今の余り
+    答え += count[c]        ← 先に足す（自分自身を数えないため）
+    count[c] += 1
+
+【落とし穴】
+・count[0] = 1 を忘れると、先頭から始まる区間を数え落とします（S_0 の分）
+・足す順番を入れ替えると、長さ 0 の区間（自分自身）まで数えてしまいます
+・K が大きいので配列ではなく Map（Java なら HashMap）を使います
+・答えは最大 N(N+1)/2 ≈ 2×10^10 なので、Java では long が必要です`,
+  complexity:'O(N)',
+  pitfalls:['余り 0 の初期値を入れ忘れ、先頭からの区間を数え落とす','足す順番を入れ替えて自分自身を数える','答えが 32bit を超える'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const count = new Map();
+  count.set(0, 1);                 // S_0 = 0 の分
+  let sum = 0, ans = 0;
+  for (let i = 0; i < n; i++) {
+    sum = (sum + a[i]) % k;
+    const c = count.get(sum) || 0;
+    ans += c;
+    count.set(sum, c + 1);
+  }
+  return ans;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long k = Long.parseLong(st.nextToken());
+        HashMap<Long, Integer> count = new HashMap<>();
+        count.put(0L, 1);
+        long sum = 0, ans = 0;
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) {
+            sum = (sum + Long.parseLong(st.nextToken())) % k;
+            int c = count.getOrDefault(sum, 0);
+            ans += c;
+            count.put(sum, c + 1);
+        }
+        System.out.println(ans);
+    }
+}`,
+  quiz:[
+    {note:`余り 0 の分を最初に入れておらず、先頭から始まる区間を数え落とす`, edits:[[`  count.set(0, 1);                 // S_0 = 0 の分
+`,``]]},
+    {note:`同じ余りが何回出たかではなく、常に 1 を足している`, edits:[[`    ans += c;`,`    ans += 1;`]]},
+    {note:`累積和になっておらず、その要素だけの余りを見ている`, edits:[[`    sum = (sum + a[i]) % k;`,`    sum = a[i] % k;`]]},
+    {note:`出現回数を数えておらず、いつも 1 のままになっている`, edits:[[`    count.set(sum, c + 1);`,`    count.set(sum, 1);`]]},
+    {note:`数える順番が逆で、長さ 0 の区間（自分自身）まで数えている`, edits:[[`    ans += c;
+    count.set(sum, c + 1);`,`    count.set(sum, c + 1);
+    ans += count.get(sum);`]]}
+  ]
+},{
+  kind:'algo', id:'c57', level:3, tags:['ダブリング'], title:'K 回すすんだ先',
+  statement:`1 から N までの番号が付いた N 個のマスがあり、
+マス i にいるとき、次の 1 手で必ずマス nxt_i に移動します。
+
+マス 1 から出発してちょうど K 回移動したとき、どのマスにいるかを出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ K ≤ 10^15','1 ≤ nxt_i ≤ N'],
+  inputFormat:'N K\nnxt_1 ... nxt_N',
+  cases:[{in:'4 5\n2 3 4 1',out:'2'},{in:'3 1\n1 1 1',out:'1'},{in:'2 3\n2 2',out:'2'},{in:'5 1000000000000000\n2 3 4 5 1',out:'1',big:true},{in:'4 2\n2 1 4 3',out:'1'},{in:'6 7\n2 3 1 5 6 4',out:'2'},{in:'6 32\n3 2 4 6 3 3',out:'4'},{in:'2 32\n2 2',out:'2'},{in:'4 10\n2 2 4 3',out:'2'},{in:'2 49\n1 2',out:'1'},{in:'6 59\n2 6 4 6 5 4',out:'4'}],
+  hint:'K を 2 進法で見て「1 歩」「2 歩」「4 歩」…の移動表を用意します。',
+  idea:`K が 10^15 なので、1 歩ずつ動かすのは無理です。
+「行き先が 1 つに決まっている」ので、ダブリング（バイナリリフティング）が使えます。
+
+  up[d][i] = マス i から 2^d 回移動した先
+
+これは次の漸化式で作れます。
+
+  up[0][i] = nxt_i
+  up[d+1][i] = up[d][ up[d][i] ]     （2^d 歩 + 2^d 歩 = 2^{d+1} 歩）
+
+【K 回の移動】
+K を 2 進法で書き、立っているビットに対応する表を順に適用します。
+
+  10 回 = 2 + 8 なので、「2 歩の表」→「8 歩の表」の順に適用
+
+【実装のこつ】
+表を全部持たなくても、下のビットから順に処理するなら、
+「今の段の表」だけを保持して 1 段ずつ 2 乗していけば、メモリは O(N) で済みます。
+
+【計算量】
+段数は log2(10^15) ≈ 50 なので O(N log K)。
+
+【なぜダブリングが使えるのか】
+「1 歩の動き」が関数として決まっていて、合成できるからです。
+関数の合成には結合法則があるので、繰り返し 2 乗法とまったく同じ理屈が通ります。`,
+  complexity:'O(N log K)',
+  pitfalls:['2 倍の移動表を作らず、1 歩の表のまま使ってしまう','段数が足りず、大きな K に対応できない','出発点を 1 手進めた場所にしてしまう'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, k] = lines[0].trim().split(/\\s+/).map(Number);
+  const nxt = lines[1].trim().split(/\\s+/).map(Number);
+  const LOG = 50;
+  let cur = new Array(n + 1);
+  for (let i = 1; i <= n; i++) cur[i] = nxt[i - 1];
+  let pos = 1;
+  let rest = k;
+  for (let d = 0; d < LOG; d++) {
+    if (rest % 2 === 1) pos = cur[pos];
+    rest = Math.floor(rest / 2);
+    const next = new Array(n + 1);
+    for (let i = 1; i <= n; i++) next[i] = cur[cur[i]];
+    cur = next;
+  }
+  return pos;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long k = Long.parseLong(st.nextToken());
+        int[] cur = new int[n + 1];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 1; i <= n; i++) cur[i] = Integer.parseInt(st.nextToken());
+        int pos = 1;
+        long rest = k;
+        for (int d = 0; d < 50; d++) {
+            if (rest % 2 == 1) pos = cur[pos];
+            rest /= 2;
+            int[] next = new int[n + 1];
+            for (int i = 1; i <= n; i++) next[i] = cur[cur[i]];
+            cur = next;
+        }
+        System.out.println(pos);
+    }
+}`,
+  quiz:[
+    {note:`移動表を 2 倍にしておらず、いつまでも 1 歩のままになっている`, edits:[[`    for (let i = 1; i <= n; i++) next[i] = cur[cur[i]];`,`    for (let i = 1; i <= n; i++) next[i] = cur[i];`]]},
+    {note:`ビットが立っているかの判定が逆になっている`, edits:[[`    if (rest % 2 === 1) pos = cur[pos];`,`    if (rest % 2 === 0) pos = cur[pos];`]]},
+    {note:`段数が足りず、大きな K に対応できていない`, edits:[[`  const LOG = 50;`,`  const LOG = 20;`]]},
+    {note:`残りを半分にしておらず、同じけたを何度も見ている`, edits:[[`    rest = Math.floor(rest / 2);
+`,``]]},
+    {note:`出発点をすでに 1 手すすめた場所にしている`, edits:[[`  let pos = 1;`,`  let pos = nxt[0];`]]}
+  ]
+},{
+  kind:'algo', id:'c58', level:3, tags:['累積和','ビット演算'], title:'区間の排他的論理和',
+  statement:`長さ N の非負整数列 A_1, ..., A_N と、Q 個の質問が与えられます。
+i 番目の質問は 2 つの整数 l_i, r_i からなり、
+A_{l_i} xor A_{l_i+1} xor ... xor A_{r_i} の値を答えます。
+
+質問の答えを 1 行ずつ出力してください（xor はビットごとの排他的論理和）。`,
+  constraints:['1 ≤ N, Q ≤ 2 × 10^5','0 ≤ A_i < 2^30','1 ≤ l_i ≤ r_i ≤ N'],
+  inputFormat:'N Q\nA_1 ... A_N\nl_1 r_1\n...\nl_Q r_Q',
+  cases:[{in:'5 3\n1 2 3 4 5\n1 1\n1 2\n3 5',out:'1\n3\n2'},{in:'1 1\n7\n1 1',out:'7'},{in:'4 2\n5 5 5 5\n1 4\n1 3',out:'0\n5'},{in:'3 2\n0 0 0\n1 3\n2 2',out:'0\n0'},{in:'4 3\n1 2 4 8\n1 4\n2 3\n4 4',out:'15\n6\n8'},{in:'1 3\n14\n1 1\n1 1\n1 1',out:'14\n14\n14'},{in:'1 1\n10\n1 1',out:'10'},{in:'3 4\n13 7 9\n1 2\n2 3\n3 3\n1 1',out:'10\n14\n9\n13'},{in:'6 2\n12 5 3 10 14 8\n1 5\n3 4',out:'14\n9'},{in:'3 1\n12 11 11\n3 3',out:'11'}],
+  hint:'xor は「同じ値を 2 回かけると打ち消える」ので、足し算の累積和とまったく同じ形が作れます。',
+  idea:`和の累積和と同じことが xor でもできます。鍵になるのは次の 2 つの性質です。
+
+  ・x xor x = 0     （同じ値は打ち消し合う）
+  ・xor は結合法則・交換法則を満たす
+
+そこで累積 xor を用意します。
+
+  S_0 = 0, S_i = A_1 xor A_2 xor ... xor A_i
+
+すると
+
+  A_l xor ... xor A_r = S_r xor S_{l−1}
+
+が成り立ちます。S_{l−1} の部分が 2 回現れて打ち消えるからです。
+
+【引き算ではダメな理由】
+和のときは S_r − S_{l−1} と引きましたが、xor に引き算はありません。
+xor の「逆演算」は xor 自身です。ここを引き算にすると答えが合いません。
+
+【計算量】
+前処理 O(N)、1 質問あたり O(1) で、全体 O(N + Q)。
+
+【ビット演算の注意】
+JavaScript のビット演算は 32bit 符号付きで行われます。
+2^30 未満なら問題ありませんが、2^31 以上を扱うときは注意が必要です。`,
+  complexity:'O(N + Q)',
+  pitfalls:['左端で 1 つずらすのを忘れる','xor を引き算で戻そうとする','累積になっておらず、その要素だけを入れてしまう'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, q] = lines[0].trim().split(/\\s+/).map(Number);
+  const a = lines[1].trim().split(/\\s+/).map(Number);
+  const acc = new Array(n + 1).fill(0);
+  for (let i = 0; i < n; i++) acc[i + 1] = acc[i] ^ a[i];
+  const out = [];
+  for (let i = 0; i < q; i++) {
+    const [l, r] = lines[2 + i].trim().split(/\\s+/).map(Number);
+    out.push(acc[r] ^ acc[l - 1]);
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken()), q = Integer.parseInt(st.nextToken());
+        int[] acc = new int[n + 1];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < n; i++) acc[i + 1] = acc[i] ^ Integer.parseInt(st.nextToken());
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < q; i++) {
+            st = new StringTokenizer(br.readLine());
+            int l = Integer.parseInt(st.nextToken()), r = Integer.parseInt(st.nextToken());
+            sb.append(acc[r] ^ acc[l - 1]).append('\\n');
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`左端で 1 つずらすのを忘れており、左端の要素が抜けている`, edits:[[`    out.push(acc[r] ^ acc[l - 1]);`,`    out.push(acc[r] ^ acc[l]);`]]},
+    {note:`xor ではなく足し算で累積している`, edits:[[`  for (let i = 0; i < n; i++) acc[i + 1] = acc[i] ^ a[i];`,`  for (let i = 0; i < n; i++) acc[i + 1] = acc[i] + a[i];`]]},
+    {note:`xor を引き算で戻そうとしている`, edits:[[`    out.push(acc[r] ^ acc[l - 1]);`,`    out.push(acc[r] - acc[l - 1]);`]]},
+    {note:`右端を含めていない`, edits:[[`    out.push(acc[r] ^ acc[l - 1]);`,`    out.push(acc[r - 1] ^ acc[l - 1]);`]]},
+    {note:`累積になっておらず、その要素だけを入れている`, edits:[[`  for (let i = 0; i < n; i++) acc[i + 1] = acc[i] ^ a[i];`,`  for (let i = 0; i < n; i++) acc[i + 1] = a[i];`]]}
+  ]
+},{
+  kind:'algo', id:'c59', level:3, tags:['貪欲法','ソート'], title:'区間で覆う',
+  statement:`数直線上の区間が N 個与えられます。i 番目の区間は [l_i, r_i] です。
+これらのうちいくつかを選んで、区間 [0, X] をすべて覆いたいです。
+
+必要な区間の個数の最小値を出力してください。どう選んでも覆えない場合は −1 を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','1 ≤ X ≤ 10^9','0 ≤ l_i < r_i ≤ 10^9'],
+  inputFormat:'N X\nl_1 r_1\n...\nl_N r_N',
+  cases:[{in:'3 5\n0 2\n1 4\n3 5',out:'3'},{in:'1 5\n0 5',out:'1'},{in:'2 5\n0 2\n3 5',out:'-1'},{in:'2 4\n0 3\n1 4',out:'2'},{in:'1 3\n1 3',out:'-1'},{in:'3 5\n0 4\n0 1\n3 5',out:'2'},{in:'2 5\n0 5\n1 2',out:'1'},{in:'3 5\n0 2\n2 4\n4 5',out:'3'},{in:'1 3\n3 5',out:'-1'},{in:'1 6\n4 5',out:'-1'}],
+  hint:'今どこまで覆えているかを持ち、そこから始められる区間の中でいちばん右まで届くものを取ります。',
+  idea:`貪欲法で解けます。
+
+  covered = 今どこまで連続して覆えているか（最初は 0）
+
+covered から先を覆うには、l_i ≤ covered を満たす区間しか使えません。
+その中で r_i がいちばん大きいものを選ぶのが最適です。
+
+【なぜ最適か（交換論法）】
+最適解のある区間を、「使える中でいちばん右まで届く区間」に取り替えても、
+覆える範囲は狭くならず、個数も増えません。
+これを先頭から順に繰り返せば、貪欲解が最適解と同じ個数になります。
+
+【実装】
+区間を左端 l の昇順にソートしておくと、
+covered を伸ばしながらポインタを 1 方向に進めるだけで済みます。
+
+  covered < X のあいだ繰り返す
+    l ≤ covered の区間を順に見て、r の最大値 reach を求める
+    reach が covered から伸びなければ −1（そこで途切れている）
+    covered = reach、個数を 1 増やす
+
+【端が接する場合】
+l = covered の区間は使えます（点で接していれば、そこから続けて覆えます）。
+ここを l < covered にすると、隙間なく並んだ区間をつなげなくなります。
+
+【計算量】
+ソートが O(N log N)、走査は各区間を 1 回ずつ見るだけなので O(N)。`,
+  complexity:'O(N log N)',
+  pitfalls:['端がちょうど接する区間を使えないと判定する','右端でソートして貪欲の前提を壊す','いちばん右まで届くものを選ばない'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const [n, x] = lines[0].trim().split(/\\s+/).map(Number);
+  const seg = [];
+  for (let i = 1; i <= n; i++) {
+    const [l, r] = lines[i].trim().split(/\\s+/).map(Number);
+    seg.push([l, r]);
+  }
+  seg.sort((p, q) => p[0] - q[0]);
+  let covered = 0, idx = 0, ans = 0;
+  while (covered < x) {
+    let reach = covered;
+    while (idx < n && seg[idx][0] <= covered) {
+      if (seg[idx][1] > reach) reach = seg[idx][1];
+      idx++;
+    }
+    if (reach === covered) return -1;
+    covered = reach;
+    ans++;
+  }
+  return ans;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int n = Integer.parseInt(st.nextToken());
+        long x = Long.parseLong(st.nextToken());
+        long[][] seg = new long[n][2];
+        for (int i = 0; i < n; i++) {
+            st = new StringTokenizer(br.readLine());
+            seg[i][0] = Long.parseLong(st.nextToken());
+            seg[i][1] = Long.parseLong(st.nextToken());
+        }
+        Arrays.sort(seg, (p, q) -> Long.compare(p[0], q[0]));
+        long covered = 0;
+        int idx = 0, ans = 0;
+        while (covered < x) {
+            long reach = covered;
+            while (idx < n && seg[idx][0] <= covered) {
+                if (seg[idx][1] > reach) reach = seg[idx][1];
+                idx++;
+            }
+            if (reach == covered) { System.out.println(-1); return; }
+            covered = reach;
+            ans++;
+        }
+        System.out.println(ans);
+    }
+}`,
+  quiz:[
+    {note:`右端でソートしており、左から順に伸ばすという前提が崩れている`, edits:[[`  seg.sort((p, q) => p[0] - q[0]);`,`  seg.sort((p, q) => p[1] - q[1]);`]]},
+    {note:`端がちょうど接する区間を使えないと判定している`, edits:[[`    while (idx < n && seg[idx][0] <= covered) {`,`    while (idx < n && seg[idx][0] < covered) {`]]},
+    {note:`いちばん右まで届く区間を選んでおらず、最後に見た区間を使っている`, edits:[[`      if (seg[idx][1] > reach) reach = seg[idx][1];`,`      reach = seg[idx][1];`]]},
+    {note:`覆い終わる条件がずれており、1 回多く進もうとしている`, edits:[[`  while (covered < x) {`,`  while (covered <= x) {`]]},
+    {note:`区間の左端と右端を取り違えている`, edits:[[`    seg.push([l, r]);`,`    seg.push([r, l]);`]]}
+  ]
+},{
+  kind:'algo', id:'c60', level:3, tags:['全探索','ビット演算'], title:'N クイーン',
+  statement:`N × N のチェス盤に N 個のクイーンを置きます。
+どの 2 つのクイーンも、同じ行・同じ列・同じ斜め（45 度の 2 方向）に並ばないようにします。
+
+そのような置き方が何通りあるかを出力してください。`,
+  constraints:['1 ≤ N ≤ 12'],
+  inputFormat:'N',
+  cases:[{in:'1',out:'1'},{in:'2',out:'0'},{in:'3',out:'0'},{in:'4',out:'2'},{in:'5',out:'10'},{in:'6',out:'4'},{in:'8',out:'92'},{in:'7',out:'40'},{in:'10',out:'724'},{in:'11',out:'2680'}],
+  hint:'行を上から 1 つずつ埋めていき、使えない列・斜めをビットで持ち回ります。',
+  idea:`行を上から順に 1 つずつ埋めます。各行にはクイーンをちょうど 1 個置きます。
+「今の行で置ける列」がわかれば、あとは深さ優先探索（バックトラック）です。
+
+【ビットで持つ】
+3 種類の禁止をビット列で持ちます。
+
+  col … すでに使った列
+  dl  … 左下がりの斜めから来る禁止（次の行では 1 つ左にずれる → 左シフト）
+  dr  … 右下がりの斜めから来る禁止（次の行では 1 つ右にずれる → 右シフト）
+
+今の行で置ける場所は
+
+  free = full & ~(col | dl | dr)        （full = (1 << N) − 1）
+
+free の立っているビットを 1 つずつ試します。
+いちばん下のビットは free & −free で取り出せ、free −= bit で消せます。
+
+置いた列のビットを bit とすると、次の行へは
+
+  col | bit
+  ((dl | bit) << 1) & full
+  (dr | bit) >> 1
+
+を渡します。col がすべて 1（= full）になったら 1 通り数えます。
+
+【計算量】
+枝刈りが強く効くため、N = 12 でも一瞬で終わります（解の個数は 14200 通り）。
+ビットで持つことで、判定が定数時間になるのが効いています。
+
+【斜めのずれ方】
+盤を 1 行下がると、左下がりの斜めは列番号が 1 増え、右下がりは 1 減ります。
+シフトの向きを取り違えると、まったく別の禁止条件になってしまいます。`,
+  complexity:'枝刈り付き全探索（N ≤ 12 で十分高速）',
+  pitfalls:['斜めのシフトの向きを取り違える','置いたクイーンを斜めの情報に加え忘れる','盤の幅を表すマスクが 1 つずれる'],
+  codeJs:`function solve(input) {
+  const n = Number(input.trim());
+  const full = (1 << n) - 1;
+  let ans = 0;
+  const rec = (col, dl, dr) => {
+    if (col === full) { ans++; return; }
+    let free = full & ~(col | dl | dr);
+    while (free) {
+      const bit = free & -free;          // いちばん下の 1 を取り出す
+      free -= bit;
+      rec(col | bit, ((dl | bit) << 1) & full, (dr | bit) >> 1);
+    }
+  };
+  rec(0, 0, 0);
+  return ans;
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    static int full;
+    static int ans = 0;
+
+    static void rec(int col, int dl, int dr) {
+        if (col == full) { ans++; return; }
+        int free = full & ~(col | dl | dr);
+        while (free != 0) {
+            int bit = free & -free;
+            free -= bit;
+            rec(col | bit, ((dl | bit) << 1) & full, (dr | bit) >> 1);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        full = (1 << n) - 1;
+        rec(0, 0, 0);
+        System.out.println(ans);
+    }
+}`,
+  quiz:[
+    {note:`右下がりの斜めのシフトの向きが逆になっている`, edits:[[`      rec(col | bit, ((dl | bit) << 1) & full, (dr | bit) >> 1);`,`      rec(col | bit, ((dl | bit) << 1) & full, ((dr | bit) << 1) & full);`]]},
+    {note:`斜めを片方しか見ていない`, edits:[[`    let free = full & ~(col | dl | dr);`,`    let free = full & ~(col | dl);`]]},
+    {note:`今おいたクイーンを斜めの情報に加えていない`, edits:[[`      rec(col | bit, ((dl | bit) << 1) & full, (dr | bit) >> 1);`,`      rec(col | bit, (dl << 1) & full, dr >> 1);`]]},
+    {note:`答えの初期値が 1 で、置き方が無いときでも 1 を数える`, edits:[[`  let ans = 0;`,`  let ans = 1;`]]},
+    {note:`盤の幅を表すマスクが 1 つずれている`, edits:[[`  const full = (1 << n) - 1;`,`  const full = 1 << n;`]]}
+  ]
+}
 /* ---------------- 論理パズル ---------------- */
 ,{
   kind:'puzzle', id:'q01', level:1, tags:['論理パズル','数当て'], title:'2 けたの数を当てる',
@@ -11435,7 +13718,7 @@ XOR を 0 にするには 8 の山を 5 にすればよい、と機械的にも�
 /* ============================================================
    アプリ本体
    ============================================================ */
-const LEVEL_NAME = {1:'Lv1 入門', 2:'Lv2 初級', 3:'Lv3 中級'};
+const LEVEL_NAME = {1:'Lv1 初級', 2:'Lv2 中級', 3:'Lv3 上級'};
 const PUZZLE_LEVEL_NAME = {1:'Lv1 やさしい', 2:'Lv2 ふつう', 3:'Lv3 むずかしい'};
 const levelLabel = p => (p.kind === 'puzzle' ? PUZZLE_LEVEL_NAME : LEVEL_NAME)[p.level];
 const KIND_NAME = {algo:'アルゴリズム', puzzle:'論理パズル'};
