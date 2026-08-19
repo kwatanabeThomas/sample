@@ -12306,6 +12306,509 @@ public class Main {
     {note:`答えの初期値が 1 で、置き方が無いときでも 1 を数える`, edits:[[`  let ans = 0;`,`  let ans = 1;`]]},
     {note:`盤の幅を表すマスクが 1 つずれている`, edits:[[`  const full = (1 << n) - 1;`,`  const full = 1 << n;`]]}
   ]
+},{
+  kind:'algo', id:'c61', level:3, tags:['動的計画法','数え上げ'], title:'整数の分け方',
+  statement:`整数 N を、K 個以下の正の整数の和で表す方法が何通りあるかを、
+1000000007 で割った余りで出力してください。
+
+足す順番だけが違うものは、同じ表し方として数えます。
+たとえば N = 4, K = 2 のときは 4 / 3+1 / 2+2 の 3 通りです。`,
+  constraints:['1 ≤ N ≤ 2000','1 ≤ K ≤ 2000'],
+  inputFormat:'N K',
+  cases:[{in:'4 2',out:'3'},{in:'4 4',out:'5'},{in:'1 1',out:'1'},{in:'5 3',out:'5'},{in:'6 6',out:'11'},{in:'10 10',out:'42'},{in:'7 2',out:'4'},{in:'35 10',out:'8070'},{in:'33 11',out:'6751'},{in:'21 6',out:'331'}],
+  hint:'「K 個以下」を「K 個ちょうど」に分けて考えるより、K を 1 つ増やす向きに漸化式を立てます。',
+  idea:`分割数の DP です。
+
+  dp[j][i] = 整数 i を、j 個以下の正の整数の和で表す方法の数
+
+漸化式は次のようになります。
+
+  dp[j][i] = dp[j-1][i] + dp[j][i-j]
+
+【右辺の意味】
+・dp[j-1][i] … 使う個数が j-1 個以下で済む場合
+・dp[j][i-j] … ちょうど j 個使う場合
+
+2 つめが分かりにくいところです。
+「ちょうど j 個の正の整数で i を作る」表し方それぞれから、全部の数を 1 ずつ減らすと、
+「j 個以下の正の整数で i-j を作る」表し方にちょうど 1 対 1 で対応します
+（0 になった数は取り除きます）。だから dp[j][i-j] で数えられます。
+
+【初期条件】
+dp[j][0] = 1（何も足さない 1 通り）。ここを忘れると全部 0 になります。
+
+【計算量】
+表の大きさが (K+1) × (N+1) で、各マス O(1) なので O(NK)。
+N, K ≤ 2000 なので 400 万マスで十分間に合います。
+
+【i ≥ j の条件】
+dp[j][i-j] は i ≥ j のときだけ使えます。ここを i > j にすると
+「ちょうど j 個で i = j を作る（全部 1）」場合が漏れます。`,
+  complexity:'O(NK)',
+  pitfalls:['dp[j][0] = 1 を入れ忘れる','i ≥ j の境界を i > j にしてしまう','内側のループを逆向きに回して同じ行の値が未計算になる'],
+  codeJs:`function solve(input) {
+  const MOD = 1000000007;
+  const [n, k] = input.trim().split(/\\s+/).map(Number);
+  // dp[j][i] = i を j 個以下の正の整数の和で表す方法の数
+  const dp = Array.from({ length: k + 1 }, () => new Array(n + 1).fill(0));
+  for (let j = 0; j <= k; j++) dp[j][0] = 1;
+  for (let j = 1; j <= k; j++) {
+    for (let i = 1; i <= n; i++) {
+      dp[j][i] = dp[j - 1][i];
+      if (i >= j) dp[j][i] = (dp[j][i] + dp[j][i - j]) % MOD;
+    }
+  }
+  return dp[k][n];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        final int MOD = 1000000007;
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt(), k = sc.nextInt();
+        int[][] dp = new int[k + 1][n + 1];
+        for (int j = 0; j <= k; j++) dp[j][0] = 1;
+        for (int j = 1; j <= k; j++) {
+            for (int i = 1; i <= n; i++) {
+                dp[j][i] = dp[j - 1][i];
+                if (i >= j) dp[j][i] = (int) ((dp[j][i] + (long) dp[j][i - j]) % MOD);
+            }
+        }
+        System.out.println(dp[k][n]);
+    }
+}`,
+  quiz:[
+    {note:`境界が i > j になっており、全部 1 で作る場合が漏れている`, edits:[[`      if (i >= j) dp[j][i]`,`      if (i > j) dp[j][i]`]]},
+    {note:`ちょうど j 個使う場合の参照先が違い、同じ大きさの数を 2 回以上使えなくなっている`, edits:[[`(dp[j][i] + dp[j][i - j]) % MOD`,`(dp[j][i] + dp[j - 1][i - j]) % MOD`]]},
+    {note:`「何も足さない 1 通り」を j = 0 のときしか入れていない`, edits:[[`  for (let j = 0; j <= k; j++) dp[j][0] = 1;`,`  dp[0][0] = 1;`]]},
+    {note:`j 個より少なくて済む場合を引き継いでいない`, edits:[[`      dp[j][i] = dp[j - 1][i];`,`      dp[j][i] = 0;`]]},
+    {note:`内側のループが逆向きで、同じ行のまだ計算していない値を見ている`, edits:[[`    for (let i = 1; i <= n; i++) {`,`    for (let i = n; i >= 1; i--) {`]]}
+  ]
+},{
+  kind:'algo', id:'c62', level:3, tags:['幅優先探索'], title:'2 つのボタンの電卓',
+  statement:`表示が整数の電卓があり、最初は 1 が表示されています。
+ボタンは 2 つだけです。
+
+・ボタン A … 表示を 2 倍にする
+・ボタン B … 表示から 1 を引く
+
+表示を N にするために必要な、ボタンを押す回数の最小値を出力してください。
+途中の表示は 0 以上 200000 以下に保たなければなりません。`,
+  constraints:['1 ≤ N ≤ 100000','途中の表示は 0 以上 200000 以下'],
+  inputFormat:'N',
+  cases:[{in:'1',out:'0'},{in:'2',out:'1'},{in:'3',out:'3'},{in:'5',out:'5'},{in:'6',out:'4'},{in:'7',out:'4'},{in:'10',out:'6'},{in:'16',out:'4'},{in:'321',out:'16'},{in:'193',out:'14'}],
+  hint:'「掛ける」と「引く」が混ざるので、行き先が単純に増えたり減ったりしません。状態を頂点とみなします。',
+  idea:`表示の値を頂点、ボタン 1 回を長さ 1 の辺とみなすと、
+これは「頂点 1 から頂点 N への最短経路」そのものです。
+辺の長さがすべて 1 なので、幅優先探索（BFS）で解けます。
+
+  頂点 v から出る辺 … v×2 と v−1
+  範囲外（0 未満、または 200000 より大きい）へは進まない
+
+【貪欲では解けない理由】
+「N が偶数なら 2 で割る」といった逆向きの貪欲は、
+引き算がはさまると成り立ちません。たとえば N = 5 は
+
+  1 → 2 → 4 → 3 → 6 → 5    （5 回）
+
+が最短で、途中でわざと 4 から 3 へ減らしています。
+「増やす」「減らす」が混ざる問題は、素直に BFS で全状態を探すのが確実です。
+
+【N を超えてよい理由】
+N = 7 の最短は 1 → 2 → 4 → 8 → 7 の 4 回で、いったん N を超えます。
+上限を N にしてしまうと、この道が使えなくなり答えが変わります。
+
+【計算量】
+頂点は 200001 個、辺は 1 頂点あたり 2 本なので O(上限)。
+訪問済みの頂点を二度と展開しないことが大切です。`,
+  complexity:'O(上限)',
+  pitfalls:['上限を N にしてしまい、いったん超える道を捨てる','訪問済みの判定を忘れて同じ頂点を何度も展開する','キューではなくスタックで取り出して最短にならない'],
+  codeJs:`function solve(input) {
+  const n = Number(input.trim());
+  const LIMIT = 200000;
+  const dist = new Int32Array(LIMIT + 1).fill(-1);
+  const queue = new Int32Array(LIMIT + 1);
+  let head = 0, tail = 0;
+  dist[1] = 0;
+  queue[tail++] = 1;
+  while (head < tail) {
+    const v = queue[head++];
+    if (v === n) return dist[v];
+    const nexts = [v * 2, v - 1];
+    for (const to of nexts) {
+      if (to < 0 || to > LIMIT) continue;
+      if (dist[to] !== -1) continue;
+      dist[to] = dist[v] + 1;
+      queue[tail++] = to;
+    }
+  }
+  return dist[n];
+}`,
+  codeJava:`import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        final int LIMIT = 200000;
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int[] dist = new int[LIMIT + 1];
+        Arrays.fill(dist, -1);
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
+        dist[1] = 0;
+        queue.add(1);
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            if (v == n) { System.out.println(dist[v]); return; }
+            int[] nexts = { v * 2, v - 1 };
+            for (int to : nexts) {
+                if (to < 0 || to > LIMIT) continue;
+                if (dist[to] != -1) continue;
+                dist[to] = dist[v] + 1;
+                queue.add(to);
+            }
+        }
+        System.out.println(dist[n]);
+    }
+}`,
+  quiz:[
+    {note:`手数を積み上げておらず、どこへ行っても 1 回になっている`, edits:[[`      dist[to] = dist[v] + 1;`,`      dist[to] = 1;`]]},
+    {note:`引くボタンを使っておらず、たどり着けない数がある`, edits:[[`    const nexts = [v * 2, v - 1];`,`    const nexts = [v * 2];`]]},
+    {note:`上限を N にしており、いったん N を超えてから戻る道を捨てている`, edits:[[`      if (to < 0 || to > LIMIT) continue;`,`      if (to < 0 || to > n) continue;`]]},
+    {note:`最初の手数が 0 になっていない`, edits:[[`  dist[1] = 0;`,`  dist[1] = 1;`]]},
+    {note:`キューではなくスタックとして取り出しており、最短手数にならない`, edits:[[`    const v = queue[head++];`,`    const v = queue[--tail];`]]}
+  ]
+},{
+  kind:'algo', id:'c63', level:3, tags:['データ構造'], title:'いまの中央値',
+  statement:`空の数列に対して、Q 個のクエリを順に処理します。
+
+・「1 x」… 数列に x を追加する
+・「2」  … いまの数列の中央値を出力する
+
+数列の要素数が偶数のときは、中央に並ぶ 2 つのうち小さいほうを中央値とします。
+種類 2 のクエリの前には、必ず 1 個以上の要素が追加されています。`,
+  constraints:['1 ≤ Q ≤ 2 × 10^5','-10^9 ≤ x ≤ 10^9'],
+  inputFormat:'Q\n(クエリ 1)\n...\n(クエリ Q)',
+  cases:[{in:'5\n1 3\n2\n1 1\n1 5\n2',out:'3\n3'},{in:'3\n1 5\n1 2\n2',out:'2'},{in:'4\n1 4\n2\n1 2\n2',out:'4\n2'},{in:'7\n1 1\n1 2\n1 3\n1 4\n1 5\n1 6\n2',out:'3'},{in:'4\n1 1\n1 2\n1 100\n2',out:'2'},{in:'4\n1 1\n1 2\n1 3\n2',out:'2'},{in:'2\n1 -7\n2',out:'-7'},{in:'7\n1 19\n1 -19\n1 -19\n2\n2\n2\n2',out:'-19\n-19\n-19\n-19'},{in:'4\n1 3\n2\n2\n1 18',out:'3\n3'},{in:'6\n1 4\n2\n1 2\n1 -3\n2\n2',out:'4\n2\n2'}],
+  hint:'中央値の左側と右側を、別々の山に分けて持ちます。それぞれの山の「境目の値」だけが取り出せれば十分です。',
+  idea:`毎回ソートすると O(Q^2 log Q) で間に合いません。
+「中央値より小さい側」と「大きい側」を 2 つのヒープに分けて持ちます。
+
+  lo … 小さいほうの山（最大ヒープ）。頂点は「小さい側でいちばん大きい値」
+  hi … 大きいほうの山（最小ヒープ）。頂点は「大きい側でいちばん小さい値」
+
+この 2 つの頂点が、ちょうど中央の 2 つです。
+
+【個数の約束（不変条件）】
+  lo の個数 = hi の個数、または lo の個数 = hi の個数 + 1
+
+これを保っておけば、下側の中央値は必ず lo の頂点になります。
+
+【追加の手順】
+1. x が lo の頂点以下なら lo へ、そうでなければ hi へ入れる
+2. 個数の約束が崩れたら、多いほうの頂点を 1 つ相手へ移す
+
+【計算量】
+1 クエリあたり O(log Q)、全体で O(Q log Q)。
+
+【なぜ 2 つに分けるのか】
+必要なのは「真ん中の値」だけで、それ以外の順序はどうでもよい、という点が鍵です。
+ヒープは「全体を並べる」代わりに「端の 1 個だけ」を速く取り出す構造なので、
+必要な情報だけを O(log) で維持できます。`,
+  complexity:'O(Q log Q)',
+  pitfalls:['小さいほうの山を最大ヒープにしていない','個数の約束が崩れたまま中央値を答える','値の大小を見ずに、いつも同じ山へ入れる'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const q = Number(lines[0].trim());
+  const lo = [];          // 小さいほうの山（最大ヒープ）
+  const hi = [];          // 大きいほうの山（最小ヒープ）
+  const up = (h, cmp) => {
+    let i = h.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (cmp(h[p], h[i]) <= 0) break;
+      const t = h[p]; h[p] = h[i]; h[i] = t;
+      i = p;
+    }
+  };
+  const down = (h, cmp) => {
+    let i = 0;
+    while (true) {
+      let c = 2 * i + 1;
+      if (c >= h.length) break;
+      if (c + 1 < h.length && cmp(h[c + 1], h[c]) < 0) c++;
+      if (cmp(h[i], h[c]) <= 0) break;
+      const t = h[i]; h[i] = h[c]; h[c] = t;
+      i = c;
+    }
+  };
+  const push = (h, cmp, x) => { h.push(x); up(h, cmp); };
+  const pop = (h, cmp) => {
+    const top = h[0];
+    const last = h.pop();
+    if (h.length) { h[0] = last; down(h, cmp); }
+    return top;
+  };
+  const asc = (a, b) => a - b;
+  const desc = (a, b) => b - a;
+  const out = [];
+  for (let i = 1; i <= q; i++) {
+    const t = lines[i].trim().split(/\\s+/).map(Number);
+    if (t[0] === 1) {
+      const x = t[1];
+      if (lo.length === 0 || x <= lo[0]) push(lo, desc, x); else push(hi, asc, x);
+      if (lo.length > hi.length + 1) push(hi, asc, pop(lo, desc));
+      else if (hi.length > lo.length) push(lo, desc, pop(hi, asc));
+    } else {
+      out.push(lo[0]);
+    }
+  }
+  return out.join("\\n");
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int q = Integer.parseInt(br.readLine().trim());
+        PriorityQueue<Long> lo = new PriorityQueue<>(Comparator.reverseOrder());
+        PriorityQueue<Long> hi = new PriorityQueue<>();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < q; i++) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int t = Integer.parseInt(st.nextToken());
+            if (t == 1) {
+                long x = Long.parseLong(st.nextToken());
+                if (lo.isEmpty() || x <= lo.peek()) lo.add(x); else hi.add(x);
+                if (lo.size() > hi.size() + 1) hi.add(lo.poll());
+                else if (hi.size() > lo.size()) lo.add(hi.poll());
+            } else {
+                sb.append(lo.peek()).append('\\n');
+            }
+        }
+        System.out.print(sb);
+    }
+}`,
+  quiz:[
+    {note:`大きいほうの中央値を答えている`, edits:[[`      out.push(lo[0]);`,`      out.push(hi[0]);`]]},
+    {note:`個数の約束が違い、小さいほうの山が 1 個多い状態を許していない`, edits:[[`      if (lo.length > hi.length + 1)`,`      if (lo.length > hi.length)`]]},
+    {note:`値の大小を見ずに、いつも小さいほうの山へ入れている`, edits:[[`      if (lo.length === 0 || x <= lo[0]) push(lo, desc, x); else push(hi, asc, x);`,`      push(lo, desc, x);`]]},
+    {note:`大きいほうの山が 1 個多い状態を直しておらず、中央値がずれる`, edits:[[`      else if (hi.length > lo.length) push(lo, desc, pop(hi, asc));`,`      else if (hi.length > lo.length + 1) push(lo, desc, pop(hi, asc));`]]},
+    {note:`小さいほうの山が最大ヒープになっていない`, edits:[[`  const desc = (a, b) => b - a;`,`  const desc = (a, b) => a - b;`]]}
+  ]
+},{
+  kind:'algo', id:'c64', level:3, tags:['グラフ','数え上げ'], title:'すべての 2 点間の距離の合計',
+  statement:`N 個の頂点からなる木（閉路のない連結なグラフ）が与えられます。
+辺の長さはすべて 1 です。
+
+すべての頂点の組 (u, v)（u < v）について u と v の距離を求め、その合計を出力してください。`,
+  constraints:['1 ≤ N ≤ 2 × 10^5','与えられるグラフは木'],
+  inputFormat:'N\na_1 b_1\n...\na_{N-1} b_{N-1}',
+  cases:[{in:'3\n1 2\n2 3',out:'4'},{in:'2\n1 2',out:'1'},{in:'1',out:'0'},{in:'4\n1 2\n1 3\n1 4',out:'9'},{in:'4\n1 2\n2 3\n3 4',out:'10'},{in:'5\n1 2\n1 3\n3 4\n3 5',out:'18'},{in:'8\n1 2\n1 3\n2 4\n3 5\n2 6\n6 7\n1 8',out:'68'},{in:'7\n1 2\n1 3\n1 4\n2 5\n4 6\n2 7',out:'46'},{in:'5\n1 2\n2 3\n1 4\n3 5',out:'20'},{in:'6\n1 2\n1 3\n3 4\n2 5\n4 6',out:'35'}],
+  hint:'2 点ずつ調べると O(N^2) です。「合計」を、点の組ではなく辺ごとの寄与に分けて数えます。',
+  idea:`頂点の組は N(N-1)/2 個あるので、1 組ずつ距離を求めると間に合いません。
+「合計」を辺ごとに分解します。
+
+【辺の寄与】
+木の辺を 1 本取り除くと、木はちょうど 2 つの部分に分かれます。
+片方に a 個、もう片方に b = N − a 個の頂点があるとすると、
+その辺を通る頂点の組はちょうど a × b 組です。
+
+距離は「通る辺の本数」なので、
+
+  すべての距離の合計 = Σ（辺ごとに）a × b
+
+と書き換えられます。数える向きを「組ごと」から「辺ごと」に変えるのがポイントです。
+
+【a の求め方】
+頂点 1 を根とすると、辺は必ず「親 − 子」の形です。
+子の側の頂点数は、その子を根とする部分木のサイズ size[子] です。
+つまり辺の寄与は size[子] × (N − size[子])。
+
+部分木のサイズは、葉に近いほうから順に size[親] += size[子] と足していけば求まります。
+深さ優先探索の訪問順を配列に記録し、それを逆順にたどると、
+再帰を使わずに（スタックあふれの心配なく）計算できます。
+
+【計算量】
+O(N)。合計は最大でおよそ 2×10^15 になるので、Java では long が必要です。`,
+  complexity:'O(N)',
+  pitfalls:['点の組ごとに数えて O(N^2) になる','部分木のサイズを葉から順に足し上げていない','反対側の頂点数を N にしてしまう'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const n = Number(lines[0].trim());
+  const g = Array.from({ length: n + 1 }, () => []);
+  for (let i = 1; i <= n - 1; i++) {
+    const [a, b] = lines[i].trim().split(/\\s+/).map(Number);
+    g[a].push(b);
+    g[b].push(a);
+  }
+  const par = new Array(n + 1).fill(0);
+  const seen = new Array(n + 1).fill(false);
+  const order = [];
+  const stack = [1];
+  seen[1] = true;
+  while (stack.length) {
+    const v = stack.pop();
+    order.push(v);
+    for (const to of g[v]) {
+      if (seen[to]) continue;
+      seen[to] = true;
+      par[to] = v;
+      stack.push(to);
+    }
+  }
+  const size = new Array(n + 1).fill(1);
+  let ans = 0;
+  for (let i = order.length - 1; i >= 1; i--) {   // 葉に近いほうから
+    const v = order[i];
+    size[par[v]] += size[v];
+    ans += size[v] * (n - size[v]);
+  }
+  return ans;
+}`,
+  codeJava:`import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine().trim());
+        List<List<Integer>> g = new ArrayList<>();
+        for (int i = 0; i <= n; i++) g.add(new ArrayList<>());
+        for (int i = 0; i < n - 1; i++) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int a = Integer.parseInt(st.nextToken()), b = Integer.parseInt(st.nextToken());
+            g.get(a).add(b);
+            g.get(b).add(a);
+        }
+        int[] par = new int[n + 1];
+        boolean[] seen = new boolean[n + 1];
+        int[] order = new int[n];
+        int cnt = 0;
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(1);
+        seen[1] = true;
+        while (!stack.isEmpty()) {
+            int v = stack.pop();
+            order[cnt++] = v;
+            for (int to : g.get(v)) {
+                if (seen[to]) continue;
+                seen[to] = true;
+                par[to] = v;
+                stack.push(to);
+            }
+        }
+        long[] size = new long[n + 1];
+        Arrays.fill(size, 1);
+        long ans = 0;
+        for (int i = cnt - 1; i >= 1; i--) {
+            int v = order[i];
+            size[par[v]] += size[v];
+            ans += size[v] * (n - size[v]);
+        }
+        System.out.println(ans);
+    }
+}`,
+  quiz:[
+    {note:`辺を通る組の数を掛けておらず、部分木のサイズを足しているだけ`, edits:[[`    ans += size[v] * (n - size[v]);`,`    ans += size[v];`]]},
+    {note:`葉に近いほうから処理しておらず、部分木のサイズが確定する前に使っている`, edits:[[`  for (let i = order.length - 1; i >= 1; i--) {   // 葉に近いほうから`,`  for (let i = 0; i < order.length; i++) {   // 葉に近いほうから`]]},
+    {note:`部分木のサイズを足し上げておらず、どの部分木も 1 のまま`, edits:[[`    size[par[v]] += size[v];
+`,``]]},
+    {note:`反対側の頂点数を N にしており、辺を通る組の数を数え過ぎている`, edits:[[`    ans += size[v] * (n - size[v]);`,`    ans += size[v] * n;`]]},
+    {note:`同じ組を 2 回数えたと思い込んで 2 で割っている`, edits:[[`    ans += size[v] * (n - size[v]);`,`    ans += size[v] * (n - size[v]) / 2;`]]}
+  ]
+},{
+  kind:'algo', id:'c65', level:3, tags:['文字列'], title:'パターンの出現回数',
+  statement:`文字列 S と、パターン文字列 T が与えられます。
+S の中に T が何回現れるかを出力してください。
+
+出現は重なっていてもかまいません。
+たとえば S = aaaa, T = aa のときの答えは 3 です。`,
+  constraints:['1 ≤ |S| ≤ 5 × 10^5','1 ≤ |T| ≤ 5 × 10^5','S, T は英小文字のみ'],
+  inputFormat:'S\nT',
+  cases:[{in:'aaaa\naa',out:'3'},{in:'ababab\nabab',out:'2'},{in:'abc\nd',out:'0'},{in:'aaa\naaaa',out:'0'},{in:'abcabc\nabc',out:'2'},{in:'abababa\naba',out:'3'},{in:'aabaaabaa\naabaa',out:'2'},{in:'aaabaaab\naaab',out:'2'},{in:'aabaaab\naaab',out:'1'},{in:'aabaa\naaa',out:'0'},{in:'aabaaabaaa\naabaaa',out:'2'}],
+  hint:'一致が途中で崩れたとき、必ずしも 1 文字目からやり直す必要はありません。どこまで戻ればよいかを前もって計算します。',
+  idea:`素直に全部の位置で照合すると O(|S| |T|) で間に合いません。KMP 法を使います。
+
+【失敗関数】
+まずパターン T だけを見て、次の表を作ります。
+
+  fail[i] = T の先頭 i 文字について、
+            「先頭からの並び」と「末尾までの並び」が一致する最長の長さ（i 自身は除く）
+
+たとえば T = aabaa なら fail = [0, 0, 1, 0, 1, 2] です。
+（先頭 5 文字 aabaa は、先頭 2 文字 aa と末尾 2 文字 aa が一致するので fail[5] = 2）
+
+【照合】
+S を左から 1 文字ずつ見て、いま何文字一致しているかを k で持ちます。
+・S[i] が T[k] と一致 → k を 1 増やす
+・一致しない → k = fail[k] として、戻れるところまで戻る（一致するまで繰り返す）
+・k が |T| になった → 1 回見つかった。k = fail[k] にして、重なりも数える
+
+【なぜ速いのか】
+k は 1 文字進むごとに高々 1 しか増えません。
+一方 fail で戻るときは必ず減ります。
+したがって減る回数の合計も高々 |S| 回で、全体 O(|S| + |T|) になります。
+
+【1 回だけ戻すのでは足りない理由】
+不一致のときの戻しは while で繰り返します。
+1 回戻した先でもまた一致しないことがあり、if にすると取りこぼします。`,
+  complexity:'O(|S| + |T|)',
+  pitfalls:['見つかった後に k を 0 に戻して、重なった出現を数え落とす','不一致のときの戻しを 1 回で済ませる','失敗関数の添字を 1 つずらす'],
+  codeJs:`function solve(input) {
+  const lines = input.split("\\n");
+  const s = lines[0].trim();
+  const t = lines[1].trim();
+  const m = t.length;
+  const fail = new Array(m + 1).fill(0);
+  let k = 0;
+  for (let i = 1; i < m; i++) {
+    while (k > 0 && t[i] !== t[k]) k = fail[k];
+    if (t[i] === t[k]) k++;
+    fail[i + 1] = k;
+  }
+  let cnt = 0;
+  k = 0;
+  for (let i = 0; i < s.length; i++) {
+    while (k > 0 && s[i] !== t[k]) k = fail[k];
+    if (s[i] === t[k]) k++;
+    if (k === m) { cnt++; k = fail[k]; }
+  }
+  return cnt;
+}`,
+  codeJava:`import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String s = br.readLine().trim();
+        String t = br.readLine().trim();
+        int m = t.length();
+        int[] fail = new int[m + 1];
+        int k = 0;
+        for (int i = 1; i < m; i++) {
+            while (k > 0 && t.charAt(i) != t.charAt(k)) k = fail[k];
+            if (t.charAt(i) == t.charAt(k)) k++;
+            fail[i + 1] = k;
+        }
+        long cnt = 0;
+        k = 0;
+        for (int i = 0; i < s.length(); i++) {
+            while (k > 0 && s.charAt(i) != t.charAt(k)) k = fail[k];
+            if (s.charAt(i) == t.charAt(k)) k++;
+            if (k == m) { cnt++; k = fail[k]; }
+        }
+        System.out.println(cnt);
+    }
+}`,
+  quiz:[
+    {note:`見つかった後に先頭から数え直しており、重なった出現を落としている`, edits:[[`    if (k === m) { cnt++; k = fail[k]; }`,`    if (k === m) { cnt++; k = 0; }`]]},
+    {note:`照合中の戻しが 1 回だけで、正しい位置まで戻れていない`, edits:[[`    while (k > 0 && s[i] !== t[k]) k = fail[k];`,`    if (k > 0 && s[i] !== t[k]) k = fail[k];`]]},
+    {note:`失敗関数を作るとき、戻さずに 0 にしている`, edits:[[`    while (k > 0 && t[i] !== t[k]) k = fail[k];`,`    while (k > 0 && t[i] !== t[k]) k = 0;`]]},
+    {note:`失敗関数の添字が 1 つずれている`, edits:[[`    fail[i + 1] = k;`,`    fail[i] = k;`]]},
+    {note:`一致していなくても進めている`, edits:[[`    if (s[i] === t[k]) k++;`,`    k++;`]]}
+  ]
 }
 /* ---------------- 論理パズル ---------------- */
 ,{
@@ -13710,6 +14213,182 @@ XOR を 0 にするには 8 の山を 5 にすればよい、と機械的にも�
 各自が自分の値を復元できる、という仕組みです。
 これは誤り検出符号（パリティビット）とまったく同じ考え方で、
 1 ビットの冗長情報が 99 人ぶんの不確定性を解消しています。`
+},{
+  kind:'puzzle', id:'q46', level:2, tags:['論理パズル','日付'], title:'13 日の金曜日',
+  statement:`ある 1 年（1 月 1 日から 12 月 31 日まで）のあいだに、
+「13 日が金曜日」になる月は、最も多くて何か月あるでしょうか。
+
+うるう年も含めて考えてよいものとします。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'3',
+  accept:['3回','3か月','3ヶ月','3カ月'],
+  hint:'各月の 13 日が、1 月 13 日から数えて何日ずれるかを 7 で割った余りで整理してみましょう。',
+  idea:`答えは 3 か月です。
+
+【考え方】
+1 月 13 日を基準にして、各月の 13 日が何日後かを求め、7 で割った余りを見ます。
+曜日は 7 日周期なので、余りが同じ月は同じ曜日になります。
+
+平年（1 月から順に 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30 日）で
+1 月 13 日からの日数を累積し、7 で割った余りを並べると
+
+  1月:0  2月:3  3月:3  4月:6  5月:1  6月:4
+  7月:6  8月:2  9月:5  10月:0  11月:3  12月:5
+
+余りが同じ月がいくつあるかを数えると、
+0 が 2 個、3 が 3 個、6 が 2 個、1 が 1 個、4 が 1 個、2 が 1 個、5 が 2 個です。
+
+いちばん多いのは余り 3 の「2 月・3 月・11 月」で 3 個。
+つまり 2 月 13 日が金曜日の年は、3 月 13 日と 11 月 13 日も金曜日になり、合計 3 回です。
+
+うるう年でも同様に計算すると、最も多い余りはやはり 3 個（1 月・4 月・7 月）です。
+
+【最低でも 1 回はある】
+上の表には 0 から 6 までの余りがすべて現れます。
+1 月 13 日がどの曜日であっても、金曜日になる月が必ず 1 つ以上あるということです。
+つまり「13 日の金曜日が 1 回もない年」は存在しません。`
+},{
+  kind:'puzzle', id:'q47', level:2, tags:['論理パズル','図形'], title:'多面体の面の数',
+  statement:`ある立体（へこみのない多面体）は、頂点が 20 個、辺が 30 本あります。
+この立体の面はいくつあるでしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'12',
+  accept:['12面','12個'],
+  hint:'頂点の数、辺の数、面の数のあいだには、立体の形によらず成り立つ関係式があります。',
+  idea:`答えは 12 面です。
+
+【オイラーの多面体公式】
+へこみのない多面体では、頂点の数 V、辺の数 E、面の数 F のあいだに
+
+  V − E + F = 2
+
+がいつでも成り立ちます。立体の形がどうであれ変わりません。
+
+今回は V = 20、E = 30 なので
+
+  20 − 30 + F = 2  →  F = 12
+
+答えは 12 面です。これは正十二面体（サッカーボールの原型のひとつ）と同じ数値です。
+
+【検算のしかた】
+正十二面体は正五角形 12 枚でできています。
+面 12 枚 × 5 辺 = 60 ですが、辺は 2 枚の面で共有されるので 60 ÷ 2 = 30 本。
+頂点は 1 か所に 3 枚の面が集まるので 12 × 5 ÷ 3 = 20 個。たしかに合っています。
+
+【なぜ形によらないのか】
+多面体の表面をゴム膜だと思って平面に広げると、
+「面をつぶす」「辺を縮める」といった操作で V − E + F は変わりません。
+最後に三角形 1 枚まで縮めると V − E + F = 3 − 3 + 1 = 1 になり、
+外側の面 1 枚を戻して 2 になります。
+この量は位相幾何学でオイラー標数と呼ばれ、ドーナツ型の立体では 0 になります。`
+},{
+  kind:'puzzle', id:'q48', level:2, tags:['論理パズル','数え上げ'], title:'30 円の払い方',
+  statement:`1 円玉、5 円玉、10 円玉が、それぞれ十分な枚数あります。
+ちょうど 30 円を払う方法は何通りあるでしょうか。
+
+同じ金額の硬貨は区別せず、使わない硬貨があってもかまいません。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'16',
+  accept:['16通り','16とおり'],
+  hint:'大きい硬貨から枚数を決めていくと、残りの数え方が単純になります。',
+  idea:`答えは 16 通りです。
+
+【大きい硬貨から決める】
+10 円玉の枚数で場合分けします。
+
+・10 円玉 3 枚 → 残り 0 円。5 円玉は 0 枚のみ。 → 1 通り
+・10 円玉 2 枚 → 残り 10 円。5 円玉は 0, 1, 2 枚。 → 3 通り
+・10 円玉 1 枚 → 残り 20 円。5 円玉は 0〜4 枚。   → 5 通り
+・10 円玉 0 枚 → 残り 30 円。5 円玉は 0〜6 枚。   → 7 通り
+
+1 円玉の枚数は残りの金額で自動的に決まるので、数える必要はありません。
+
+合計 1 + 3 + 5 + 7 = 16 通りです。
+
+【数えもれを防ぐコツ】
+「大きいほうから順に枚数を固定し、いちばん小さい硬貨は自動で決まる」
+という順序で数えると、重複も数えもれも起きません。
+
+【プログラムで書くと】
+これは「硬貨の組み合わせを数える DP」そのものです。
+
+  dp[0] = 1
+  各硬貨 c について、金額 v を小さい順に  dp[v] += dp[v − c]
+
+外側を硬貨、内側を金額にするのがポイントで、
+逆にすると「順番違いを別のものとして数える」ことになり、答えが変わります。`
+},{
+  kind:'puzzle', id:'q49', level:1, tags:['論理パズル','算数'], title:'5 科目の平均点',
+  statement:`5 科目のテストを受けたところ、平均点はちょうど 72 点でした。
+そのうち 4 科目の点数は、65 点、80 点、70 点、68 点でした。
+
+残りの 1 科目は何点でしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'77',
+  accept:['77点'],
+  hint:'平均が分かれば合計が分かります。',
+  idea:`答えは 77 点です。
+
+【手順】
+1. 5 科目の合計を求める … 72 × 5 = 360 点
+2. 分かっている 4 科目の合計 … 65 + 80 + 70 + 68 = 283 点
+3. 残り … 360 − 283 = 77 点
+
+【平均を扱うときの基本】
+平均そのものを足したり引いたりしても意味がありません。
+「平均 × 個数 = 合計」に直してから計算する、というのが鉄則です。
+
+【別の解き方（差で考える）】
+各科目が平均 72 点からどれだけ離れているかを見ます。
+
+  65 → −7、80 → +8、70 → −2、68 → −4
+
+ここまでの合計は −5 です。
+5 科目の「平均からのずれ」の合計は必ず 0 になるので、
+残りの 1 科目は +5、つまり 72 + 5 = 77 点です。
+
+この「ずれの合計は 0」という見方は、
+数が多いときほど計算が楽になります。`
+},{
+  kind:'puzzle', id:'q50', level:3, tags:['論理パズル','数学'], title:'100 個のロッカー',
+  statement:`1 番から 100 番までのロッカーが一列に並んでいて、最初はすべて閉まっています。
+そこへ 1 番から 100 番までの 100 人が、順番にこの操作をします。
+
+  k 番の人は、番号が k の倍数であるロッカーすべてについて、
+  開いていれば閉め、閉まっていれば開ける。
+
+100 人全員が終わったとき、開いているロッカーは何個でしょうか。`,
+  answerFormat:'半角数字で答えてください',
+  answer:'10',
+  accept:['10個'],
+  hint:'あるロッカーが何回さわられるかは、その番号の約数の個数で決まります。',
+  idea:`答えは 10 個です。
+
+【何回さわられるか】
+n 番のロッカーをさわるのは、n の約数の番号を持つ人だけです。
+つまり「さわられる回数 = n の約数の個数」。
+
+最初は閉まっているので、
+・さわられた回数が奇数 → 開いている
+・偶数 → 閉まっている
+
+【約数の個数が奇数になる数】
+約数はふつう d と n/d のペアで現れるので、個数は偶数になります。
+唯一の例外は d = n/d、つまり n が平方数のときで、
+このときだけ真ん中の約数が 1 つ余り、個数が奇数になります。
+
+  例：36 の約数は 1, 2, 3, 4, 6, 9, 12, 18, 36 の 9 個（奇数）
+      6 だけが相方を持たない
+
+【数える】
+100 以下の平方数は
+1, 4, 9, 16, 25, 36, 49, 64, 81, 100 の 10 個。
+
+したがって開いているロッカーは 10 個です。
+
+【一般化】
+ロッカーが N 個なら、答えは floor(√N) 個になります。
+N = 1000 なら 31 個です。`
 }
 ];
 /* PROBLEMS_END */
