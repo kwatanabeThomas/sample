@@ -307,7 +307,7 @@ pre.code{
         <div class="field-label">分野（複数選択可）</div>
         <div class="row" id="tagChips"></div>
       </div>
-      <div class="field">
+      <div class="field" id="formatField">
         <div class="field-label">アルゴリズム解答形式</div>
         <div class="row" id="formatChips">
           <button class="chip on" data-format="answer">答えモード（入力例の答えを暗算・筆算）</button>
@@ -14842,10 +14842,6 @@ const norm = s => zen2han(s).trim().replace(/\s+/g, ' ').toLowerCase();
 const normPuzzle = s => norm(s).replace(/\s/g, '').replace(/(回|本|分|個|枚|人|通り|度|番目|色|つ|リットル|l)$/, '');
 const puzzleCorrect = (p, val) => [p.answer, ...(p.accept || [])].map(normPuzzle).includes(normPuzzle(val));
 const byId = id => PROBLEMS.find(p => p.id === id);
-function fmtMs(ms) {
-  const s = Math.floor(ms / 1000);
-  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-}
 function fmtDate(ts) {
   const d = new Date(ts);
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
@@ -14874,32 +14870,36 @@ function dayCounts() {
   }
   return m;
 }
-// 連続日数。今日まだ解いていない場合は、昨日までの連続を「継続中」として数える
+// 連続日数は「きょうの目標問題数を達成した日」だけ数える。
+// きょうまだ達成していない場合は、昨日までの連続を「継続中」として数える
 function habitSummary() {
   const counts = dayCounts();
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const todayCount = counts[keyOfDate(today)] || 0;
+  const cleared = k => (counts[k] || 0) >= state.goal;
   let current = 0;
   const cur = new Date(today);
-  if (!counts[keyOfDate(cur)]) cur.setDate(cur.getDate() - 1);
-  while (counts[keyOfDate(cur)]) { current++; cur.setDate(cur.getDate() - 1); }
-  // 最長連続
+  if (!cleared(keyOfDate(cur))) cur.setDate(cur.getDate() - 1);
+  while (cleared(keyOfDate(cur))) { current++; cur.setDate(cur.getDate() - 1); }
+  // 最長連続（こちらも目標を達成した日だけ）
   const keys = Object.keys(counts).sort();
+  const clearedKeys = keys.filter(cleared);
   let longest = 0, run = 0, prev = null;
-  for (const k of keys) {
+  for (const k of clearedKeys) {
     const d = new Date(k + 'T00:00:00');
     if (prev && Math.round((d - prev) / DAY) === 1) run++; else run = 1;
     longest = Math.max(longest, run);
     prev = d;
   }
-  return { counts, todayCount, current, longest, days: keys.length, total: state.history.length };
+  return { counts, todayCount, current, longest,
+           days: keys.length, clearedDays: clearedKeys.length, total: state.history.length };
 }
 
 const BADGES = [
   { id:'first', icon:'🌱', name:'はじめの一歩', desc:'1 問はじめて解く', has:h => h.total >= 1 },
-  { id:'d3',    icon:'🔥', name:'三日坊主を超えた', desc:'3 日連続で学習', has:h => h.longest >= 3 },
-  { id:'d7',    icon:'📅', name:'一週間継続', desc:'7 日連続で学習', has:h => h.longest >= 7 },
-  { id:'d30',   icon:'🏔', name:'一ヶ月継続', desc:'30 日連続で学習', has:h => h.longest >= 30 },
+  { id:'d3',    icon:'🔥', name:'三日坊主を超えた', desc:'3 日連続で目標を達成', has:h => h.longest >= 3 },
+  { id:'d7',    icon:'📅', name:'一週間継続', desc:'7 日連続で目標を達成', has:h => h.longest >= 7 },
+  { id:'d30',   icon:'🏔', name:'一ヶ月継続', desc:'30 日連続で目標を達成', has:h => h.longest >= 30 },
   { id:'days30',icon:'🗓', name:'のべ 30 日', desc:'合計 30 日学習した', has:h => h.days >= 30 },
   { id:'c10',   icon:'✅', name:'10 問正解', desc:'のべ 10 問正解する', has:(h, c) => c.corrects >= 10 },
   { id:'c50',   icon:'💪', name:'50 問正解', desc:'のべ 50 問正解する', has:(h, c) => c.corrects >= 50 },
@@ -14930,7 +14930,7 @@ function renderToday() {
   fill.classList.toggle('done', h.todayCount >= state.goal);
   $('#todayMsg').textContent =
     h.todayCount >= state.goal ? 'きょうの目標を達成しました。連続記録が伸びています。'
-    : h.todayCount > 0 ? `あと ${state.goal - h.todayCount} 問で、きょうの目標を達成します。`
+    : h.todayCount > 0 ? `あと ${state.goal - h.todayCount} 問で、きょうの目標を達成します（連続日数は目標を達成した日だけ数えます）。`
     : (h.current > 0 ? `${h.current} 日つづいています。きょうも 1 問から始めましょう。`
                      : 'まずは 1 問だけ解いてみましょう。');
   // 今週（日曜はじまり）
@@ -14939,9 +14939,10 @@ function renderToday() {
   $('#weekDots').innerHTML = [...Array(7)].map((_, i) => {
     const d = new Date(sunday); d.setDate(sunday.getDate() + i);
     const c = h.counts[keyOfDate(d)] || 0;
+    const done = c >= state.goal;
     const isToday = i === w;
     const future = d > now && !isToday;
-    return `<div><span class="${c ? 'done' : ''} ${isToday ? 'today' : ''}">${c ? '✓' : (future ? '' : '·')}</span>${DOW[i]}</div>`;
+    return `<div><span class="${done ? 'done' : ''} ${isToday ? 'today' : ''}">${done ? '✓' : (future ? '' : '·')}</span>${DOW[i]}</div>`;
   }).join('');
 }
 
@@ -14956,8 +14957,9 @@ function renderHabit() {
     puzzleSolved: solvedIds.filter(id => (byId(id) || {}).kind === 'puzzle').length,
   };
   $('#habitStats').innerHTML = [
-    ['現在の連続日数', h.current, '日'],
-    ['最長の連続日数', h.longest, '日'],
+    ['現在の連続日数<span class="u">（目標達成）</span>', h.current, '日'],
+    ['最長の連続日数<span class="u">（目標達成）</span>', h.longest, '日'],
+    ['目標を達成した日数', h.clearedDays, '日'],
     ['学習した日数', h.days, '日'],
     ['きょうの解答数', h.todayCount, '問'],
     ['クリアした問題', `${c.solved}<span class="u"> / ${PROBLEMS.length}</span>`, ''],
@@ -15303,8 +15305,6 @@ function renderStats() {
   for (const h of state.history) {
     if (h.r === 'ok') { cur++; best = Math.max(best, cur); } else cur = 0;
   }
-  const times = state.history.filter(h => h.r === 'ok' && h.ms).map(h => h.ms);
-  const avg = times.length ? fmtMs(times.reduce((a, b) => a + b, 0) / times.length) : '--:--';
   const dueCount = PROBLEMS.filter(p => isDue(rec(p.id), Date.now())).length;
 
   $('#statGrid').innerHTML = [
@@ -15313,7 +15313,6 @@ function renderStats() {
     ['正解した問題', `${solved}<span class="u"> / ${PROBLEMS.length}</span>`, ''],
     ['現在の連続正解', cur, '問'],
     ['最高連続正解', best, '問'],
-    ['平均解答時間', avg, ''],
     ['復習待ち', dueCount, '問'],
   ].map(([k, v, u]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}<span class="u">${u}</span></div></div>`).join('');
 
@@ -15479,7 +15478,7 @@ function init() {
     $$('#catChips .chip').forEach(c => c.classList.toggle('on', c === b));
     // 論理パズルにコードモードは無いので、答えモードに戻す
     const onlyPuzzle = settings.category === 'puzzle';
-    $('#formatChips').classList.toggle('hidden', onlyPuzzle);
+    $('#formatField').classList.toggle('hidden', onlyPuzzle);
     if (onlyPuzzle) {
       settings.format = 'answer';
       $$('#formatChips .chip').forEach(c => c.classList.toggle('on', c.dataset.format === 'answer'));
@@ -15651,7 +15650,7 @@ AtCoder の問題文は著作物のため、このアプリには一切転載し
    「出題する」を押すだけで、その時のあなたに合った 1 問が出ます。
 
 2. 成績が確認できる
-   「成績」タブで、正答率・レベル別・分野別・連続正解・解答時間を確認できます。
+   「成績」タブで、正答率・レベル別・分野別・連続正解・復習待ちの数を確認できます。
 
 3. 間違えた問題／苦手分野を復習できる
    間違えた問題はその日のうちに復習キューへ入り、正解した問題は
@@ -15667,7 +15666,10 @@ AtCoder の問題文は著作物のため、このアプリには一切転載し
 
 5. 続けやすくする仕組み
    出題タブの上に日めくりカレンダーがあり、きょうの目標（初期値は 3 問）を達成すると
-   「済」の印が押されます。「継続」タブでは、連続日数・学習カレンダー・バッジを確認できます。
+   「済」の印が押されます。連続日数は「目標を達成した日」だけを数えるので、
+   目標に届かなかった日があるとそこで連続が途切れます。
+   （目標を変更すると、過去の日も新しい目標で数え直します）
+   「継続」タブでは、連続日数・学習カレンダー・バッジを確認できます。
    目標は 1 日 1 問からでも構いません。連続を切らさないことのほうが大切です。
 
 【2 つのアルゴリズム解答形式】（論理パズルには関係しません）
